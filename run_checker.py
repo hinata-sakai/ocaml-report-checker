@@ -674,42 +674,57 @@ def run_checker():
         print("=" * 60)
         print("Checking: {}".format(ml_file.name))
 
-        ok_count = 0
-        ng_count = 0
-        error_count = 0
+        file_results = []
 
+        # まずは今まで通り、54個の小テストをすべて実行する
         for test in TESTS:
             result = run_one_test(ml_file, test)
             all_results.append(result)
+            file_results.append(result)
 
-            status = result["status"]
-            test_name = result["test"]
+        # 小テストの結果を、1〜20の大問単位にまとめる
+        question_summaries = summarize_by_question(file_results)
+
+        question_ok_count = 0
+        question_ng_count = 0
+
+        # 大問ごとの結果を表示する
+        for summary in question_summaries:
+            question = summary["question"]
+            status = summary["status"]
 
             if status == "OK":
-                ok_count += 1
-                print("[OK]    {}".format(test_name))
-            elif status == "NG":
-                ng_count += 1
-                print("[NG]    {}".format(test_name))
+                question_ok_count += 1
+                print("[OK]    Question {}".format(question))
             else:
-                error_count += 1
-                print("[ERROR] {}".format(test_name))
+                question_ng_count += 1
+                print("[NG]    Question {}  小テスト OK {}/{}  NG {}  ERROR {}".format(
+                    question,
+                    summary["ok"],
+                    summary["total"],
+                    summary["ng"],
+                    summary["error"]
+                ))
 
-        total = ok_count + ng_count + error_count
+        question_total = question_ok_count + question_ng_count
 
         print("-" * 60)
-        print("Result: OK {} / {}, NG {}, ERROR {}".format(
-            ok_count, total, ng_count, error_count
+        print("Result: OK {} / {}, NG {}".format(
+            question_ok_count,
+            question_total,
+            question_ng_count
         ))
 
+        # result.html の上部カードも、大問単位の集計にする
         file_summaries.append({
             "file": ml_file.name,
-            "ok": ok_count,
-            "ng": ng_count,
-            "error": error_count,
-            "total": total,
+            "ok": question_ok_count,
+            "ng": question_ng_count,
+            "error": 0,
+            "total": question_total,
         })
 
+    # CSVには、詳細確認用として54個の小テスト結果をそのまま保存する
     with RESULT_CSV.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
             f,
@@ -718,12 +733,12 @@ def run_checker():
         writer.writeheader()
         writer.writerows(all_results)
 
+    # HTMLには、大問単位の概要と、小テスト単位の詳細を出す
     write_html_report(all_results, file_summaries)
 
     print("=" * 60)
     print("CSV出力完了: {}".format(RESULT_CSV))
     print("HTML出力完了: {}".format(RESULT_HTML))
-
 
 if __name__ == "__main__":
     run_checker()

@@ -5,7 +5,6 @@ from pathlib import Path
 import tempfile
 import shutil
 import cgi
-import sys
 import traceback
 
 import run_checker
@@ -72,46 +71,7 @@ h1 {
 .description {
   color: #555;
   margin: 0;
-}
-
-.upload-box {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-
-input[type="file"] {
-  display: block;
-  margin: 16px 0;
-  padding: 12px;
-  border: 1px solid #d0d7de;
-  border-radius: 8px;
-  background: #fff;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-button {
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 12px 18px;
-  border-radius: 10px;
-  font-size: 15px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-button:hover {
-  background: #1d4ed8;
-}
-
-.note {
-  color: #666;
-  font-size: 14px;
-  margin-top: 12px;
+  line-height: 1.7;
 }
 
 .summary-grid {
@@ -161,6 +121,12 @@ button:hover {
   padding: 20px;
   margin-bottom: 28px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.section-title {
+  margin-top: 28px;
+  margin-bottom: 8px;
+  font-size: 18px;
 }
 
 table {
@@ -220,7 +186,10 @@ pre {
 
     html.append("<div class='header'>")
     html.append("<h1>OCaml課題チェッカー Web版</h1>")
-    html.append("<p class='description'>アップロードされた .ml ファイルに対して、各実行例の結果を自動チェックします。</p>")
+    html.append("<p class='description'>")
+    html.append("アップロードされた .ml ファイルに対して、各大問ごとに OK / NG を判定します。")
+    html.append("大問内の小テストがすべてOKなら大問OK、1つでもNGまたはERRORがあれば大問NGです。")
+    html.append("</p>")
     html.append("</div>")
 
     html.append("<a class='back-link' href='/'>← 別のファイルをチェックする</a>")
@@ -230,30 +199,65 @@ pre {
         filename = html_escape(summary["file"])
         ok = summary["ok"]
         ng = summary["ng"]
-        error = summary["error"]
         total = summary["total"]
 
         html.append("<div class='summary-card'>")
         html.append("<h2>{}</h2>".format(filename))
-        html.append("<div class='score'>OK {} / {}</div>".format(ok, total))
-        html.append("<div><span class='ok'>OK</span>: {}</div>".format(ok))
-        html.append("<div><span class='ng'>NG</span>: {}</div>".format(ng))
-        html.append("<div><span class='error'>ERROR</span>: {}</div>".format(error))
+        html.append("<div class='score'>大問OK {} / {}</div>".format(ok, total))
+        html.append("<div><span class='ok'>大問OK</span>: {}</div>".format(ok))
+        html.append("<div><span class='ng'>大問NG</span>: {}</div>".format(ng))
         html.append("</div>")
     html.append("</div>")
 
     for summary in file_summaries:
         filename = summary["file"]
+        question_summaries = summary.get("questions", [])
 
         html.append("<div class='file-section'>")
         html.append("<h2>{}</h2>".format(html_escape(filename)))
-        html.append("<p>OK: {} / {}　NG: {}　ERROR: {}</p>".format(
+        html.append("<p>大問OK: {} / {}　大問NG: {}</p>".format(
             summary["ok"],
             summary["total"],
-            summary["ng"],
-            summary["error"]
+            summary["ng"]
         ))
 
+        html.append("<h3 class='section-title'>大問ごとの判定</h3>")
+        html.append("<table>")
+        html.append("<tr>")
+        html.append("<th>大問</th>")
+        html.append("<th>判定</th>")
+        html.append("<th>小テスト結果</th>")
+        html.append("</tr>")
+
+        for q_summary in question_summaries:
+            q = q_summary["question"]
+            status = q_summary["status"]
+            ok_count = q_summary["ok"]
+            ng_count = q_summary["ng"]
+            error_count = q_summary["error"]
+            total_count = q_summary["total"]
+
+            if status == "OK":
+                row_class = "status-ok"
+                status_class = "ok"
+            else:
+                row_class = "status-ng"
+                status_class = "ng"
+
+            html.append("<tr class='{}'>".format(row_class))
+            html.append("<td>Question {}</td>".format(html_escape(q)))
+            html.append("<td class='{}'>{}</td>".format(status_class, html_escape(status)))
+            html.append("<td>OK {}/{}　NG {}　ERROR {}</td>".format(
+                ok_count,
+                total_count,
+                ng_count,
+                error_count
+            ))
+            html.append("</tr>")
+
+        html.append("</table>")
+
+        html.append("<h3 class='section-title'>小テストごとの詳細</h3>")
         html.append("<table>")
         html.append("<tr>")
         html.append("<th>テスト</th>")
@@ -389,6 +393,7 @@ button:hover {
     html.append("<h1>OCaml課題チェッカー Web版</h1>")
     html.append("<p class='description'>")
     html.append("課題の .ml ファイルをアップロードすると、checkl から diff までの実行例を自動でチェックします。")
+    html.append("判定は大問単位で行い、大問内の小テストがすべてOKなら大問OK、1つでもNGまたはERRORがあれば大問NGになります。")
     html.append("複数の .ml ファイルを同時に選択できます。")
     html.append("</p>")
 
@@ -420,31 +425,35 @@ def check_uploaded_files(upload_dir):
     ml_files = sorted(upload_dir.glob("*.ml"))
 
     for ml_file in ml_files:
-        ok_count = 0
-        ng_count = 0
-        error_count = 0
+        file_results = []
 
+        # まずは54個の小テストをすべて実行する
         for test in run_checker.TESTS:
             result = run_checker.run_one_test(ml_file, test)
             all_results.append(result)
+            file_results.append(result)
 
-            status = result["status"]
+        # 小テスト結果を1〜20の大問単位にまとめる
+        question_summaries = run_checker.summarize_by_question(file_results)
 
-            if status == "OK":
-                ok_count += 1
-            elif status == "NG":
-                ng_count += 1
+        question_ok_count = 0
+        question_ng_count = 0
+
+        for summary in question_summaries:
+            if summary["status"] == "OK":
+                question_ok_count += 1
             else:
-                error_count += 1
+                question_ng_count += 1
 
-        total = ok_count + ng_count + error_count
+        question_total = question_ok_count + question_ng_count
 
         file_summaries.append({
             "file": ml_file.name,
-            "ok": ok_count,
-            "ng": ng_count,
-            "error": error_count,
-            "total": total,
+            "ok": question_ok_count,
+            "ng": question_ng_count,
+            "error": 0,
+            "total": question_total,
+            "questions": question_summaries,
         })
 
     return all_results, file_summaries
