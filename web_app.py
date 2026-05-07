@@ -12,6 +12,7 @@ import run_checker
 
 HOST = "127.0.0.1"
 PORT = 8000
+BACKGROUND_IMAGE = Path("webhaikei.png")
 
 
 def html_escape(s):
@@ -192,7 +193,7 @@ pre {
     html.append("</p>")
     html.append("</div>")
 
-    html.append("<a class='back-link' href='/'>← 別のファイルをチェックする</a>")
+    html.append("<a class='back-link' href='/upload'>← 別のファイルをチェックする</a>")
 
     html.append("<div class='summary-grid'>")
     for summary in file_summaries:
@@ -301,6 +302,127 @@ pre {
         html.append("</table>")
         html.append("</div>")
 
+    html.append("</div>")
+    html.append("</body>")
+    html.append("</html>")
+
+    return "\n".join(html)
+
+
+def build_start_html():
+    html = []
+    html.append("<!DOCTYPE html>")
+    html.append("<html lang='ja'>")
+    html.append("<head>")
+    html.append("<meta charset='UTF-8'>")
+    html.append("<title>OCaml課題チェッカー</title>")
+    html.append("""
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url('/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+}
+
+.start-screen {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: center;
+}
+
+.content {
+  margin-top: 70px;
+}
+
+.school {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 55px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.45);
+}
+
+.title {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #ff5a00;
+  margin-bottom: 35px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.year {
+  font-size: 44px;
+  font-weight: 800;
+  color: #ff5a00;
+  letter-spacing: 6px;
+  margin-bottom: 90px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.start-button {
+  display: inline-block;
+  background: #31148f;
+  color: white;
+  text-decoration: none;
+  font-size: 28px;
+  font-weight: 800;
+  padding: 10px 70px;
+  min-width: 260px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+
+.start-button:hover {
+  background: #4320b8;
+}
+
+@media (max-width: 700px) {
+  .content {
+    margin-top: 50px;
+    padding: 0 20px;
+  }
+
+  .school {
+    font-size: 22px;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+
+  .year {
+    font-size: 34px;
+    margin-bottom: 60px;
+  }
+
+  .start-button {
+    font-size: 22px;
+    padding: 12px 42px;
+  }
+}
+</style>
+""")
+    html.append("</head>")
+    html.append("<body>")
+    html.append("<div class='start-screen'>")
+    html.append("<div class='content'>")
+    html.append("<div class='school'>東京理科大学 創域理工学部<br>情報計算科学科</div>")
+    html.append("<div class='title'>計算機科学基礎実験<br>計算機科学基礎演習</div>")
+    html.append("<div class='year'>2026</div>")
+    html.append("<a class='start-button' href='/upload'>採点をはじめる</a>")
+    html.append("</div>")
     html.append("</div>")
     html.append("</body>")
     html.append("</html>")
@@ -469,9 +591,26 @@ class CheckerHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def send_png(self, path):
+        if not path.exists():
+            self.send_response(404)
+            self.end_headers()
+            return
+
+        data = path.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", "image/png")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
     def do_GET(self):
         if self.path == "/" or self.path.startswith("/?"):
+            self.send_html(build_start_html())
+        elif self.path == "/upload" or self.path.startswith("/upload?"):
             self.send_html(build_index_html())
+        elif self.path == "/background.png":
+            self.send_png(BACKGROUND_IMAGE)
         else:
             self.send_html(build_index_html("ページが見つかりません。"), status=404)
 
