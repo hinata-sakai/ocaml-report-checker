@@ -322,8 +322,9 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
@@ -694,6 +695,8 @@ body {
   z-index: 4;
   min-height: 100vh;
   text-align: center;
+  padding-bottom: 28px;
+  box-sizing: border-box;
 }
 
 .header {
@@ -900,6 +903,85 @@ body {
     font-size: 48px;
   }
 }
+
+@media (max-height: 900px) {
+  .header {
+    padding-top: 42px;
+  }
+
+  .school {
+    font-size: 24px;
+    margin-bottom: 30px;
+  }
+
+  .title {
+    font-size: 34px;
+    margin-bottom: 22px;
+  }
+
+  .year {
+    font-size: 38px;
+    margin-bottom: 38px;
+  }
+
+  .carousel-shell {
+    margin-top: 0;
+  }
+
+  .carousel-viewport {
+    padding: 12px 0 6px;
+  }
+
+  .carousel-card {
+    flex-basis: 220px;
+    height: 185px;
+    font-size: 25px;
+  }
+
+  .dots {
+    margin-top: 24px;
+  }
+}
+
+@media (max-height: 760px) {
+  .header {
+    padding-top: 24px;
+  }
+
+  .school {
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+
+  .title {
+    font-size: 28px;
+    margin-bottom: 14px;
+  }
+
+  .year {
+    font-size: 32px;
+    margin-bottom: 24px;
+  }
+
+  .carousel-viewport {
+    padding: 8px 0 4px;
+  }
+
+  .carousel-card {
+    flex-basis: 190px;
+    height: 160px;
+    font-size: 22px;
+  }
+
+  .nav-btn {
+    font-size: 56px;
+  }
+
+  .dots {
+    margin-top: 18px;
+  }
+}
+
 </style>
 """)
     html.append("</head>")
