@@ -812,7 +812,7 @@ body {
 }
 
 .dots {
-  margin-top: 16px;
+  margin-top: 28px;
   display: flex;
   justify-content: center;
   gap: 14px;
