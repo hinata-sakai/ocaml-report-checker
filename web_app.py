@@ -593,8 +593,347 @@ body {
     html.append("<div class='school'>東京理科大学 創域理工学部<br>情報計算科学科</div>")
     html.append("<div class='title'>計算機科学基礎実験<br>計算機科学基礎演習</div>")
     html.append("<div class='year'>2026</div>")
-    html.append("<a class='start-button' href='/upload'>採点をはじめる</a>")
+    html.append("<a class='start-button' href='/term'>採点をはじめる</a>")
     html.append("</div>")
+    html.append("</div>")
+    html.append("</body>")
+    html.append("</html>")
+
+    return "\n".join(html)
+
+
+def build_term_select_html():
+    html = []
+    html.append("<!DOCTYPE html>")
+    html.append("<html lang='ja'>")
+    html.append("<head>")
+    html.append("<meta charset='UTF-8'>")
+    html.append("<title>前期・後期選択</title>")
+    html.append("""
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: white;
+  background: #020817;
+}
+
+.space-bg {
+  position: fixed;
+  inset: 0;
+  background-image: url('/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.05);
+  animation: slowGalaxyMove 30s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+.dark-overlay {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.45)),
+    linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.35));
+  z-index: 1;
+}
+
+.page {
+  position: relative;
+  z-index: 4;
+  min-height: 100vh;
+  text-align: center;
+}
+
+.header {
+  padding-top: 48px;
+}
+
+.school {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.4;
+  margin-bottom: 34px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.55);
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.35;
+  color: #ff5a00;
+  margin-bottom: 24px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
+}
+
+.year {
+  font-size: 34px;
+  font-weight: 900;
+  color: #ff5a00;
+  letter-spacing: 8px;
+  margin-bottom: 60px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
+}
+
+.carousel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 56px;
+}
+
+.select-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 240px;
+  height: 210px;
+  background: #31148f;
+  color: white;
+  text-decoration: none;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1.6;
+  box-shadow: 0 5px 18px rgba(0,0,0,0.4);
+  transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+}
+
+.select-card.active {
+  width: 300px;
+  height: 260px;
+  font-size: 32px;
+  background: #351799;
+  transform: scale(1.08);
+  box-shadow: 0 0 24px rgba(80, 160, 255, 0.45), 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.select-card:hover {
+  background: #4320b8;
+  transform: translateY(-4px) scale(1.04);
+}
+
+.select-card.active:hover {
+  transform: translateY(-4px) scale(1.10);
+}
+
+@keyframes slowGalaxyMove {
+  0% {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.10) translate3d(-18px, 10px, 0);
+  }
+  100% {
+    transform: scale(1.07) translate3d(16px, -10px, 0);
+  }
+}
+</style>
+""")
+    html.append("</head>")
+    html.append("<body>")
+    html.append("<div class='space-bg'></div>")
+    html.append("<div class='dark-overlay'></div>")
+
+    html.append("<div class='page'>")
+    html.append("<div class='header'>")
+    html.append("<div class='school'>東京理科大学 創域理工学部<br>情報計算科学科</div>")
+    html.append("<div class='title'>計算機科学基礎実験<br>計算機科学基礎演習</div>")
+    html.append("<div class='year'>2026</div>")
+    html.append("</div>")
+
+    html.append("<div class='carousel'>")
+    html.append("<a class='select-card active' href='/period'>前期<br>ocaml演習</a>")
+    html.append("<a class='select-card' href='/upload'>後期<br>Java演習</a>")
+    html.append("</div>")
+
+    html.append("</div>")
+    html.append("</body>")
+    html.append("</html>")
+
+    return "\n".join(html)
+
+
+def build_period_select_html():
+    html = []
+    html.append("<!DOCTYPE html>")
+    html.append("<html lang='ja'>")
+    html.append("<head>")
+    html.append("<meta charset='UTF-8'>")
+    html.append("<title>期選択</title>")
+    html.append("""
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: white;
+  background: #020817;
+}
+
+.space-bg {
+  position: fixed;
+  inset: 0;
+  background-image: url('/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.05);
+  animation: slowGalaxyMove 30s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+.dark-overlay {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.45)),
+    linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.35));
+  z-index: 1;
+}
+
+.page {
+  position: relative;
+  z-index: 4;
+  min-height: 100vh;
+  text-align: center;
+}
+
+.header {
+  padding-top: 42px;
+}
+
+.school {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.4;
+  margin-bottom: 28px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.55);
+}
+
+.title {
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1.35;
+  color: #ff5a00;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
+}
+
+.year {
+  font-size: 32px;
+  font-weight: 900;
+  color: #ff5a00;
+  letter-spacing: 8px;
+  margin-bottom: 46px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
+}
+
+.slider-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 20px 0 40px;
+  scroll-snap-type: x mandatory;
+}
+
+.slider {
+  display: flex;
+  align-items: center;
+  gap: 42px;
+  padding: 0 42vw;
+}
+
+.period-card {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 240px;
+  height: 210px;
+  background: #31148f;
+  color: white;
+  text-decoration: none;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1.6;
+  box-shadow: 0 5px 18px rgba(0,0,0,0.4);
+  transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+}
+
+.period-card.active {
+  width: 300px;
+  height: 260px;
+  font-size: 34px;
+  background: #351799;
+  transform: scale(1.08);
+  box-shadow: 0 0 24px rgba(80, 160, 255, 0.45), 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.period-card:hover {
+  background: #4320b8;
+  transform: translateY(-4px) scale(1.04);
+}
+
+.period-card.active:hover {
+  transform: translateY(-4px) scale(1.10);
+}
+
+.hint {
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+@keyframes slowGalaxyMove {
+  0% {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.10) translate3d(-18px, 10px, 0);
+  }
+  100% {
+    transform: scale(1.07) translate3d(16px, -10px, 0);
+  }
+}
+</style>
+""")
+    html.append("</head>")
+    html.append("<body>")
+    html.append("<div class='space-bg'></div>")
+    html.append("<div class='dark-overlay'></div>")
+
+    html.append("<div class='page'>")
+    html.append("<div class='header'>")
+    html.append("<div class='school'>東京理科大学 創域理工学部<br>情報計算科学科</div>")
+    html.append("<div class='title'>計算機科学基礎実験<br>計算機科学基礎演習</div>")
+    html.append("<div class='year'>2026</div>")
+    html.append("</div>")
+
+    html.append("<div class='slider-wrap'>")
+    html.append("<div class='slider'>")
+    html.append("<a class='period-card' href='/upload'>1期<br>ocaml演習</a>")
+    html.append("<a class='period-card' href='/upload'>2期<br>ocaml演習</a>")
+    html.append("<a class='period-card active' href='/upload'>3期<br>ocaml演習</a>")
+    html.append("<a class='period-card' href='/upload'>4期<br>ocaml演習</a>")
+    html.append("</div>")
+    html.append("</div>")
+    html.append("<div class='hint'>横にスクロールして期を選択できます</div>")
+
     html.append("</div>")
     html.append("</body>")
     html.append("</html>")
@@ -779,6 +1118,10 @@ class CheckerHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/" or self.path.startswith("/?"):
             self.send_html(build_start_html())
+        elif self.path == "/term" or self.path.startswith("/term?"):
+            self.send_html(build_term_select_html())
+        elif self.path == "/period" or self.path.startswith("/period?"):
+            self.send_html(build_period_select_html())
         elif self.path == "/upload" or self.path.startswith("/upload?"):
             self.send_html(build_index_html())
         elif self.path == "/background.png":
