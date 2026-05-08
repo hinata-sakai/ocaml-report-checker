@@ -697,32 +697,32 @@ body {
 }
 
 .header {
-  padding-top: 42px;
+  padding-top: 70px;
 }
 
 .school {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 28px;
+  font-weight: 700;
   line-height: 1.4;
-  margin-bottom: 28px;
+  margin-bottom: 55px;
   text-shadow: 0 2px 8px rgba(0,0,0,0.55);
 }
 
 .title {
-  font-size: 30px;
-  font-weight: 900;
+  font-size: 40px;
+  font-weight: 800;
   line-height: 1.35;
   color: #ff5a00;
-  margin-bottom: 20px;
+  margin-bottom: 35px;
   text-shadow: 0 2px 8px rgba(0,0,0,0.65);
 }
 
 .year {
-  font-size: 32px;
-  font-weight: 900;
+  font-size: 44px;
+  font-weight: 800;
   color: #ff5a00;
-  letter-spacing: 8px;
-  margin-bottom: 34px;
+  letter-spacing: 6px;
+  margin-bottom: 70px;
   text-shadow: 0 2px 8px rgba(0,0,0,0.65);
 }
 
@@ -738,19 +738,20 @@ body {
 .nav-btn {
   border: none;
   background: transparent;
-  color: #5b3d18;
+  color: rgba(255, 255, 255, 0.78);
   font-size: 72px;
   font-weight: bold;
   line-height: 1;
   cursor: pointer;
   padding: 0 8px;
   z-index: 5;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.12);
+  transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+  text-shadow: 0 0 10px rgba(255,255,255,0.25);
 }
 
 .nav-btn:hover {
   transform: scale(1.08);
+  color: rgba(255, 255, 255, 1);
 }
 
 .nav-btn:disabled {
@@ -821,26 +822,22 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 3px solid #4f3b24;
+  border: 3px solid rgba(255, 255, 255, 0.78);
   background: transparent;
   cursor: pointer;
   padding: 0;
-  transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+  transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease, border-color 0.2s ease;
 }
 
 .dot.active {
-  background: #4f3b24;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.9);
   transform: scale(1.05);
 }
 
 .dot:hover {
   transform: scale(1.08);
-}
-
-.help-text {
-  margin-top: 12px;
-  color: rgba(255,255,255,0.78);
-  font-size: 14px;
+  border-color: rgba(255, 255, 255, 1);
 }
 
 @keyframes slowGalaxyMove {
@@ -929,9 +926,6 @@ body {
 
     html.append("<div class='dots' id='carousel-dots'>")
     html.append(dots_html)
-    html.append("</div>")
-
-    html.append("<div class='help-text'>左右の矢印または下のドットで選択できます</div>")
     html.append("</div>")
 
     html.append("<script>")
