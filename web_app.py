@@ -323,18 +323,99 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url('/background.png');
+  color: white;
+  background: #020817;
+}
+
+/* 背景画像レイヤー */
+.space-bg {
+  position: fixed;
+  inset: 0;
+  background-image: url('/background.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  color: white;
+  transform: scale(1.05);
+  animation: slowGalaxyMove 30s ease-in-out infinite alternate;
+  z-index: 0;
 }
 
+/* 背景を少し暗くして文字を読みやすくする */
+.dark-overlay {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.42)),
+    linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.32));
+  z-index: 1;
+}
+
+/* 星のきらめきレイヤー */
+.stars {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.2;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+.star.s1  { top: 12%; left: 18%; animation-delay: 0s; }
+.star.s2  { top: 18%; left: 72%; animation-delay: 1.3s; }
+.star.s3  { top: 26%; left: 46%; animation-delay: 2.1s; }
+.star.s4  { top: 35%; left: 82%; animation-delay: 0.7s; }
+.star.s5  { top: 45%; left: 20%; animation-delay: 3.2s; }
+.star.s6  { top: 56%; left: 62%; animation-delay: 1.8s; }
+.star.s7  { top: 68%; left: 30%; animation-delay: 2.8s; }
+.star.s8  { top: 76%; left: 78%; animation-delay: 0.4s; }
+.star.s9  { top: 84%; left: 52%; animation-delay: 3.7s; }
+.star.s10 { top: 22%; left: 10%; animation-delay: 2.5s; }
+.star.s11 { top: 62%; left: 88%; animation-delay: 1.1s; }
+.star.s12 { top: 8%;  left: 55%; animation-delay: 3.4s; }
+
+/* 流れ星レイヤー */
+.shooting-star {
+  position: fixed;
+  top: 18%;
+  right: -160px;
+  width: 140px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.95));
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+  transform: rotate(-35deg);
+  opacity: 0;
+  z-index: 3;
+  animation: shootingStar 10s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.shooting-star.second {
+  top: 58%;
+  right: -180px;
+  width: 110px;
+  animation-delay: 5.5s;
+  animation-duration: 13s;
+  opacity: 0;
+}
+
+/* 文字とボタン */
 .start-screen {
+  position: relative;
+  z-index: 4;
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -351,7 +432,7 @@ body {
   font-weight: 700;
   line-height: 1.4;
   margin-bottom: 55px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.45);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.55);
 }
 
 .title {
@@ -360,7 +441,7 @@ body {
   line-height: 1.35;
   color: #ff5a00;
   margin-bottom: 35px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
 }
 
 .year {
@@ -369,7 +450,7 @@ body {
   color: #ff5a00;
   letter-spacing: 6px;
   margin-bottom: 90px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
 }
 
 .start-button {
@@ -382,10 +463,64 @@ body {
   padding: 10px 70px;
   min-width: 260px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .start-button:hover {
   background: #4320b8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.45), 0 0 18px rgba(120, 90, 255, 0.45);
+}
+
+/* 背景画像のゆっくりした動き */
+@keyframes slowGalaxyMove {
+  0% {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.10) translate3d(-18px, 10px, 0);
+  }
+  100% {
+    transform: scale(1.07) translate3d(16px, -10px, 0);
+  }
+}
+
+/* 星の明滅 */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.18;
+    transform: scale(0.8);
+  }
+  45% {
+    opacity: 0.95;
+    transform: scale(1.35);
+  }
+  70% {
+    opacity: 0.35;
+    transform: scale(1.0);
+  }
+}
+
+/* 流れ星 */
+@keyframes shootingStar {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(-35deg);
+  }
+  6% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  22% {
+    opacity: 0;
+    transform: translate3d(-900px, 520px, 0) rotate(-35deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-900px, 520px, 0) rotate(-35deg);
+  }
 }
 
 @media (max-width: 700px) {
@@ -416,6 +551,27 @@ body {
 """)
     html.append("</head>")
     html.append("<body>")
+    html.append("<div class='space-bg'></div>")
+    html.append("<div class='dark-overlay'></div>")
+
+    html.append("<div class='stars'>")
+    html.append("<span class='star s1'></span>")
+    html.append("<span class='star s2'></span>")
+    html.append("<span class='star s3'></span>")
+    html.append("<span class='star s4'></span>")
+    html.append("<span class='star s5'></span>")
+    html.append("<span class='star s6'></span>")
+    html.append("<span class='star s7'></span>")
+    html.append("<span class='star s8'></span>")
+    html.append("<span class='star s9'></span>")
+    html.append("<span class='star s10'></span>")
+    html.append("<span class='star s11'></span>")
+    html.append("<span class='star s12'></span>")
+    html.append("</div>")
+
+    html.append("<div class='shooting-star'></div>")
+    html.append("<div class='shooting-star second'></div>")
+
     html.append("<div class='start-screen'>")
     html.append("<div class='content'>")
     html.append("<div class='school'>東京理科大学 創域理工学部<br>情報計算科学科</div>")
