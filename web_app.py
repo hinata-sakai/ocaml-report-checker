@@ -905,72 +905,34 @@ body {
 }
 
 @media (max-height: 900px) {
-  .header {
-    padding-top: 42px;
-  }
-
-  .school {
-    font-size: 24px;
-    margin-bottom: 30px;
-  }
-
-  .title {
-    font-size: 34px;
-    margin-bottom: 22px;
-  }
-
-  .year {
-    font-size: 38px;
-    margin-bottom: 38px;
-  }
-
   .carousel-shell {
     margin-top: 0;
   }
 
   .carousel-viewport {
-    padding: 12px 0 6px;
+    padding: 10px 0 6px;
   }
 
   .carousel-card {
-    flex-basis: 220px;
-    height: 185px;
-    font-size: 25px;
+    flex-basis: 230px;
+    height: 200px;
+    font-size: 26px;
   }
 
   .dots {
-    margin-top: 24px;
+    margin-top: 28px;
   }
 }
 
 @media (max-height: 760px) {
-  .header {
-    padding-top: 24px;
-  }
-
-  .school {
-    font-size: 20px;
-    margin-bottom: 18px;
-  }
-
-  .title {
-    font-size: 28px;
-    margin-bottom: 14px;
-  }
-
-  .year {
-    font-size: 32px;
-    margin-bottom: 24px;
-  }
-
   .carousel-viewport {
-    padding: 8px 0 4px;
+    padding: 6px 0 4px;
   }
 
   .carousel-card {
-    flex-basis: 190px;
-    height: 160px;
-    font-size: 22px;
+    flex-basis: 210px;
+    height: 180px;
+    font-size: 24px;
   }
 
   .nav-btn {
@@ -978,7 +940,7 @@ body {
   }
 
   .dots {
-    margin-top: 18px;
+    margin-top: 22px;
   }
 }
 
