@@ -386,15 +386,23 @@ body {
 .star.s10 { top: 22%; left: 10%; animation-delay: 2.5s; }
 .star.s11 { top: 62%; left: 88%; animation-delay: 1.1s; }
 .star.s12 { top: 8%;  left: 55%; animation-delay: 3.4s; }
+.star.s13 { top: 15%; left: 34%; animation-delay: 0.9s; }
+.star.s14 { top: 31%; left: 66%; animation-delay: 2.9s; }
+.star.s15 { top: 41%; left: 12%; animation-delay: 1.6s; }
+.star.s16 { top: 50%; left: 73%; animation-delay: 3.9s; }
+.star.s17 { top: 60%; left: 43%; animation-delay: 0.2s; }
+.star.s18 { top: 72%; left: 15%; animation-delay: 2.2s; }
+.star.s19 { top: 82%; left: 67%; animation-delay: 1.4s; }
+.star.s20 { top: 10%; left: 86%; animation-delay: 3.1s; }
 
 /* 流れ星レイヤー */
 .shooting-star {
   position: fixed;
   top: 18%;
-  right: -160px;
-  width: 140px;
+  right: -180px;
+  width: 160px;
   height: 2px;
-  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.95));
+  background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0));
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
   transform: rotate(-35deg);
   opacity: 0;
@@ -405,8 +413,8 @@ body {
 
 .shooting-star.second {
   top: 58%;
-  right: -180px;
-  width: 110px;
+  right: -200px;
+  width: 125px;
   animation-delay: 5.5s;
   animation-duration: 13s;
   opacity: 0;
@@ -567,6 +575,14 @@ body {
     html.append("<span class='star s10'></span>")
     html.append("<span class='star s11'></span>")
     html.append("<span class='star s12'></span>")
+    html.append("<span class='star s13'></span>")
+    html.append("<span class='star s14'></span>")
+    html.append("<span class='star s15'></span>")
+    html.append("<span class='star s16'></span>")
+    html.append("<span class='star s17'></span>")
+    html.append("<span class='star s18'></span>")
+    html.append("<span class='star s19'></span>")
+    html.append("<span class='star s20'></span>")
     html.append("</div>")
 
     html.append("<div class='shooting-star'></div>")
