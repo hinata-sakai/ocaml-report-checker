@@ -603,171 +603,55 @@ body {
 
 
 def build_term_select_html():
-    html = []
-    html.append("<!DOCTYPE html>")
-    html.append("<html lang='ja'>")
-    html.append("<head>")
-    html.append("<meta charset='UTF-8'>")
-    html.append("<title>前期・後期選択</title>")
-    html.append("""
-<style>
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: white;
-  background: #020817;
-}
-
-.space-bg {
-  position: fixed;
-  inset: 0;
-  background-image: url('/background.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  transform: scale(1.05);
-  animation: slowGalaxyMove 30s ease-in-out infinite alternate;
-  z-index: 0;
-}
-
-.dark-overlay {
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(circle at center, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.45)),
-    linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.35));
-  z-index: 1;
-}
-
-.page {
-  position: relative;
-  z-index: 4;
-  min-height: 100vh;
-  text-align: center;
-}
-
-.header {
-  padding-top: 48px;
-}
-
-.school {
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.4;
-  margin-bottom: 34px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.55);
-}
-
-.title {
-  font-size: 32px;
-  font-weight: 900;
-  line-height: 1.35;
-  color: #ff5a00;
-  margin-bottom: 24px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
-}
-
-.year {
-  font-size: 34px;
-  font-weight: 900;
-  color: #ff5a00;
-  letter-spacing: 8px;
-  margin-bottom: 60px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
-}
-
-.carousel {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 56px;
-}
-
-.select-card {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 240px;
-  height: 210px;
-  background: #31148f;
-  color: white;
-  text-decoration: none;
-  font-size: 30px;
-  font-weight: 900;
-  line-height: 1.6;
-  box-shadow: 0 5px 18px rgba(0,0,0,0.4);
-  transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
-}
-
-.select-card.active {
-  width: 300px;
-  height: 260px;
-  font-size: 32px;
-  background: #351799;
-  transform: scale(1.08);
-  box-shadow: 0 0 24px rgba(80, 160, 255, 0.45), 0 8px 24px rgba(0,0,0,0.5);
-}
-
-.select-card:hover {
-  background: #4320b8;
-  transform: translateY(-4px) scale(1.04);
-}
-
-.select-card.active:hover {
-  transform: translateY(-4px) scale(1.10);
-}
-
-@keyframes slowGalaxyMove {
-  0% {
-    transform: scale(1.05) translate3d(0, 0, 0);
-  }
-  50% {
-    transform: scale(1.10) translate3d(-18px, 10px, 0);
-  }
-  100% {
-    transform: scale(1.07) translate3d(16px, -10px, 0);
-  }
-}
-</style>
-""")
-    html.append("</head>")
-    html.append("<body>")
-    html.append("<div class='space-bg'></div>")
-    html.append("<div class='dark-overlay'></div>")
-
-    html.append("<div class='page'>")
-    html.append("<div class='header'>")
-    html.append("<div class='school'>東京理科大学 創域理工学部<br>情報計算科学科</div>")
-    html.append("<div class='title'>計算機科学基礎実験<br>計算機科学基礎演習</div>")
-    html.append("<div class='year'>2026</div>")
-    html.append("</div>")
-
-    html.append("<div class='carousel'>")
-    html.append("<a class='select-card active' href='/period'>前期<br>ocaml演習</a>")
-    html.append("<a class='select-card' href='/upload'>後期<br>Java演習</a>")
-    html.append("</div>")
-
-    html.append("</div>")
-    html.append("</body>")
-    html.append("</html>")
-
-    return "\n".join(html)
+    items = [
+        {"label": "前期\nocaml演習", "href": "/period"},
+        {"label": "後期\nJava演習", "href": "/upload"},
+    ]
+    return build_carousel_select_html("前期・後期選択", items, initial_index=0)
 
 
 def build_period_select_html():
+    items = [
+        {"label": "1期\nocaml演習", "href": "/upload"},
+        {"label": "2期\nocaml演習", "href": "/upload"},
+        {"label": "3期\nocaml演習", "href": "/upload"},
+        {"label": "4期\nocaml演習", "href": "/upload"},
+    ]
+    return build_carousel_select_html("期選択", items, initial_index=2)
+
+
+def build_carousel_select_html(page_title, items, initial_index=0):
+    card_html_list = []
+    dot_html_list = []
+
+    for i, item in enumerate(items):
+        label_lines = item["label"].split("\n")
+        label_html = "<br>".join(html_escape(line) for line in label_lines)
+
+        card_html_list.append(
+            "<a class='carousel-card' href='{href}' data-index='{index}'>{label}</a>".format(
+                href=html_escape(item["href"]),
+                index=i,
+                label=label_html
+            )
+        )
+
+        dot_html_list.append(
+            "<button class='dot' type='button' data-index='{index}' aria-label='{label}'></button>".format(
+                index=i,
+                label=html_escape(item["label"].replace("\n", " "))
+            )
+        )
+
+    cards_html = "\n".join(card_html_list)
+    dots_html = "\n".join(dot_html_list)
+
     html = []
     html.append("<!DOCTYPE html>")
     html.append("<html lang='ja'>")
     html.append("<head>")
     html.append("<meta charset='UTF-8'>")
-    html.append("<title>期選択</title>")
+    html.append("<title>{}</title>".format(html_escape(page_title)))
     html.append("""
 <style>
 html, body {
@@ -838,65 +722,125 @@ body {
   font-weight: 900;
   color: #ff5a00;
   letter-spacing: 8px;
-  margin-bottom: 46px;
+  margin-bottom: 34px;
   text-shadow: 0 2px 8px rgba(0,0,0,0.65);
 }
 
-.slider-wrap {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 20px 0 40px;
-  scroll-snap-type: x mandatory;
-}
-
-.slider {
+.carousel-shell {
   display: flex;
   align-items: center;
-  gap: 42px;
-  padding: 0 42vw;
-}
-
-.period-card {
-  flex: 0 0 auto;
-  scroll-snap-align: center;
-  display: flex;
   justify-content: center;
+  gap: 28px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.nav-btn {
+  border: none;
+  background: transparent;
+  color: #5b3d18;
+  font-size: 72px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 8px;
+  z-index: 5;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.12);
+}
+
+.nav-btn:hover {
+  transform: scale(1.08);
+}
+
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  transform: none;
+}
+
+.carousel-viewport {
+  width: min(920px, 78vw);
+  overflow: hidden;
+  position: relative;
+  padding: 24px 0 8px;
+}
+
+.carousel-track {
+  display: flex;
   align-items: center;
-  width: 240px;
+  gap: 54px;
+  will-change: transform;
+  transition: transform 0.42s ease;
+}
+
+.carousel-card {
+  flex: 0 0 240px;
   height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 16px;
+  box-sizing: border-box;
   background: #31148f;
   color: white;
   text-decoration: none;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 900;
-  line-height: 1.6;
+  line-height: 1.55;
   box-shadow: 0 5px 18px rgba(0,0,0,0.4);
-  transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+  transform: scale(0.82);
+  opacity: 0.62;
+  transition:
+    transform 0.35s ease,
+    opacity 0.35s ease,
+    box-shadow 0.35s ease,
+    background 0.35s ease;
 }
 
-.period-card.active {
-  width: 300px;
-  height: 260px;
-  font-size: 34px;
+.carousel-card.active {
+  transform: scale(1.12);
+  opacity: 1;
   background: #351799;
-  transform: scale(1.08);
   box-shadow: 0 0 24px rgba(80, 160, 255, 0.45), 0 8px 24px rgba(0,0,0,0.5);
 }
 
-.period-card:hover {
+.carousel-card:hover {
   background: #4320b8;
-  transform: translateY(-4px) scale(1.04);
 }
 
-.period-card.active:hover {
-  transform: translateY(-4px) scale(1.10);
+.dots {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
 }
 
-.hint {
-  color: rgba(255,255,255,0.75);
+.dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid #4f3b24;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.dot.active {
+  background: #4f3b24;
+  transform: scale(1.05);
+}
+
+.dot:hover {
+  transform: scale(1.08);
+}
+
+.help-text {
+  margin-top: 12px;
+  color: rgba(255,255,255,0.78);
   font-size: 14px;
-  margin-top: 4px;
 }
 
 @keyframes slowGalaxyMove {
@@ -908,6 +852,55 @@ body {
   }
   100% {
     transform: scale(1.07) translate3d(16px, -10px, 0);
+  }
+}
+
+@media (max-width: 900px) {
+  .carousel-viewport {
+    width: min(700px, 70vw);
+  }
+
+  .carousel-track {
+    gap: 32px;
+  }
+
+  .carousel-card {
+    flex-basis: 200px;
+    height: 180px;
+    font-size: 24px;
+  }
+
+  .nav-btn {
+    font-size: 60px;
+  }
+}
+
+@media (max-width: 640px) {
+  .school {
+    font-size: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .year {
+    font-size: 28px;
+    margin-bottom: 24px;
+  }
+
+  .carousel-viewport {
+    width: min(520px, 64vw);
+  }
+
+  .carousel-card {
+    flex-basis: 180px;
+    height: 160px;
+    font-size: 21px;
+  }
+
+  .nav-btn {
+    font-size: 48px;
   }
 }
 </style>
@@ -924,17 +917,119 @@ body {
     html.append("<div class='year'>2026</div>")
     html.append("</div>")
 
-    html.append("<div class='slider-wrap'>")
-    html.append("<div class='slider'>")
-    html.append("<a class='period-card' href='/upload'>1期<br>ocaml演習</a>")
-    html.append("<a class='period-card' href='/upload'>2期<br>ocaml演習</a>")
-    html.append("<a class='period-card active' href='/upload'>3期<br>ocaml演習</a>")
-    html.append("<a class='period-card' href='/upload'>4期<br>ocaml演習</a>")
+    html.append("<div class='carousel-shell'>")
+    html.append("<button class='nav-btn' id='prev-btn' type='button' aria-label='前へ'>&lsaquo;</button>")
+    html.append("<div class='carousel-viewport' id='carousel-viewport'>")
+    html.append("<div class='carousel-track' id='carousel-track'>")
+    html.append(cards_html)
     html.append("</div>")
     html.append("</div>")
-    html.append("<div class='hint'>横にスクロールして期を選択できます</div>")
+    html.append("<button class='nav-btn' id='next-btn' type='button' aria-label='次へ'>&rsaquo;</button>")
+    html.append("</div>")
 
+    html.append("<div class='dots' id='carousel-dots'>")
+    html.append(dots_html)
     html.append("</div>")
+
+    html.append("<div class='help-text'>左右の矢印または下のドットで選択できます</div>")
+    html.append("</div>")
+
+    html.append("<script>")
+    html.append("window.INITIAL_CAROUSEL_INDEX = {};".format(initial_index))
+    html.append("""
+document.addEventListener('DOMContentLoaded', function () {
+  const viewport = document.getElementById('carousel-viewport');
+  const track = document.getElementById('carousel-track');
+  const cards = Array.from(document.querySelectorAll('.carousel-card'));
+  const dots = Array.from(document.querySelectorAll('.dot'));
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+
+  let currentIndex = window.INITIAL_CAROUSEL_INDEX || 0;
+
+  function clampIndex(index) {
+    if (index < 0) return 0;
+    if (index > cards.length - 1) return cards.length - 1;
+    return index;
+  }
+
+  function updateCarousel(index) {
+    currentIndex = clampIndex(index);
+
+    cards.forEach(function (card, i) {
+      card.classList.toggle('active', i === currentIndex);
+    });
+
+    dots.forEach(function (dot, i) {
+      dot.classList.toggle('active', i === currentIndex);
+    });
+
+    const activeCard = cards[currentIndex];
+    const viewportWidth = viewport.clientWidth;
+    const activeCenter = activeCard.offsetLeft + (activeCard.offsetWidth / 2);
+    const offset = (viewportWidth / 2) - activeCenter;
+
+    track.style.transform = 'translateX(' + offset + 'px)';
+
+    prevBtn.disabled = currentIndex === 0;
+    nextBtn.disabled = currentIndex === cards.length - 1;
+  }
+
+  prevBtn.addEventListener('click', function () {
+    updateCarousel(currentIndex - 1);
+  });
+
+  nextBtn.addEventListener('click', function () {
+    updateCarousel(currentIndex + 1);
+  });
+
+  dots.forEach(function (dot) {
+    dot.addEventListener('click', function () {
+      const index = parseInt(dot.getAttribute('data-index'), 10);
+      updateCarousel(index);
+    });
+  });
+
+  cards.forEach(function (card) {
+    card.addEventListener('mouseenter', function () {
+      const index = parseInt(card.getAttribute('data-index'), 10);
+      updateCarousel(index);
+    });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') {
+      updateCarousel(currentIndex - 1);
+    } else if (e.key === 'ArrowRight') {
+      updateCarousel(currentIndex + 1);
+    }
+  });
+
+  let touchStartX = 0;
+
+  viewport.addEventListener('touchstart', function (e) {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  viewport.addEventListener('touchend', function (e) {
+    const touchEndX = e.changedTouches[0].screenX;
+    const diff = touchStartX - touchEndX;
+
+    if (diff > 40) {
+      updateCarousel(currentIndex + 1);
+    } else if (diff < -40) {
+      updateCarousel(currentIndex - 1);
+    }
+  }, { passive: true });
+
+  window.addEventListener('resize', function () {
+    updateCarousel(currentIndex);
+  });
+
+  updateCarousel(currentIndex);
+});
+""")
+    html.append("</script>")
     html.append("</body>")
     html.append("</html>")
 
