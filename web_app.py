@@ -608,7 +608,7 @@ def build_term_select_html():
         {"label": "前期\nocaml演習", "href": "/period"},
         {"label": "後期\nJava演習", "href": "/upload"},
     ]
-    return build_carousel_select_html("前期・後期選択", items, initial_index=0)
+    return build_carousel_select_html("前期・後期選択", items, initial_index=0, back_href="/")
 
 
 def build_period_select_html():
@@ -618,10 +618,10 @@ def build_period_select_html():
         {"label": "3期\nocaml演習", "href": "/upload"},
         {"label": "4期\nocaml演習", "href": "/upload"},
     ]
-    return build_carousel_select_html("期選択", items, initial_index=2)
+    return build_carousel_select_html("期選択", items, initial_index=2, back_href="/term")
 
 
-def build_carousel_select_html(page_title, items, initial_index=0):
+def build_carousel_select_html(page_title, items, initial_index=0, back_href="/"):
     card_html_list = []
     dot_html_list = []
 
@@ -697,6 +697,32 @@ body {
   text-align: center;
   padding-bottom: 28px;
   box-sizing: border-box;
+}
+
+.back-button {
+  position: fixed;
+  top: 30%;
+  right: 31%;
+  z-index: 10;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: none;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 36px;
+  text-align: center;
+  box-shadow: 0 0 12px rgba(255,255,255,0.22);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.back-button:hover {
+  transform: scale(1.08);
+  background: rgba(255, 255, 255, 0.26);
+  box-shadow: 0 0 18px rgba(255,255,255,0.35);
 }
 
 .header {
@@ -950,6 +976,7 @@ body {
     html.append("<body>")
     html.append("<div class='space-bg'></div>")
     html.append("<div class='dark-overlay'></div>")
+    html.append("<a class='back-button' href='{}' aria-label='戻る'>×</a>".format(html_escape(back_href)))
 
     html.append("<div class='page'>")
     html.append("<div class='header'>")
