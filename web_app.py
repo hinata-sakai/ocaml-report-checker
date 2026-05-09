@@ -6,12 +6,13 @@ import tempfile
 import shutil
 import cgi
 import traceback
+import os
 
 import run_checker
 
 
-HOST = "127.0.0.1"
-PORT = 8000
+HOST = os.environ.get("HOST", "127.0.0.1")
+PORT = int(os.environ.get("PORT", "8000"))
 BACKGROUND_IMAGE = Path("webhaikei.png")
 
 

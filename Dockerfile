@@ -13,4 +13,4 @@ ENV PORT=8000
 
 EXPOSE 8000
 
-CMD ["python3", "web_app.py"]
+CMD ["python3", "-u", "web_app.py"]
