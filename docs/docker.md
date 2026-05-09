@@ -1,4 +1,4 @@
-\# Dockerでの使い方
+# Dockerでの使い方
 
 
 
@@ -10,11 +10,11 @@ Dockerを使うことで、Python や OCaml の環境をPCに直接入れなく�
 
 
 
-\---
+---
 
 
 
-\## 事前準備
+## 事前準備
 
 
 
@@ -66,11 +66,11 @@ docker compose version
 
 
 
-\---
+---
 
 
 
-\## 1. GitHubページを開く
+## 1. GitHubページを開く
 
 
 
@@ -86,11 +86,11 @@ https://github.com/hinata-sakai/ocaml-report-checker
 
 
 
-\---
+---
 
 
 
-\## 2. 作業用フォルダを作成する
+## 2. 作業用フォルダを作成する
 
 
 
@@ -100,7 +100,7 @@ https://github.com/hinata-sakai/ocaml-report-checker
 
 ```powershell
 
-mkdir C:\\dev
+mkdir C:\dev
 
 cd C:\\dev
 
@@ -122,11 +122,11 @@ cd C:\\dev
 
 
 
-\---
+---
 
 
 
-\## 3. GitHubからチェッカーを取得する
+## 3. GitHubからチェッカーを取得する
 
 
 
@@ -148,11 +148,11 @@ cd ocaml-report-checker
 
 
 
-\---
+---
 
 
 
-\## 4. 必要なファイルがあるか確認する
+## 4. 必要なファイルがあるか確認する
 
 
 
@@ -182,11 +182,11 @@ docker-compose.yml
 
 
 
-\---
+---
 
 
 
-\## 5. DockerでWebアプリを起動する
+## 5. DockerでWebアプリを起動する
 
 
 
@@ -226,11 +226,11 @@ URL: http://0.0.0.0:8000
 
 
 
-\---
+---
 
 
 
-\## 6. ブラウザでWebページを開く
+## 6. ブラウザでWebページを開く
 
 
 
@@ -252,11 +252,11 @@ OCaml課題チェッカーの画面が表示されれば成功です。
 
 
 
-\---
+---
 
 
 
-\## 2回目以降の使い方
+## 2回目以降の使い方
 
 
 
@@ -286,11 +286,11 @@ http://localhost:8000
 
 
 
-\---
+---
 
 
 
-\## GitHubの最新版を取り込む場合
+## GitHubの最新版を取り込む場合
 
 
 
@@ -314,11 +314,11 @@ docker compose up --build
 
 
 
-\---
+---
 
 
 
-\## 終了方法
+## 終了方法
 
 
 
@@ -346,15 +346,15 @@ docker compose down
 
 
 
-\---
+---
 
 
 
-\## よくあるエラー
+## よくあるエラー
 
 
 
-\### `docker` が認識されない場合
+### `docker` が認識されない場合
 
 
 
@@ -376,11 +376,11 @@ Docker Desktopをインストールし、起動した状態で再度試してく
 
 
 
-\---
+---
 
 
 
-\### `no configuration file provided: not found` と表示される場合
+### `no configuration file provided: not found` と表示される場合
 
 
 
@@ -410,11 +410,11 @@ docker compose up --build
 
 
 
-\---
+---
 
 
 
-\### `Dockerfile` が見つからない場合
+### `Dockerfile` が見つからない場合
 
 
 
@@ -454,11 +454,11 @@ docker compose up --build
 
 
 
-\---
+---
 
 
 
-\### `port is already allocated` と表示される場合
+### `port is already allocated` と表示される場合
 
 
 
@@ -502,11 +502,11 @@ docker compose up
 
 
 
-\---
+---
 
 
 
-\## 注意
+## 注意
 
 
 
