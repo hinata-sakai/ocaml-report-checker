@@ -1,0 +1,9 @@
+services:
+  ocaml-report-checker:
+    build: .
+    container_name: ocaml-report-checker
+    ports:
+      - "8000:8000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8000

@@ -1,0 +1,7 @@
+.git
+__pycache__
+*.pyc
+result.csv
+result.html
+run_checker_backup.py
+submissions/*.ml
