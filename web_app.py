@@ -701,7 +701,7 @@ body {
 
 .back-button {
   position: fixed;
-  top: 36%;
+  top: 40%;
   right: 20%;
   z-index: 10;
   width: 42px;
