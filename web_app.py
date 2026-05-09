@@ -894,30 +894,6 @@ body {
   color: rgba(255,255,255,0.86);
 }
 
-.comms-route {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(140, 210, 255, 0.22);
-  color: rgba(255,255,255,0.95);
-  font-weight: 700;
-}
-
-.comms-close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  border: none;
-  background: transparent;
-  color: rgba(255,255,255,0.7);
-  font-size: 20px;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.comms-close:hover {
-  color: white;
-}
-
 .comms-panel::before {
   content: "";
   position: absolute;
@@ -1161,13 +1137,11 @@ body {
     html.append("<div class='dots' id='carousel-dots'>")
     html.append(dots_html)
     html.append("</div>")
-　　html.append("<div class='comms-panel' id='comms-panel'>")
-　　html.append("<button class='comms-close' id='comms-close' type='button' aria-label='閉じる'>×</button>")
-　　html.append("<div class='comms-label'>SYSTEM MESSAGE</div>")
-　　html.append("<div class='comms-title'>Coming Soon...</div>")
-　　html.append("<div class='comms-text'>この採点ルートは現在準備中です。</div>")
-　　html.append("<div class='comms-route'>利用可能ルート：<br>前期 → 1期 → ocaml演習</div>")
-　　html.append("</div>")
+    html.append("<div class='comms-panel' id='comms-panel'>")
+    html.append("<div class='comms-label'>SYSTEM MESSAGE</div>")
+    html.append("<div class='comms-title'>Coming Soon...</div>")
+    html.append("<div class='comms-text'>この採点ルートは現在準備中です。</div>")
+    html.append("</div>")
 
     html.append("<script>")
     html.append("window.INITIAL_CAROUSEL_INDEX = {};".format(initial_index))
@@ -1179,9 +1153,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const dots = Array.from(document.querySelectorAll('.dot'));
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
-　const commsPanel = document.getElementById('comms-panel');
-　const commsClose = document.getElementById('comms-close');
-　let commsTimer = null;
+  const commsPanel = document.getElementById('comms-panel');
+  let commsTimer = null;
 
   let currentIndex = window.INITIAL_CAROUSEL_INDEX || 0;
 
@@ -1233,14 +1206,6 @@ document.addEventListener('DOMContentLoaded', function () {
  　   commsPanel.classList.remove('show');
  　 }, 4200);
 　}
-
-　commsClose.addEventListener('click', function () {
- 　 commsPanel.classList.remove('show');
-
- 　 if (commsTimer) {
- 　   clearTimeout(commsTimer);
-　  }
-　});
 
   prevBtn.addEventListener('click', function () {
     updateCarousel(currentIndex - 1);
