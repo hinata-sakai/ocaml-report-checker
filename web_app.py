@@ -629,22 +629,22 @@ def build_carousel_select_html(page_title, items, initial_index=0, back_href="/"
         label_lines = item["label"].split("\n")
         label_html = "<br>".join(html_escape(line) for line in label_lines)
 
-	if item.get("coming_soon"):
-	    card_html_list.append(
-	        "<button class='carousel-card coming-soon-card' type='button' data-index='{index}' data-	label='{data_label}'>{label}</button>".format(
-	            index=i,
-	            data_label=html_escape(item["label"].replace("\n", " ")),
-	            label=label_html
-	        )
-	    )
-	else:
-	    card_html_list.append(
-	        "<a class='carousel-card' href='{href}' data-index='{index}'>{label}</a>".format(
-	            href=html_escape(item["href"]),
-	            index=i,
-	            label=label_html
-	        )
-	    )
+        if item.get("coming_soon"):
+            card_html_list.append(
+                "<button class='carousel-card coming-soon-card' type='button' data-index='{index}' data-label='{data_label}'>{label}</button>".format(
+                    index=i,
+                    data_label=html_escape(item["label"].replace("\n", " ")),
+                    label=label_html
+                )
+            )
+        else:
+            card_html_list.append(
+                "<a class='carousel-card' href='{href}' data-index='{index}'>{label}</a>".format(
+                    href=html_escape(item["href"]),
+                    index=i,
+                    label=label_html
+                )
+            )
 
         dot_html_list.append(
             "<button class='dot' type='button' data-index='{index}' aria-label='{label}'></button>".format(
