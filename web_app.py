@@ -606,7 +606,7 @@ body {
 def build_term_select_html():
     items = [
         {"label": "前期\nocaml演習", "href": "/period"},
-        {"label": "後期\nJava演習", "href": "/upload"},
+        {"label": "後期\nJava演習", "href": "#", "coming_soon": True},
     ]
     return build_carousel_select_html("前期・後期選択", items, initial_index=0, back_href="/")
 
@@ -614,11 +614,11 @@ def build_term_select_html():
 def build_period_select_html():
     items = [
         {"label": "1期\nocaml演習", "href": "/upload"},
-        {"label": "2期\nocaml演習", "href": "/upload"},
-        {"label": "3期\nocaml演習", "href": "/upload"},
-        {"label": "4期\nocaml演習", "href": "/upload"},
+        {"label": "2期\nocaml演習", "href": "#", "coming_soon": True},
+        {"label": "3期\nocaml演習", "href": "#", "coming_soon": True},
+        {"label": "4期\nocaml演習", "href": "#", "coming_soon": True},
     ]
-    return build_carousel_select_html("期選択", items, initial_index=2, back_href="/term")
+    return build_carousel_select_html("期選択", items, initial_index=0, back_href="/term")
 
 
 def build_carousel_select_html(page_title, items, initial_index=0, back_href="/"):
@@ -629,13 +629,22 @@ def build_carousel_select_html(page_title, items, initial_index=0, back_href="/"
         label_lines = item["label"].split("\n")
         label_html = "<br>".join(html_escape(line) for line in label_lines)
 
-        card_html_list.append(
-            "<a class='carousel-card' href='{href}' data-index='{index}'>{label}</a>".format(
-                href=html_escape(item["href"]),
-                index=i,
-                label=label_html
-            )
-        )
+	if item.get("coming_soon"):
+	    card_html_list.append(
+	        "<button class='carousel-card coming-soon-card' type='button' data-index='{index}' data-	label='{data_label}'>{label}</button>".format(
+	            index=i,
+	            data_label=html_escape(item["label"].replace("\n", " ")),
+	            label=label_html
+	        )
+	    )
+	else:
+	    card_html_list.append(
+	        "<a class='carousel-card' href='{href}' data-index='{index}'>{label}</a>".format(
+	            href=html_escape(item["href"]),
+	            index=i,
+	            label=label_html
+	        )
+	    )
 
         dot_html_list.append(
             "<button class='dot' type='button' data-index='{index}' aria-label='{label}'></button>".format(
@@ -829,6 +838,160 @@ body {
     background 0.35s ease;
 }
 
+.carousel-card.coming-soon-card {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.comms-panel {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  z-index: 30;
+  width: min(360px, calc(100vw - 48px));
+  padding: 18px 20px;
+  box-sizing: border-box;
+  border: 1px solid rgba(140, 210, 255, 0.65);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(6, 16, 38, 0.92), rgba(20, 24, 70, 0.88));
+  box-shadow:
+    0 0 24px rgba(70, 170, 255, 0.25),
+    inset 0 0 18px rgba(120, 190, 255, 0.08);
+  color: rgba(255, 255, 255, 0.94);
+  text-align: left;
+  transform: translateY(18px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.comms-panel.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.comms-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: rgba(120, 210, 255, 0.95);
+  margin-bottom: 10px;
+  font-weight: 800;
+}
+
+.comms-title {
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 10px;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(120, 210, 255, 0.45);
+}
+
+.comms-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: rgba(255,255,255,0.86);
+}
+
+.comms-route {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(140, 210, 255, 0.22);
+  color: rgba(255,255,255,0.95);
+  font-weight: 700;
+}
+
+.comms-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.comms-close:hover {
+  color: white;
+}
+
+.comms-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.10),
+    rgba(255,255,255,0.02) 35%,
+    rgba(255,255,255,0.00)
+  );
+  pointer-events: none;
+}
+
+.comms-panel::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 48px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(120,210,255,0),
+    rgba(120,210,255,0.65),
+    rgba(120,210,255,0)
+  );
+  animation: commsScan 2.4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes commsScan {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(90px);
+    opacity: 0;
+  }
+}
+
+@keyframes cardShake {
+  0%, 100% {
+    transform: scale(1.12) translateX(0);
+  }
+  20% {
+    transform: scale(1.12) translateX(-4px);
+  }
+  40% {
+    transform: scale(1.12) translateX(4px);
+  }
+  60% {
+    transform: scale(1.12) translateX(-3px);
+  }
+  80% {
+    transform: scale(1.12) translateX(3px);
+  }
+}
+
+.carousel-card.shake.active {
+  animation: cardShake 0.35s ease;
+}
+
+@media (max-width: 640px) {
+  .comms-panel {
+    right: 16px;
+    bottom: 18px;
+  }
+}
+
 .carousel-card.active {
   transform: scale(1.12);
   opacity: 1;
@@ -998,6 +1161,13 @@ body {
     html.append("<div class='dots' id='carousel-dots'>")
     html.append(dots_html)
     html.append("</div>")
+　　html.append("<div class='comms-panel' id='comms-panel'>")
+　　html.append("<button class='comms-close' id='comms-close' type='button' aria-label='閉じる'>×</button>")
+　　html.append("<div class='comms-label'>SYSTEM MESSAGE</div>")
+　　html.append("<div class='comms-title'>Coming Soon...</div>")
+　　html.append("<div class='comms-text'>この採点ルートは現在準備中です。</div>")
+　　html.append("<div class='comms-route'>利用可能ルート：<br>前期 → 1期 → ocaml演習</div>")
+　　html.append("</div>")
 
     html.append("<script>")
     html.append("window.INITIAL_CAROUSEL_INDEX = {};".format(initial_index))
@@ -1009,6 +1179,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const dots = Array.from(document.querySelectorAll('.dot'));
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
+　const commsPanel = document.getElementById('comms-panel');
+　const commsClose = document.getElementById('comms-close');
+　let commsTimer = null;
 
   let currentIndex = window.INITIAL_CAROUSEL_INDEX || 0;
 
@@ -1040,6 +1213,35 @@ document.addEventListener('DOMContentLoaded', function () {
     nextBtn.disabled = currentIndex === cards.length - 1;
   }
 
+　function showCommsMessage(card) {
+　  if (card) {
+　    const index = parseInt(card.getAttribute('data-index'), 10);
+ 　   updateCarousel(index);
+
+ 　   card.classList.remove('shake');
+ 　   void card.offsetWidth;
+　    card.classList.add('shake');
+ 　 }
+
+　  commsPanel.classList.add('show');
+
+ 　 if (commsTimer) {
+ 　   clearTimeout(commsTimer);
+　  }
+
+　  commsTimer = setTimeout(function () {
+ 　   commsPanel.classList.remove('show');
+ 　 }, 4200);
+　}
+
+　commsClose.addEventListener('click', function () {
+ 　 commsPanel.classList.remove('show');
+
+ 　 if (commsTimer) {
+ 　   clearTimeout(commsTimer);
+　  }
+　});
+
   prevBtn.addEventListener('click', function () {
     updateCarousel(currentIndex - 1);
   });
@@ -1061,6 +1263,15 @@ document.addEventListener('DOMContentLoaded', function () {
       updateCarousel(index);
     });
   });
+
+　cards.forEach(function (card) {
+ 　 card.addEventListener('click', function (e) {
+ 　   if (card.classList.contains('coming-soon-card')) {
+ 　     e.preventDefault();
+ 　     showCommsMessage(card);
+ 　   }
+ 　 });
+　});
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'ArrowLeft') {
