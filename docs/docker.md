@@ -178,32 +178,6 @@ Dockerfile
 
 docker-compose.yml
 
-.dockerignore
-
-README.md
-
-run\_checker.py
-
-web\_app.py
-
-webhaikei.png
-
-submissions
-
-```
-
-
-
-特に、Dockerで起動するには以下の2つが必要です。
-
-
-
-```text
-
-Dockerfile
-
-docker-compose.yml
-
 ```
 
 
