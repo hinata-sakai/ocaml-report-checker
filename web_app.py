@@ -1285,109 +1285,450 @@ def build_index_html(message=""):
     html.append("<html lang='ja'>")
     html.append("<head>")
     html.append("<meta charset='UTF-8'>")
-    html.append("<title>OCaml課題チェッカー Web版</title>")
+    html.append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>")
+    html.append("<title>Ocaml 1期</title>")
     html.append("""
 <style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f5f7fb;
-  color: #222;
-  margin: 0;
-  padding: 32px;
+:root {
+  --poster-mint: #86ddb1;
+  --poster-mint-dark: #33a76c;
+  --poster-ink: #0b0b0d;
+  --poster-paper: #f1f1ef;
+  --poster-muted: #626262;
+  --poster-card: rgba(255, 255, 255, 0.88);
+  --poster-red: #ff454f;
+  --poster-orange: #ffb36d;
 }
 
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 28px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-
-h1 {
-  margin: 0 0 12px;
-}
-
-.description {
-  color: #555;
-  line-height: 1.7;
-}
-
-input[type="file"] {
-  display: block;
-  margin: 20px 0;
-  padding: 14px;
-  border: 1px solid #d0d7de;
-  border-radius: 8px;
-  background: #fff;
-  width: 100%;
+* {
   box-sizing: border-box;
 }
 
-button {
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 12px 18px;
-  border-radius: 10px;
-  font-size: 15px;
-  cursor: pointer;
-  font-weight: bold;
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+  color: var(--poster-ink);
+  background:
+    radial-gradient(circle at 72% 22%, rgba(255, 69, 79, 0.34), transparent 12rem),
+    linear-gradient(180deg, var(--poster-paper) 0%, var(--poster-paper) 44%, var(--poster-mint) 44%, var(--poster-mint) 100%);
 }
 
-button:hover {
-  background: #1d4ed8;
+.upload-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 42px 24px 56px;
+}
+
+.upload-page::before {
+  content: "";
+  position: absolute;
+  top: -90px;
+  right: max(40px, 11vw);
+  width: 310px;
+  height: 230px;
+  border-radius: 48% 52% 45% 55%;
+  background:
+    radial-gradient(circle at 68% 12%, rgba(148, 239, 199, 0.82), transparent 18%),
+    radial-gradient(circle at 46% 42%, var(--poster-red), rgba(255, 69, 79, 0.88) 42%, transparent 72%),
+    radial-gradient(circle at 28% 70%, var(--poster-orange), transparent 45%);
+  filter: blur(20px);
+  opacity: 0.95;
+  transform: rotate(4deg);
+}
+
+.upload-page::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 42%;
+  left: 31%;
+  width: 3px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.hero {
+  position: relative;
+  z-index: 1;
+  width: min(1040px, 100%);
+  margin: 0 auto;
+}
+
+.hero-top {
+  min-height: 260px;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.86fr) minmax(280px, 1.14fr);
+  gap: 36px;
+  align-items: end;
+  padding-bottom: 34px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  padding: 7px 12px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  margin-bottom: 22px;
+}
+
+.badge::before {
+  content: "OC";
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--poster-ink);
+  color: white;
+  font-size: 11px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(48px, 9vw, 104px);
+  line-height: 0.92;
+  letter-spacing: -0.075em;
+  font-weight: 950;
+}
+
+.hero-copy {
+  align-self: center;
+  max-width: 560px;
+}
+
+.kicker {
+  margin: 0 0 16px;
+  color: var(--poster-muted);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.lead {
+  margin: 0;
+  font-size: clamp(17px, 2.1vw, 22px);
+  font-weight: 750;
+  line-height: 1.85;
+}
+
+.arrow-mark {
+  width: 74px;
+  height: 74px;
+  margin-top: 42px;
+  border-top: 5px solid var(--poster-ink);
+  border-right: 5px solid var(--poster-ink);
+  transform: rotate(45deg);
+}
+
+.work-panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.86fr) minmax(320px, 1.14fr);
+  gap: 30px;
+  align-items: stretch;
+  margin-top: 18px;
+}
+
+.info-block {
+  padding: 26px 4px 0;
+}
+
+.info-block h2 {
+  margin: 0 0 14px;
+  font-size: clamp(30px, 5vw, 54px);
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+  font-weight: 950;
+}
+
+.info-block p {
+  margin: 0;
+  color: rgba(11, 11, 13, 0.74);
+  font-size: 16px;
+  line-height: 1.85;
+  font-weight: 650;
+}
+
+.upload-card {
+  position: relative;
+  padding: clamp(24px, 4vw, 36px);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 30px;
+  background: var(--poster-card);
+  box-shadow: 0 24px 60px rgba(24, 88, 59, 0.22);
+  backdrop-filter: blur(16px);
+}
+
+.steps {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 13px;
+  align-items: start;
+  color: rgba(11, 11, 13, 0.78);
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 650;
+}
+
+.step-num {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--poster-ink);
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.form-title {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.file-drop {
+  display: block;
+  margin: 0 0 18px;
+  padding: 22px;
+  border: 2px dashed rgba(11, 11, 13, 0.28);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.74);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.file-drop:hover {
+  transform: translateY(-2px);
+  border-color: var(--poster-mint-dark);
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.file-drop input[type="file"] {
+  width: 100%;
+  margin-top: 14px;
+  color: rgba(11, 11, 13, 0.72);
+  font-weight: 700;
+}
+
+.file-drop-title {
+  display: block;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.file-drop-text {
+  display: block;
+  margin-top: 6px;
+  color: rgba(11, 11, 13, 0.58);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.selected-files {
+  margin: 0 0 20px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(134, 221, 177, 0.28);
+  border: 1px solid rgba(51, 167, 108, 0.28);
+}
+
+.selected-files-title {
+  margin: 0 0 8px;
+  color: rgba(11, 11, 13, 0.74);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.selected-files ul {
+  margin: 0;
+  padding-left: 20px;
+  color: rgba(11, 11, 13, 0.82);
+  font-size: 14px;
+  line-height: 1.7;
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.selected-files.is-empty ul {
+  padding-left: 0;
+  list-style: none;
+  color: rgba(11, 11, 13, 0.48);
+}
+
+.submit-button {
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 16px 22px;
+  background: var(--poster-ink);
+  color: white;
+  font-size: 17px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.24);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.submit-button:hover {
+  transform: translateY(-2px);
+  background: #1f1f22;
+  box-shadow: 0 18px 32px rgba(11, 11, 13, 0.30);
 }
 
 .note {
-  color: #666;
-  font-size: 14px;
-  margin-top: 16px;
+  margin: 18px 0 0;
+  color: rgba(11, 11, 13, 0.56);
+  font-size: 13px;
   line-height: 1.7;
 }
 
 .message {
-  color: #c62828;
-  font-weight: bold;
-  margin-top: 16px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 69, 79, 0.12);
+  color: #b01825;
+  font-weight: 900;
+}
+
+@media (max-width: 780px) {
+  .upload-page {
+    padding: 28px 18px 40px;
+  }
+
+  .upload-page::after {
+    display: none;
+  }
+
+  .hero-top,
+  .work-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-top {
+    min-height: auto;
+    gap: 24px;
+  }
+
+  .arrow-mark {
+    display: none;
+  }
+
+  .info-block {
+    padding-top: 0;
+  }
 }
 </style>
 """)
     html.append("</head>")
     html.append("<body>")
-    html.append("<div class='container'>")
-    html.append("<div class='card'>")
-    html.append("<h1>OCaml課題チェッカー Web版</h1>")
-    html.append("<p class='description'>")
-    html.append("課題の .ml ファイルをアップロードすると、checkl から diff までの実行例を自動でチェックします。")
-    html.append("判定は大問単位で行い、大問内の小テストがすべてOKなら大問OK、1つでもNGまたはERRORがあれば大問NGになります。")
-    html.append("複数の .ml ファイルを同時に選択できます。")
-    html.append("</p>")
+    html.append("<main class='upload-page'>")
+    html.append("<section class='hero'>")
+    html.append("<div class='hero-top'>")
+    html.append("<div>")
+    html.append("<div class='badge'>Report Checker</div>")
+    html.append("<h1>Ocaml<br>1期</h1>")
+    html.append("<div class='arrow-mark' aria-hidden='true'></div>")
+    html.append("</div>")
+    html.append("<div class='hero-copy'>")
+    html.append("<p class='kicker'>Simple grading site</p>")
+    html.append("<p class='lead'>OCaml課題の .ml ファイルをアップロードすると、自動でテストを実行し、大問ごとの OK / NG を確認できる簡単な採点サイトです。</p>")
+    html.append("</div>")
+    html.append("</div>")
 
+    html.append("<div class='work-panel'>")
+    html.append("<div class='info-block'>")
+    html.append("<h2>選んで、<br>採点する。</h2>")
+    html.append("<p>複数ファイルにも対応しています。選択後にファイル名一覧が表示されるので、採点前に対象ファイルを確認できます。</p>")
+    html.append("</div>")
+
+    html.append("<div class='upload-card'>")
     if message:
         html.append("<p class='message'>{}</p>".format(html_escape(message)))
 
+    html.append("<ol class='steps' aria-label='使い方'>")
+    html.append("<li><span class='step-num'>01</span><span>課題の .ml ファイルを選択します。</span></li>")
+    html.append("<li><span class='step-num'>02</span><span>選択済みファイル名を確認します。</span></li>")
+    html.append("<li><span class='step-num'>03</span><span>採点を実行し、結果画面で大問ごとの判定を確認します。</span></li>")
+    html.append("</ol>")
+
     html.append("<form method='POST' enctype='multipart/form-data' action='/check'>")
-    html.append("<input type='file' name='files' accept='.ml' multiple required>")
-    html.append("<button type='submit'>チェック実行</button>")
+    html.append("<p class='form-title'>ファイルの選択</p>")
+    html.append("<label class='file-drop'>")
+    html.append("<span class='file-drop-title'>.ml ファイルをアップロード</span>")
+    html.append("<span class='file-drop-text'>複数選択できます。選択したファイル名は下に表示されます。</span>")
+    html.append("<input id='file-input' type='file' name='files' accept='.ml' multiple required>")
+    html.append("</label>")
+    html.append("<div class='selected-files is-empty' id='selected-files' aria-live='polite'>")
+    html.append("<p class='selected-files-title'>選択中のファイル</p>")
+    html.append("<ul id='selected-file-list'><li>まだファイルが選択されていません。</li></ul>")
+    html.append("</div>")
+    html.append("<button class='submit-button' type='submit'>採点を実行</button>")
     html.append("</form>")
 
     html.append("<p class='note'>")
     html.append("注意: Exception が出る実行例を提出ファイル内で直接実行している場合、読み込み時点で ERROR になることがあります。")
     html.append("課題文の指示通り、例外が出る呼び出しはコメントアウトしてください。")
     html.append("</p>")
+    html.append("</div>")
+    html.append("</div>")
+    html.append("</section>")
+    html.append("</main>")
+    html.append("""
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const fileInput = document.getElementById('file-input');
+  const selectedFiles = document.getElementById('selected-files');
+  const selectedFileList = document.getElementById('selected-file-list');
 
-    html.append("</div>")
-    html.append("</div>")
+  function updateSelectedFiles() {
+    const files = Array.from(fileInput.files || []);
+    selectedFileList.innerHTML = '';
+
+    if (files.length === 0) {
+      selectedFiles.classList.add('is-empty');
+      const emptyItem = document.createElement('li');
+      emptyItem.textContent = 'まだファイルが選択されていません。';
+      selectedFileList.appendChild(emptyItem);
+      return;
+    }
+
+    selectedFiles.classList.remove('is-empty');
+    files.forEach(function (file) {
+      const item = document.createElement('li');
+      item.textContent = file.name;
+      selectedFileList.appendChild(item);
+    });
+  }
+
+  fileInput.addEventListener('change', updateSelectedFiles);
+});
+</script>
+""")
     html.append("</body>")
     html.append("</html>")
 
     return "\n".join(html)
-
 
 def check_uploaded_files(upload_dir):
     all_results = []
