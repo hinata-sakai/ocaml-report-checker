@@ -1042,7 +1042,7 @@ body {
 
 .carousel-viewport {
   width: min(920px, 78vw);
-  overflow: hidden;
+  overflow: visible;
   position: relative;
   padding: 52px 0 52px;
 }
