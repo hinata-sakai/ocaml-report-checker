@@ -1044,7 +1044,7 @@ body {
   width: min(920px, 78vw);
   overflow: hidden;
   position: relative;
-  padding: 24px 0 8px;
+  padding: 52px 0 52px;
 }
 
 .carousel-track {
@@ -1241,7 +1241,7 @@ body {
 }
 
 .dots {
-  margin-top: 54px;
+  margin-top: 12px;
   display: flex;
   justify-content: center;
   gap: 14px;
