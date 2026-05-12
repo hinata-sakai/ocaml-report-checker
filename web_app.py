@@ -1463,10 +1463,10 @@ body {
   z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: fit-content;
   margin-bottom: 28px;
-  padding: 10px 16px;
+  padding: 10px 18px;
   border: 2px solid var(--poster-ink);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
@@ -1480,16 +1480,13 @@ body {
 }
 
 .upload-back-link::before {
-  content: "←";
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 20px;
-  border-radius: 999px;
-  background: var(--poster-ink);
-  color: white;
-  font-size: 14px;
-  font-weight: 900;
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 11px solid var(--poster-ink);
 }
 
 .upload-back-link:hover {
