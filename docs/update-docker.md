@@ -65,12 +65,6 @@ Already up to date.
 type VERSION
 ```
 
-次のように表示されれば、現在の最新バージョンです。
-
-```text
-v1.1.0
-```
-
 ---
 
 ## 5. Dockerイメージを作り直して起動する
