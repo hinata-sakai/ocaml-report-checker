@@ -531,22 +531,6 @@ body {
   z-index: 1;
 }
 
-.page-fade-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: rgba(0, 0, 0, 0);
-  opacity: 0;
-  pointer-events: none;
-  transition: background 0.9s ease, opacity 0.9s ease;
-}
-
-.page-fade-overlay.show {
-  background: rgba(0, 0, 0, 0.92);
-  opacity: 1;
-  pointer-events: auto;
-}
-
 /* 星のきらめきレイヤー */
 .stars {
   position: fixed;
@@ -890,6 +874,22 @@ body {
     radial-gradient(circle at center, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.45)),
     linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.35));
   z-index: 1;
+}
+
+.page-fade-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: background 0.9s ease, opacity 0.9s ease;
+}
+
+.page-fade-overlay.show {
+  background: rgba(0, 0, 0, 0.92);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .page {
