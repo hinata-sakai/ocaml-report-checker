@@ -1811,6 +1811,67 @@ h1 {
   font-weight: 900;
 }
 
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(241, 241, 239, 0.82);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.loading-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.loading-card {
+  width: min(380px, 100%);
+  padding: 34px 30px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 24px 60px rgba(11, 11, 13, 0.22);
+  text-align: center;
+}
+
+.loading-ring {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 20px;
+  border: 5px solid rgba(11, 11, 13, 0.12);
+  border-top-color: var(--poster-ink);
+  border-radius: 50%;
+  animation: loadingSpin 0.85s linear infinite;
+}
+
+.loading-title {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.loading-text {
+  margin: 0;
+  color: rgba(11, 11, 13, 0.62);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.7;
+}
+
+@keyframes loadingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 780px) {
   .upload-page {
     padding: 28px 18px 40px;
@@ -1868,7 +1929,7 @@ h1 {
     html.append("<li><span class='step-num'>03</span><span>採点を実行し、結果画面で大問ごとの判定を確認します。</span></li>")
     html.append("</ol>")
 
-    html.append("<form method='POST' enctype='multipart/form-data' action='/check'>")
+    html.append("<form id='upload-form' method='POST' enctype='multipart/form-data' action='/check'>")
     html.append("<p class='form-title'>ファイルの選択</p>")
     html.append("<label class='file-drop'>")
     html.append("<span class='file-drop-title'>.ml ファイルをアップロード</span>")
@@ -1890,9 +1951,18 @@ h1 {
     html.append("</div>")
     html.append("</section>")
     html.append("</main>")
+    html.append("<div class='loading-overlay' id='loading-overlay' aria-live='polite'>")
+    html.append("<div class='loading-card'>")
+    html.append("<div class='loading-ring' aria-hidden='true'></div>")
+    html.append("<p class='loading-title'>採点中...</p>")
+    html.append("<p class='loading-text'>提出ファイルをチェックしています。<br>しばらくお待ちください。</p>")
+    html.append("</div>")
+    html.append("</div>")
     html.append("""
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  const uploadForm = document.getElementById('upload-form');
+  const loadingOverlay = document.getElementById('loading-overlay');
   const fileInput = document.getElementById('file-input');
   const selectedFiles = document.getElementById('selected-files');
   const selectedFileList = document.getElementById('selected-file-list');
@@ -1918,6 +1988,15 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   fileInput.addEventListener('change', updateSelectedFiles);
+    uploadForm.addEventListener('submit', function () {
+      const files = Array.from(fileInput.files || []);
+
+      if (files.length === 0) {
+        return;
+      }
+
+      loadingOverlay.classList.add('show');
+    });
 });
 </script>
 """)
