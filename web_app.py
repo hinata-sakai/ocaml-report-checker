@@ -70,7 +70,13 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    linear-gradient(180deg, var(--poster-paper) 0%, #f7f7f3 44%, var(--poster-mint) 44%, var(--poster-mint) 100%);
+    linear-gradient(
+      180deg,
+      var(--poster-paper) 0%,
+      #f7f7f3 44%,
+      var(--poster-mint) 44%,
+      var(--poster-mint) 100%
+    );
   color: var(--poster-ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -99,18 +105,6 @@ body {
       rgba(255, 172, 120, 0.82) 100%);
   filter: blur(42px);
   opacity: 0.9;
-  z-index: 0;
-}
-
-.result-page::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 42%;
-  min-height: 300px;
-  background: linear-gradient(135deg, rgba(134, 221, 177, 0.92), rgba(167, 236, 199, 0.88));
   z-index: 0;
 }
 
