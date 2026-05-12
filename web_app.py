@@ -70,8 +70,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 82% 12%, rgba(255, 107, 72, 0.30), transparent 24%),
-    linear-gradient(180deg, var(--poster-paper) 0%, #f7f7f3 44%, var(--poster-mint-soft) 44%, var(--poster-mint) 100%);
+    linear-gradient(180deg, var(--poster-paper) 0%, #f7f7f3 44%, var(--poster-mint) 44%, var(--poster-mint) 100%);
   color: var(--poster-ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
