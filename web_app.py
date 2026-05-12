@@ -663,6 +663,25 @@ body {
   box-shadow: 0 8px 22px rgba(0,0,0,0.45), 0 0 18px rgba(120, 90, 255, 0.45);
 }
 
+@keyframes startButtonLaunch {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  }
+  45% {
+    transform: scale(1.20);
+    box-shadow: 0 0 34px rgba(170, 210, 255, 0.75), 0 12px 34px rgba(0,0,0,0.58);
+  }
+  100% {
+    transform: scale(1.14);
+    box-shadow: 0 0 26px rgba(120, 190, 255, 0.65), 0 10px 30px rgba(0,0,0,0.55);
+  }
+}
+
+.start-button.launch {
+  animation: startButtonLaunch 0.45s ease forwards;
+}
+
 /* 背景画像のゆっくりした動き */
 @keyframes slowGalaxyMove {
   0% {
@@ -776,9 +795,32 @@ body {
     html.append("<div class='school'>東京理科大学 創域理工学部<br>情報計算科学科</div>")
     html.append("<div class='title'>計算機科学基礎実験<br>計算機科学基礎演習</div>")
     html.append("<div class='year'>2026</div>")
-    html.append("<a class='start-button' href='/term'>採点をはじめる</a>")
+    html.append("<a class='start-button' id='start-button' href='/term'>採点をはじめる</a>")
     html.append("</div>")
     html.append("</div>")
+
+    html.append("""
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const startButton = document.getElementById('start-button');
+
+  startButton.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    const href = startButton.getAttribute('href');
+
+    startButton.classList.remove('launch');
+    void startButton.offsetWidth;
+    startButton.classList.add('launch');
+
+    setTimeout(function () {
+      window.location.href = href;
+    }, 450);
+  });
+});
+</script>
+""")
+
     html.append("</body>")
     html.append("</html>")
 
@@ -1422,7 +1464,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const href = card.getAttribute('href');
 
-      if (href === '/upload') {
+      if (href && href !== '#') {
         e.preventDefault();
 
         const index = parseInt(card.getAttribute('data-index'), 10);
@@ -1432,13 +1474,19 @@ document.addEventListener('DOMContentLoaded', function () {
         void card.offsetWidth;
         card.classList.add('launch');
 
-        setTimeout(function () {
-          fadeOverlay.classList.add('show');
-        }, 180);
+        if (href === '/upload') {
+          setTimeout(function () {
+            fadeOverlay.classList.add('show');
+          }, 180);
 
-        setTimeout(function () {
-          window.location.href = href;
-        }, 1300);
+          setTimeout(function () {
+            window.location.href = href;
+          }, 1300);
+        } else {
+          setTimeout(function () {
+            window.location.href = href;
+          }, 450);
+        }
       }
     });
   });
