@@ -84,7 +84,7 @@ body {
 .result-page {
   position: relative;
   min-height: 100vh;
-  padding: 48px 28px 64px;
+  padding: 42px 24px 56px;
   overflow: hidden;
 }
 
@@ -362,12 +362,6 @@ body {
   box-shadow: 0 8px 18px rgba(181, 55, 24, 0.12);
 }
 
-.actions {
-  margin-top: 30px;
-  display: flex;
-  justify-content: flex-start;
-}
-
 .back-link {
   position: relative;
   z-index: 2;
@@ -437,6 +431,7 @@ body {
     html.append("</head>")
     html.append("<body>")
     html.append("<main class='result-page'>")
+    html.append("<a class='back-link' href='/upload'>ファイル選択へ戻る</a>")
     html.append("<div class='result-shell'>")
     html.append("<section class='result-hero'>")
     html.append("<div>")
@@ -488,9 +483,6 @@ body {
         html.append("</article>")
     html.append("</section>")
 
-    html.append("<div class='actions'>")
-    html.append("<a class='back-link' href='/upload'>ファイル選択へ戻る</a>")
-    html.append("</div>")
     html.append("</div>")
     html.append("</main>")
     html.append("</body>")
