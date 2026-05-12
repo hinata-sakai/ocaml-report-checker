@@ -1045,6 +1045,7 @@ body {
   overflow: visible;
   position: relative;
   padding: 52px 0 52px;
+  clip-path: inset(-80px 0 -80px 0);
 }
 
 .carousel-track {
