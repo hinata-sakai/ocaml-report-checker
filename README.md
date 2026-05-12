@@ -13,6 +13,21 @@
 - [大学Linuxでの使い方](./docs/university-linux.md)
 - [Dockerでの使い方](./docs/docker.md)
 
+## 最新版への更新方法
+
+Webサイトの内容や採点処理が更新されたときは、以下のページを見て最新版に更新してください。
+
+- [大学Linuxで最新版に更新する方法](./docs/update-university-linux.md)
+- [Dockerで最新版に更新する方法](./docs/update-docker.md)
+
+## 現在の最新バージョン
+
+```text
+v1.1.0
+```
+
+このリポジトリでは、最新バージョンを [`VERSION`](./VERSION) にも記載しています。
+
 ---
 
 ## 現在対応している課題
