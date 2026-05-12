@@ -531,6 +531,22 @@ body {
   z-index: 1;
 }
 
+.page-fade-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: background 0.9s ease, opacity 0.9s ease;
+}
+
+.page-fade-overlay.show {
+  background: rgba(0, 0, 0, 0.92);
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* 星のきらめきレイヤー */
 .stars {
   position: fixed;
@@ -1254,6 +1270,7 @@ body {
     html.append("<body>")
     html.append("<div class='space-bg'></div>")
     html.append("<div class='dark-overlay'></div>")
+    html.append("<div class='page-fade-overlay' id='page-fade-overlay'></div>")
     html.append("<a class='back-button' href='{}' aria-label='戻る'>×</a>".format(html_escape(back_href)))
 
     html.append("<div class='page'>")
@@ -1293,6 +1310,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
   const commsPanel = document.getElementById('comms-panel');
+  const fadeOverlay = document.getElementById('page-fade-overlay');
   let commsTimer = null;
 
   let currentIndex = window.INITIAL_CAROUSEL_INDEX || 0;
@@ -1368,14 +1386,34 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-　cards.forEach(function (card) {
- 　 card.addEventListener('click', function (e) {
- 　   if (card.classList.contains('coming-soon-card')) {
- 　     e.preventDefault();
- 　     showCommsMessage(card);
- 　   }
- 　 });
-　});
+  cards.forEach(function (card) {
+    card.addEventListener('click', function (e) {
+      if (card.classList.contains('coming-soon-card')) {
+        e.preventDefault();
+        showCommsMessage(card);
+        return;
+      }
+
+      const href = card.getAttribute('href');
+
+      if (href === '/upload') {
+        e.preventDefault();
+
+        const index = parseInt(card.getAttribute('data-index'), 10);
+        updateCarousel(index);
+
+        card.classList.remove('shake');
+        void card.offsetWidth;
+        card.classList.add('shake');
+
+        fadeOverlay.classList.add('show');
+
+        setTimeout(function () {
+          window.location.href = href;
+        }, 1000);
+      }
+    });
+  });
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'ArrowLeft') {
