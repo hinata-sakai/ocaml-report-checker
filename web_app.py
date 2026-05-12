@@ -31,11 +31,6 @@ def html_escape(s):
 
 
 def build_result_html(all_results, file_summaries):
-    total_files = len(file_summaries)
-    total_questions = sum(summary.get("total", 0) for summary in file_summaries)
-    total_ok = sum(summary.get("ok", 0) for summary in file_summaries)
-    overall_rate = round((total_ok / total_questions) * 100) if total_questions else 0
-
     html = []
     html.append("<!DOCTYPE html>")
     html.append("<html lang='ja'>")
@@ -70,7 +65,6 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 82% 12%, rgba(255, 107, 72, 0.30), transparent 24%),
     linear-gradient(180deg, var(--poster-paper) 0%, #f7f7f3 44%, var(--poster-mint-soft) 44%, var(--poster-mint) 100%);
   color: var(--poster-ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -83,22 +77,28 @@ body {
   overflow: hidden;
 }
 
+/* 赤いぼかし球 */
 .result-page::before {
   content: "";
   position: absolute;
-  top: 76px;
-  right: min(8vw, 100px);
-  width: 260px;
-  height: 260px;
-  border-radius: 42% 58% 46% 54%;
+  top: -60px;
+  right: -20px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
   background:
-    radial-gradient(circle at 38% 30%, rgba(255, 218, 122, 0.95), transparent 22%),
-    radial-gradient(circle at 58% 58%, rgba(255, 54, 72, 0.9), rgba(255, 121, 65, 0.78) 48%, transparent 68%);
-  filter: blur(1px);
-  opacity: 0.74;
+    radial-gradient(circle at 30% 28%,
+      rgba(255, 240, 165, 0.95) 0%,
+      rgba(255, 227, 150, 0.78) 10%,
+      rgba(255, 190, 145, 0.56) 22%,
+      rgba(255, 135, 135, 0.72) 52%,
+      rgba(255, 172, 120, 0.82) 100%);
+  filter: blur(42px);
+  opacity: 0.9;
   z-index: 0;
 }
 
+/* 下の緑の面 */
 .result-page::after {
   content: "";
   position: absolute;
@@ -172,36 +172,6 @@ body {
   font-size: 17px;
   line-height: 1.8;
   font-weight: 650;
-}
-
-.result-overview {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 24px;
-}
-
-.overview-card {
-  padding: 18px 20px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.78);
-  box-shadow: 0 16px 38px rgba(24, 88, 59, 0.14);
-}
-
-.overview-label {
-  margin: 0 0 8px;
-  color: rgba(11, 11, 13, 0.56);
-  font-size: 12px;
-  font-weight: 950;
-  letter-spacing: 0.06em;
-}
-
-.overview-value {
-  margin: 0;
-  font-size: 30px;
-  font-weight: 950;
-  letter-spacing: -0.04em;
 }
 
 .result-grid {
@@ -385,14 +355,14 @@ body {
   }
 
   .result-page::before {
-    width: 180px;
-    height: 180px;
-    right: -42px;
-    top: 42px;
+    width: 300px;
+    height: 300px;
+    top: -30px;
+    right: -60px;
+    filter: blur(34px);
   }
 
-  .result-hero,
-  .result-overview {
+  .result-hero {
     grid-template-columns: 1fr;
   }
 
@@ -412,6 +382,7 @@ body {
     html.append("<body>")
     html.append("<main class='result-page'>")
     html.append("<div class='result-shell'>")
+
     html.append("<section class='result-hero'>")
     html.append("<div>")
     html.append("<div class='badge'>Report Checker</div>")
@@ -421,13 +392,6 @@ body {
     html.append("<p class='kicker'>Ocaml 1期 / Result</p>")
     html.append("<p class='lead'>ファイルごとの正解数と、確認が必要な問をまとめて表示しています。</p>")
     html.append("</div>")
-    html.append("</section>")
-
-    html.append("<section class='result-overview' aria-label='採点結果の概要'>")
-    html.append("<div class='overview-card'><p class='overview-label'>FILES</p><p class='overview-value'>{}</p></div>".format(total_files))
-    html.append("<div class='overview-card'><p class='overview-label'>TOTAL OK</p><p class='overview-value'>{}</p></div>".format(total_ok))
-    html.append("<div class='overview-card'><p class='overview-label'>TOTAL QUESTIONS</p><p class='overview-value'>{}</p></div>".format(total_questions))
-    html.append("<div class='overview-card'><p class='overview-label'>SCORE RATE</p><p class='overview-value'>{}%</p></div>".format(overall_rate))
     html.append("</section>")
 
     html.append("<section class='result-grid' aria-label='ファイルごとの採点結果'>")
@@ -472,12 +436,13 @@ body {
     html.append("<div class='actions'>")
     html.append("<a class='back-link' href='/upload'>別のファイルを採点する</a>")
     html.append("</div>")
+
     html.append("</div>")
     html.append("</main>")
     html.append("</body>")
     html.append("</html>")
 
-    return "\n".join(html)
+    return "\\n".join(html)
 
 
 def build_start_html():
