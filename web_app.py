@@ -1410,7 +1410,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         setTimeout(function () {
           window.location.href = href;
-        }, 1500);
+        }, 1300);
       }
     });
   });
