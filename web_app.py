@@ -1157,7 +1157,7 @@ body {
 }
 
 .dots {
-  margin-top: 36px;
+  margin-top: 54px;
   display: flex;
   justify-content: center;
   gap: 14px;
