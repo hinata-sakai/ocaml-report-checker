@@ -883,11 +883,11 @@ body {
   background: rgba(0, 0, 0, 0);
   opacity: 0;
   pointer-events: none;
-  transition: background 0.9s ease, opacity 0.9s ease;
+  transition: background 1,0s ease, opacity 1.0s ease;
 }
 
 .page-fade-overlay.show {
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(0, 0, 0, 1);
   opacity: 1;
   pointer-events: auto;
 }
@@ -1410,7 +1410,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         setTimeout(function () {
           window.location.href = href;
-        }, 1000);
+        }, 1500);
       }
     });
   });
