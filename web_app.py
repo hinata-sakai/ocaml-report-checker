@@ -47,6 +47,7 @@ def build_result_html(all_results, file_summaries):
     html.append("""
 <style>
 body {
+  min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #f5f7fb;
   color: #222;
@@ -670,8 +671,9 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
@@ -1071,45 +1073,7 @@ body {
   }
 }
 
-@media (max-height: 900px) {
-  .carousel-shell {
-    margin-top: 0;
-  }
 
-  .carousel-viewport {
-    padding: 10px 0 6px;
-  }
-
-  .carousel-card {
-    flex-basis: 230px;
-    height: 200px;
-    font-size: 26px;
-  }
-
-  .dots {
-    margin-top: 28px;
-  }
-}
-
-@media (max-height: 760px) {
-  .carousel-viewport {
-    padding: 6px 0 4px;
-  }
-
-  .carousel-card {
-    flex-basis: 210px;
-    height: 180px;
-    font-size: 24px;
-  }
-
-  .nav-btn {
-    font-size: 56px;
-  }
-
-  .dots {
-    margin-top: 22px;
-  }
-}
 
 </style>
 """)
