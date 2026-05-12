@@ -883,7 +883,7 @@ body {
   background: rgba(0, 0, 0, 0);
   opacity: 0;
   pointer-events: none;
-  transition: background 1,0s ease, opacity 1.0s ease;
+  transition: background 1.0s ease, opacity 1.0s ease;
 }
 
 .page-fade-overlay.show {
