@@ -365,29 +365,44 @@ body {
 .actions {
   margin-top: 30px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .back-link {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 52px;
-  padding: 0 28px;
+  gap: 10px;
+  width: fit-content;
+  margin-bottom: 28px;
+  padding: 10px 18px;
+  border: 2px solid var(--poster-ink);
   border-radius: 999px;
-  background: var(--poster-ink);
-  color: white;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--poster-ink);
   text-decoration: none;
-  font-size: 16px;
-  font-weight: 950;
-  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.24);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 24px rgba(11, 11, 13, 0.08);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.back-link::before {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 11px solid var(--poster-ink);
 }
 
 .back-link:hover {
   transform: translateY(-2px);
-  background: #1f1f22;
-  box-shadow: 0 18px 32px rgba(11, 11, 13, 0.30);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.14);
 }
 
 @media (max-width: 780px) {
@@ -474,7 +489,7 @@ body {
     html.append("</section>")
 
     html.append("<div class='actions'>")
-    html.append("<a class='back-link' href='/upload'>別のファイルを採点する</a>")
+    html.append("<a class='back-link' href='/upload'>ファイル選択へ戻る</a>")
     html.append("</div>")
     html.append("</div>")
     html.append("</main>")
