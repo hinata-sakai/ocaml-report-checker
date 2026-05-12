@@ -31,6 +31,11 @@ def html_escape(s):
 
 
 def build_result_html(all_results, file_summaries):
+    total_files = len(file_summaries)
+    total_questions = sum(summary.get("total", 0) for summary in file_summaries)
+    total_ok = sum(summary.get("ok", 0) for summary in file_summaries)
+    overall_rate = round((total_ok / total_questions) * 100) if total_questions else 0
+
     html = []
     html.append("<!DOCTYPE html>")
     html.append("<html lang='ja'>")
@@ -65,6 +70,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
+    radial-gradient(circle at 82% 12%, rgba(255, 107, 72, 0.30), transparent 24%),
     linear-gradient(180deg, var(--poster-paper) 0%, #f7f7f3 44%, var(--poster-mint-soft) 44%, var(--poster-mint) 100%);
   color: var(--poster-ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -77,7 +83,6 @@ body {
   overflow: hidden;
 }
 
-/* 赤いぼかし球 */
 .result-page::before {
   content: "";
   position: absolute;
@@ -98,7 +103,6 @@ body {
   z-index: 0;
 }
 
-/* 下の緑の面 */
 .result-page::after {
   content: "";
   position: absolute;
@@ -172,6 +176,36 @@ body {
   font-size: 17px;
   line-height: 1.8;
   font-weight: 650;
+}
+
+.result-overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.overview-card {
+  padding: 18px 20px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow: 0 16px 38px rgba(24, 88, 59, 0.14);
+}
+
+.overview-label {
+  margin: 0 0 8px;
+  color: rgba(11, 11, 13, 0.56);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+}
+
+.overview-value {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
 }
 
 .result-grid {
@@ -355,14 +389,14 @@ body {
   }
 
   .result-page::before {
-    width: 300px;
-    height: 300px;
-    top: -30px;
-    right: -60px;
-    filter: blur(34px);
+    width: 180px;
+    height: 180px;
+    right: -42px;
+    top: 42px;
   }
 
-  .result-hero {
+  .result-hero,
+  .result-overview {
     grid-template-columns: 1fr;
   }
 
@@ -382,7 +416,6 @@ body {
     html.append("<body>")
     html.append("<main class='result-page'>")
     html.append("<div class='result-shell'>")
-
     html.append("<section class='result-hero'>")
     html.append("<div>")
     html.append("<div class='badge'>Report Checker</div>")
@@ -436,13 +469,12 @@ body {
     html.append("<div class='actions'>")
     html.append("<a class='back-link' href='/upload'>別のファイルを採点する</a>")
     html.append("</div>")
-
     html.append("</div>")
     html.append("</main>")
     html.append("</body>")
     html.append("</html>")
 
-    return "\\n".join(html)
+    return "\n".join(html)
 
 
 def build_start_html():
