@@ -1502,7 +1502,7 @@ body {
 }
 
 .badge::before {
-  content: "OC";
+  content: "TA";
   display: grid;
   place-items: center;
   width: 30px;
@@ -1774,14 +1774,14 @@ h1 {
     html.append("<div class='arrow-mark' aria-hidden='true'></div>")
     html.append("</div>")
     html.append("<div class='hero-copy'>")
-    html.append("<p class='kicker'>Simple grading site</p>")
-    html.append("<p class='lead'>OCaml課題の .ml ファイルをアップロードすると、自動でテストを実行し、大問ごとの OK / NG を確認できる簡単な採点サイトです。</p>")
+    html.append("<p class='kicker'>SUBMISSION CHECKER</p>")
+    html.append("<p class='lead'>OCaml課題の .ml ファイルを自動でテストし、各大問の判定結果をわかりやすく表示します。</p>")
     html.append("</div>")
     html.append("</div>")
 
     html.append("<div class='work-panel'>")
     html.append("<div class='info-block'>")
-    html.append("<h2>選んで、<br>採点する。</h2>")
+    html.append("<h2>採点作業を、<br>シンプルに。</h2>")
     html.append("<p>複数ファイルにも対応しています。選択後にファイル名一覧が表示されるので、採点前に対象ファイルを確認できます。</p>")
     html.append("</div>")
 
