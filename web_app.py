@@ -1475,16 +1475,6 @@ body {
   transform: rotate(4deg);
 }
 
-.upload-page::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 42%;
-  left: 31%;
-  width: 3px;
-  background: rgba(255, 255, 255, 0.85);
-}
-
 .hero {
   position: relative;
   z-index: 1;
@@ -1554,15 +1544,6 @@ h1 {
   font-size: clamp(17px, 2.1vw, 22px);
   font-weight: 750;
   line-height: 1.85;
-}
-
-.arrow-mark {
-  width: 74px;
-  height: 74px;
-  margin-top: 42px;
-  border-top: 5px solid var(--poster-ink);
-  border-right: 5px solid var(--poster-ink);
-  transform: rotate(45deg);
 }
 
 .work-panel {
@@ -1767,10 +1748,6 @@ h1 {
     gap: 24px;
   }
 
-  .arrow-mark {
-    display: none;
-  }
-
   .info-block {
     padding-top: 0;
   }
@@ -1785,7 +1762,6 @@ h1 {
     html.append("<div>")
     html.append("<div class='badge'>Report Checker</div>")
     html.append("<h1>Ocaml<br>1期</h1>")
-    html.append("<div class='arrow-mark' aria-hidden='true'></div>")
     html.append("</div>")
     html.append("<div class='hero-copy'>")
     html.append("<p class='kicker'>SUBMISSION CHECKER</p>")
