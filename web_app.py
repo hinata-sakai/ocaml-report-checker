@@ -1161,6 +1161,25 @@ body {
   animation: cardShake 0.35s ease;
 }
 
+@keyframes cardLaunch {
+  0% {
+    transform: scale(1.12);
+    box-shadow: 0 0 24px rgba(80, 160, 255, 0.45), 0 8px 24px rgba(0,0,0,0.5);
+  }
+  45% {
+    transform: scale(1.20);
+    box-shadow: 0 0 38px rgba(170, 210, 255, 0.75), 0 12px 34px rgba(0,0,0,0.58);
+  }
+  100% {
+    transform: scale(1.17);
+    box-shadow: 0 0 30px rgba(120, 190, 255, 0.65), 0 10px 30px rgba(0,0,0,0.55);
+  }
+}
+
+.carousel-card.launch.active {
+  animation: cardLaunch 0.45s ease forwards;
+}
+
 @media (max-width: 640px) {
   .comms-panel {
     right: 16px;
@@ -1409,11 +1428,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const index = parseInt(card.getAttribute('data-index'), 10);
         updateCarousel(index);
 
-        card.classList.remove('shake');
+        card.classList.remove('launch');
         void card.offsetWidth;
-        card.classList.add('shake');
+        card.classList.add('launch');
 
-        fadeOverlay.classList.add('show');
+        setTimeout(function () {
+          fadeOverlay.classList.add('show');
+        }, 180);
 
         setTimeout(function () {
           window.location.href = href;
