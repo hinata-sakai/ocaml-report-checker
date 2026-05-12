@@ -126,15 +126,29 @@ body {
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
+  gap: 7px;
+  width: fit-content;
+  padding: 7px 12px;
   border: 2px solid var(--poster-ink);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   font-size: 13px;
-  font-weight: 950;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.badge::before {
+  content: "TA";
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--poster-ink);
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
 }
 
 .result-title {
