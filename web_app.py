@@ -123,46 +123,6 @@ body {
   margin-bottom: 34px;
 }
 
-.upload-back-link {
-  position: relative;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  width: fit-content;
-  margin-bottom: 28px;
-  padding: 10px 16px;
-  border: 2px solid var(--poster-ink);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--poster-ink);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  box-shadow: 0 10px 24px rgba(11, 11, 13, 0.08);
-  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-}
-
-.upload-back-link::before {
-  content: "←";
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 20px;
-  border-radius: 999px;
-  background: var(--poster-ink);
-  color: white;
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.upload-back-link:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.14);
-}
-
 .badge {
   display: inline-flex;
   align-items: center;
@@ -1498,6 +1458,46 @@ body {
   padding: 42px 24px 56px;
 }
 
+.upload-back-link {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin-bottom: 28px;
+  padding: 10px 16px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--poster-ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 24px rgba(11, 11, 13, 0.08);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.upload-back-link::before {
+  content: "←";
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--poster-ink);
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.upload-back-link:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.14);
+}
+
 .upload-page::before {
   content: "";
   position: absolute;
@@ -1797,7 +1797,7 @@ h1 {
     html.append("</head>")
     html.append("<body>")
     html.append("<main class='upload-page'>")
-    html.append("<a class='upload-back-link' href='/period'>選択へ戻る</a>")
+    html.append("<a class='upload-back-link' href='/period'>選択画面へ戻る</a>")
     html.append("<section class='hero'>")
     html.append("<div class='hero-top'>")
     html.append("<div>")
