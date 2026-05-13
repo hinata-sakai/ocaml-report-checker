@@ -230,8 +230,8 @@ body {
 
 .result-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
 }
 
 .result-card {
@@ -426,6 +426,10 @@ body {
 
   .result-hero,
   .result-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .result-grid {
     grid-template-columns: 1fr;
   }
 
