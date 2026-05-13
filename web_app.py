@@ -2036,7 +2036,7 @@ h1 {
     html.append("<div class='hero-top'>")
     html.append("<div>")
     html.append("<div class='badge'>Report Checker</div>")
-    html.append("<h1>Ocaml<br>1期</h1>")
+    html.append("<h1>OCaml<br>1期</h1>")
     html.append("</div>")
     html.append("<div class='hero-copy'>")
     html.append("<p class='kicker'>SUBMISSION CHECKER</p>")
