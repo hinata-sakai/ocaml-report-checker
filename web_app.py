@@ -890,7 +890,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 def build_term_select_html():
     items = [
-        {"label": "前期\nocaml演習", "href": "/period"},
+        {"label": "前期\nOCaml演習", "href": "/period"},
         {"label": "後期\nJava演習", "href": "#", "coming_soon": True},
     ]
     return build_carousel_select_html("前期・後期選択", items, initial_index=0, back_href="/")
@@ -898,10 +898,10 @@ def build_term_select_html():
 
 def build_period_select_html():
     items = [
-        {"label": "1期\nocaml演習", "href": "/upload"},
-        {"label": "2期\nocaml演習", "href": "/period/2"},
-        {"label": "3期\nocaml演習", "href": "#", "coming_soon": True},
-        {"label": "4期\nocaml演習", "href": "#", "coming_soon": True},
+        {"label": "1期\nOCaml演習", "href": "/upload"},
+        {"label": "2期\nOCaml演習", "href": "/period/2"},
+        {"label": "3期\nOCaml演習", "href": "#", "coming_soon": True},
+        {"label": "4期\nOCaml演習", "href": "#", "coming_soon": True},
     ]
     return build_carousel_select_html("期選択", items, initial_index=0, back_href="/term")
 
@@ -1599,7 +1599,7 @@ def build_index_html(message=""):
     html.append("<head>")
     html.append("<meta charset='UTF-8'>")
     html.append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>")
-    html.append("<title>Ocaml 1期</title>")
+    html.append("<title>OCaml 1期</title>")
     html.append("""
 <style>
 :root {
