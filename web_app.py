@@ -952,7 +952,7 @@ body {
 
 .back-button {
   position: absolute;
-  top: 40%;
+  top: 55%;
   right: 20%;
   z-index: 10;
   width: 42px;
