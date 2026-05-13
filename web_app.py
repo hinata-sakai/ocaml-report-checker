@@ -9,7 +9,7 @@ from email import policy
 import traceback
 
 import run_checker
-
+import second_period_pages
 
 import os
 
@@ -899,7 +899,7 @@ def build_term_select_html():
 def build_period_select_html():
     items = [
         {"label": "1期\nocaml演習", "href": "/upload"},
-        {"label": "2期\nocaml演習", "href": "#", "coming_soon": True},
+        {"label": "2期\nocaml演習", "href": "/period/2"},
         {"label": "3期\nocaml演習", "href": "#", "coming_soon": True},
         {"label": "4期\nocaml演習", "href": "#", "coming_soon": True},
     ]
@@ -2207,6 +2207,8 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_html(build_term_select_html())
         elif self.path == "/period" or self.path.startswith("/period?"):
             self.send_html(build_period_select_html())
+        elif self.path == "/period/2" or self.path.startswith("/period/2?"):
+            self.send_html(second_period_pages.build_week_select_html(build_carousel_select_html))
         elif self.path == "/upload" or self.path.startswith("/upload?"):
             self.send_html(build_index_html())
         elif self.path == "/background.png":
