@@ -17,6 +17,19 @@ HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8000"))
 BACKGROUND_IMAGE = Path("webhaikei.png")
 
+VERSION_FILE = Path("VERSION")
+
+
+def get_app_version():
+    try:
+        if VERSION_FILE.exists():
+            version = VERSION_FILE.read_text(encoding="utf-8").strip()
+            if version:
+                return version
+    except Exception:
+        pass
+
+    return "version unknown"
 
 def html_escape(s):
     if s is None:
@@ -603,6 +616,46 @@ body {
   opacity: 0;
 }
 
+.version-badge {
+  position: fixed;
+  top: 28px;
+  right: 32px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 18px rgba(120, 190, 255, 0.16);
+}
+
+.version-badge::before {
+  content: "VERSION";
+  color: rgba(120, 210, 255, 0.95);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+@media (max-width: 700px) {
+  .version-badge {
+    top: 18px;
+    right: 18px;
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+
+  .version-badge::before {
+    font-size: 10px;
+  }
+}
+                
 /* 文字とボタン */
 .start-screen {
   position: relative;
@@ -763,6 +816,7 @@ body {
     html.append("<body>")
     html.append("<div class='space-bg'></div>")
     html.append("<div class='dark-overlay'></div>")
+    html.append("<div class='version-badge'>{}</div>".format(html_escape(get_app_version().lstrip("vV"))))
 
     html.append("<div class='stars'>")
     html.append("<span class='star s1'></span>")
