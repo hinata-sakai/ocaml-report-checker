@@ -627,36 +627,39 @@ body {
   z-index: 5;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.10);
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 13px;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 0 18px rgba(120, 190, 255, 0.16);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .version-badge::before {
   content: "VERSION";
-  color: rgba(120, 210, 255, 0.95);
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
 }
 
 @media (max-width: 700px) {
   .version-badge {
     top: 18px;
     right: 18px;
-    padding: 7px 11px;
-    font-size: 12px;
+    padding: 0;
+    font-size: 14px;
   }
 
   .version-badge::before {
-    font-size: 10px;
+    font-size: 14px;
   }
 }
                 
