@@ -49,28 +49,45 @@ def build_result_html(all_results, file_summaries):
     total_ok = sum(summary.get("ok", 0) for summary in file_summaries)
     overall_rate = round((total_ok / total_questions) * 100) if total_questions else 0
 
-    def build_score_text(summary):
+    def build_score_html(summary):
         ok = summary.get("ok", 0)
         warning = summary.get("warning", 0)
         ng = summary.get("ng", 0)
         error = summary.get("error", 0)
         total = summary.get("total", 0)
 
-        if total and ok == total:
-            return "{}問正解/{}問".format(ok, total)
+        pieces = []
 
-        parts = []
+        pieces.append(
+            "<span class='score-piece'><span class='score-large'>{}問中</span></span>".format(total)
+        )
+
         if ok:
-            parts.append("{}問正解".format(ok))
+            pieces.append(
+                "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small'>正解</span></span>".format(ok)
+            )
+
         if ng:
-            parts.append("{}問不正解".format(ng))
+            pieces.append(
+                "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small'>不正解</span></span>".format(ng)
+            )
+
         if warning:
-            parts.append("{}問警告".format(warning))
+            pieces.append(
+                "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small'>警告</span></span>".format(warning)
+            )
+
         if error:
-            parts.append("{}問エラー".format(error))
-        if not parts:
-            parts.append("0問正解")
-        return "{}/{}問".format("".join(parts), total)
+            pieces.append(
+                "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small'>エラー</span></span>".format(error)
+            )
+
+        if not ok and not ng and not warning and not error:
+            pieces.append(
+                "<span class='score-piece'><span class='score-large'>0問</span><span class='score-small'>正解</span></span>"
+            )
+
+        return "".join(pieces)
 
     def build_issue_detail(question_summary, status):
         question = html_escape(question_summary.get("question"))
@@ -343,10 +360,29 @@ body {
 }
 
 .score-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.score-large {
   font-size: clamp(24px, 4vw, 42px);
   line-height: 1.14;
   font-weight: 950;
   letter-spacing: -0.05em;
+}
+
+.score-small {
+  color: rgba(11, 11, 13, 0.58);
+  font-size: 16px;
+  font-weight: 900;
+  margin-left: 4px;
+}
+
+.score-piece {
+  display: inline-flex;
+  align-items: baseline;
 }
 
 .progress {
@@ -609,7 +645,7 @@ pre {
         html.append("<span class='status-pill'>{}</span>".format(status_label))
         html.append("</div>")
         html.append("<div class='score-line'>")
-        html.append("<span class='score-main'>{}</span>".format(html_escape(build_score_text(summary))))
+        html.append("<span class='score-main'>{}</span>".format(build_score_html(summary)))
         html.append("</div>")
         html.append("<div class='progress' aria-label='正答率 {}%'>".format(score_rate))
         html.append("<span class='progress-bar' style='--score-width: {}%;'></span>".format(score_rate))
