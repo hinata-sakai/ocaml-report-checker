@@ -2279,7 +2279,6 @@ h1 {
     html.append("</div>")
     html.append("</div>")
     html.append("""
-    html.append("""
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const uploadForm = document.getElementById('upload-form');
