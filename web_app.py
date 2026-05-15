@@ -2042,6 +2042,12 @@ h1 {
   background: rgba(255, 255, 255, 0.94);
 }
 
+.file-drop.is-dragging {
+  transform: translateY(-2px);
+  border-color: var(--poster-mint-dark);
+  background: rgba(255, 255, 255, 0.94);
+}
+
 .file-drop input[type="file"] {
   width: 100%;
   margin-top: 14px;
@@ -2342,21 +2348,45 @@ document.addEventListener('DOMContentLoaded', function () {
     fileDrop.addEventListener('dragenter', function (e) {
       e.preventDefault();
       e.stopPropagation();
+      fileDrop.classList.add('is-dragging');
     });
 
     fileDrop.addEventListener('dragover', function (e) {
       e.preventDefault();
       e.stopPropagation();
+      fileDrop.classList.add('is-dragging');
+    });
+
+    fileDrop.addEventListener('dragleave', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!fileDrop.contains(e.relatedTarget)) {
+        fileDrop.classList.remove('is-dragging');
+      }
     });
 
     fileDrop.addEventListener('drop', function (e) {
       e.preventDefault();
       e.stopPropagation();
 
+      fileDrop.classList.remove('is-dragging');
       addDroppedFiles(e.dataTransfer.files);
     });
   }
 
+  document.addEventListener('drop', function () {
+    if (fileDrop) {
+      fileDrop.classList.remove('is-dragging');
+    }
+  });
+
+  document.addEventListener('dragend', function () {
+    if (fileDrop) {
+      fileDrop.classList.remove('is-dragging');
+    }
+  });
+  
   uploadForm.addEventListener('submit', function () {
     const files = Array.from(fileInput.files || []);
 
