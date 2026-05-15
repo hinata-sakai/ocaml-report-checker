@@ -586,7 +586,7 @@ pre {
     html.append("</div>")
     html.append("<div class='hero-copy'>")
     html.append("<p class='kicker'>Ocaml 1期 / Result</p>")
-    html.append("<p class='lead'>正解・警告・不正解・エラーを分けて表示します。確認が必要な問はクリックすると理由を確認できます。</p>")
+    html.append("<p class='lead'>採点結果と確認が必要な問を、ファイルごとにまとめて表示しています。</p>")
     html.append("</div>")
     html.append("</section>")
 
