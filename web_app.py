@@ -31,6 +31,7 @@ def get_app_version():
 
     return "version unknown"
 
+
 def html_escape(s):
     if s is None:
         return ""
@@ -44,10 +45,82 @@ def html_escape(s):
 
 
 def build_result_html(all_results, file_summaries):
-    total_files = len(file_summaries)
     total_questions = sum(summary.get("total", 0) for summary in file_summaries)
     total_ok = sum(summary.get("ok", 0) for summary in file_summaries)
     overall_rate = round((total_ok / total_questions) * 100) if total_questions else 0
+
+    def build_score_text(summary):
+        ok = summary.get("ok", 0)
+        warning = summary.get("warning", 0)
+        ng = summary.get("ng", 0)
+        error = summary.get("error", 0)
+        total = summary.get("total", 0)
+
+        if total and ok == total:
+            return "{}問正解/{}問".format(ok, total)
+
+        parts = []
+        if ok:
+            parts.append("{}問正解".format(ok))
+        if ng:
+            parts.append("{}問不正解".format(ng))
+        if warning:
+            parts.append("{}問警告".format(warning))
+        if error:
+            parts.append("{}問エラー".format(error))
+        if not parts:
+            parts.append("0問正解")
+        return "{}/{}問".format("".join(parts), total)
+
+    def build_issue_detail(question_summary, status):
+        question = html_escape(question_summary.get("question"))
+        related_results = [
+            result for result in question_summary.get("results", [])
+            if result.get("status") == status
+        ]
+
+        if not related_results:
+            related_results = question_summary.get("results", [])
+
+        if status == "WARNING":
+            reason = "実行結果は期待値と一致しましたが、実行後にOCamlの警告が出ています。"
+            detail_class = "issue-detail warning-detail"
+        elif status == "NG":
+            reason = "実行はできましたが、実行結果が期待値と違いました。"
+            detail_class = "issue-detail wrong-detail"
+        else:
+            reason = "文法エラー・未定義関数・型エラーなどにより、採点処理まで進めませんでした。"
+            detail_class = "issue-detail error-detail"
+
+        detail = []
+        detail.append("<details class='{}'>".format(detail_class))
+        detail.append("<summary><span>Q{}</span><span class='detail-label'>詳細</span></summary>".format(question))
+        detail.append("<div class='issue-reason'>")
+        detail.append("<p>{}</p>".format(reason))
+
+        if not related_results:
+            detail.append("<p class='no-output'>詳細情報がありません。</p>")
+
+        for result in related_results:
+            detail.append("<div class='test-detail'>")
+            detail.append("<p class='test-name'>{}</p>".format(html_escape(result.get("test"))))
+
+            stdout = result.get("stdout", "")
+            stderr = result.get("stderr", "")
+
+            if stdout:
+                detail.append("<p class='output-label'>stdout</p><pre>{}</pre>".format(html_escape(stdout)))
+            if stderr:
+                detail.append("<p class='output-label'>stderr</p><pre>{}</pre>".format(html_escape(stderr)))
+            if not stdout and not stderr:
+                detail.append("<p class='no-output'>stdout / stderr はありません。</p>")
+
+            detail.append("</div>")
+
+        detail.append("</div>")
+        detail.append("</details>")
+
+        return "".join(detail)
 
     html = []
     html.append("<!DOCTYPE html>")
@@ -67,6 +140,10 @@ def build_result_html(all_results, file_summaries):
   --poster-card: rgba(255, 255, 255, 0.9);
   --poster-alert: #ff6b48;
   --poster-alert-soft: rgba(255, 107, 72, 0.14);
+  --poster-warning: #d98b00;
+  --poster-warning-soft: rgba(255, 184, 77, 0.20);
+  --poster-error: #c62828;
+  --poster-error-soft: rgba(198, 40, 40, 0.12);
 }
 
 * {
@@ -198,36 +275,6 @@ body {
   font-weight: 650;
 }
 
-.result-overview {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 24px;
-}
-
-.overview-card {
-  padding: 18px 20px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.78);
-  box-shadow: 0 16px 38px rgba(24, 88, 59, 0.14);
-}
-
-.overview-label {
-  margin: 0 0 8px;
-  color: rgba(11, 11, 13, 0.56);
-  font-size: 12px;
-  font-weight: 950;
-  letter-spacing: 0.06em;
-}
-
-.overview-value {
-  margin: 0;
-  font-size: 30px;
-  font-weight: 950;
-  letter-spacing: -0.04em;
-}
-
 .result-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -254,7 +301,7 @@ body {
 }
 
 .result-card.needs-review::before {
-  background: linear-gradient(90deg, var(--poster-alert), #ff9a54);
+  background: linear-gradient(90deg, var(--poster-alert), var(--poster-warning), var(--poster-error));
 }
 
 .card-top {
@@ -296,16 +343,10 @@ body {
 }
 
 .score-main {
-  font-size: clamp(40px, 6vw, 72px);
-  line-height: 0.95;
+  font-size: clamp(24px, 4vw, 42px);
+  line-height: 1.14;
   font-weight: 950;
-  letter-spacing: -0.08em;
-}
-
-.score-sub {
-  color: rgba(11, 11, 13, 0.58);
-  font-size: 16px;
-  font-weight: 900;
+  letter-spacing: -0.05em;
 }
 
 .progress {
@@ -328,19 +369,23 @@ body {
   background: linear-gradient(90deg, var(--poster-alert), #ffba6a);
 }
 
-.wrong-block {
+.issue-block {
   padding: 16px 18px;
   border-radius: 22px;
   background: rgba(134, 221, 177, 0.22);
   border: 1px solid rgba(37, 138, 89, 0.18);
 }
 
-.needs-review .wrong-block {
-  background: var(--poster-alert-soft);
-  border-color: rgba(255, 107, 72, 0.25);
+.needs-review .issue-block {
+  background: rgba(255, 255, 255, 0.58);
+  border-color: rgba(11, 11, 13, 0.10);
 }
 
-.wrong-title {
+.issue-section + .issue-section {
+  margin-top: 14px;
+}
+
+.issue-title {
   margin: 0 0 10px;
   color: rgba(11, 11, 13, 0.64);
   font-size: 13px;
@@ -348,31 +393,112 @@ body {
   letter-spacing: 0.04em;
 }
 
-.wrong-none {
+.no-issues {
   margin: 0;
   color: var(--poster-mint-dark);
   font-size: 15px;
   font-weight: 900;
 }
 
-.wrong-tags {
+.issue-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.wrong-tag {
+.issue-detail {
+  display: inline-block;
+}
+
+.issue-detail summary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-width: 46px;
   padding: 8px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.78);
-  color: #b83217;
   font-size: 14px;
   font-weight: 950;
+  cursor: pointer;
+  list-style: none;
   box-shadow: 0 8px 18px rgba(181, 55, 24, 0.12);
+}
+
+.issue-detail summary::-webkit-details-marker {
+  display: none;
+}
+
+.detail-label {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(11, 11, 13, 0.86);
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.wrong-detail summary {
+  color: #b83217;
+}
+
+.warning-detail summary {
+  color: #9a6200;
+  background: var(--poster-warning-soft);
+}
+
+.error-detail summary {
+  color: var(--poster-error);
+  background: var(--poster-error-soft);
+}
+
+.issue-reason {
+  width: min(620px, calc(100vw - 96px));
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(11, 11, 13, 0.10);
+  color: rgba(11, 11, 13, 0.76);
+  box-shadow: 0 16px 36px rgba(11, 11, 13, 0.12);
+}
+
+.issue-reason p {
+  margin: 0 0 10px;
+  line-height: 1.7;
+  font-weight: 700;
+}
+
+.test-detail {
+  padding-top: 10px;
+  border-top: 1px solid rgba(11, 11, 13, 0.08);
+}
+
+.test-detail + .test-detail {
+  margin-top: 12px;
+}
+
+.test-name,
+.output-label,
+.no-output {
+  margin: 0 0 6px;
+  color: rgba(11, 11, 13, 0.62);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+pre {
+  margin: 0 0 10px;
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(11, 11, 13, 0.06);
+  color: rgba(11, 11, 13, 0.78);
+  font-size: 12px;
 }
 
 .back-link {
@@ -424,8 +550,7 @@ body {
     top: 42px;
   }
 
-  .result-hero,
-  .result-overview {
+  .result-hero {
     grid-template-columns: 1fr;
   }
 
@@ -442,6 +567,10 @@ body {
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .issue-reason {
+    width: calc(100vw - 72px);
+  }
 }
 </style>
 """)
@@ -457,23 +586,22 @@ body {
     html.append("</div>")
     html.append("<div class='hero-copy'>")
     html.append("<p class='kicker'>Ocaml 1期 / Result</p>")
-    html.append("<p class='lead'>ファイルごとの正解数と、確認が必要な問をまとめて表示しています。</p>")
+    html.append("<p class='lead'>正解・警告・不正解・エラーを分けて表示します。確認が必要な問はクリックすると理由を確認できます。</p>")
     html.append("</div>")
     html.append("</section>")
 
     html.append("<section class='result-grid' aria-label='ファイルごとの採点結果'>")
     for summary in file_summaries:
         filename = html_escape(summary["file"])
-        ok = summary["ok"]
-        total = summary["total"]
-        wrong_questions = [
-            q_summary["question"]
-            for q_summary in summary.get("questions", [])
-            if q_summary.get("status") != "OK"
-        ]
+        ok = summary.get("ok", 0)
+        total = summary.get("total", 0)
+        warning_questions = [q for q in summary.get("questions", []) if q.get("status") == "WARNING"]
+        wrong_questions = [q for q in summary.get("questions", []) if q.get("status") == "NG"]
+        error_questions = [q for q in summary.get("questions", []) if q.get("status") == "ERROR"]
+        has_issues = bool(warning_questions or wrong_questions or error_questions)
         score_rate = round((ok / total) * 100) if total else 0
-        card_class = "result-card needs-review" if wrong_questions else "result-card"
-        status_label = "確認が必要" if wrong_questions else "全問正解"
+        card_class = "result-card needs-review" if has_issues else "result-card"
+        status_label = "確認が必要" if has_issues else "全問正解"
 
         html.append("<article class='{}'>".format(card_class))
         html.append("<div class='card-top'>")
@@ -481,25 +609,47 @@ body {
         html.append("<span class='status-pill'>{}</span>".format(status_label))
         html.append("</div>")
         html.append("<div class='score-line'>")
-        html.append("<span class='score-main'>{}問中 {}問</span>".format(total, ok))
-        html.append("<span class='score-sub'>正解</span>")
+        html.append("<span class='score-main'>{}</span>".format(html_escape(build_score_text(summary))))
         html.append("</div>")
-        html.append("<div class='progress' aria-label='正解率 {}%'>".format(score_rate))
+        html.append("<div class='progress' aria-label='正答率 {}%'>".format(score_rate))
         html.append("<span class='progress-bar' style='--score-width: {}%;'></span>".format(score_rate))
         html.append("</div>")
-        html.append("<div class='wrong-block'>")
-        html.append("<p class='wrong-title'>間違えた問</p>")
+        html.append("<div class='issue-block'>")
+
         if wrong_questions:
-            html.append("<div class='wrong-tags'>")
-            for question in wrong_questions:
-                html.append("<span class='wrong-tag'>Q{}</span>".format(html_escape(question)))
+            html.append("<div class='issue-section'>")
+            html.append("<p class='issue-title'>間違えた問</p>")
+            html.append("<div class='issue-tags'>")
+            for question_summary in wrong_questions:
+                html.append(build_issue_detail(question_summary, "NG"))
             html.append("</div>")
-        else:
-            html.append("<p class='wrong-none'>なし</p>")
+            html.append("</div>")
+
+        if warning_questions:
+            html.append("<div class='issue-section'>")
+            html.append("<p class='issue-title'>警告の出た問</p>")
+            html.append("<div class='issue-tags'>")
+            for question_summary in warning_questions:
+                html.append(build_issue_detail(question_summary, "WARNING"))
+            html.append("</div>")
+            html.append("</div>")
+
+        if error_questions:
+            html.append("<div class='issue-section'>")
+            html.append("<p class='issue-title'>エラーの出た問</p>")
+            html.append("<div class='issue-tags'>")
+            for question_summary in error_questions:
+                html.append(build_issue_detail(question_summary, "ERROR"))
+            html.append("</div>")
+            html.append("</div>")
+
+        if not has_issues:
+            html.append("<p class='no-issues'>確認が必要な問はありません</p>")
+
         html.append("</div>")
         html.append("</article>")
-    html.append("</section>")
 
+    html.append("</section>")
     html.append("</div>")
     html.append("</main>")
     html.append("</body>")
@@ -1392,8 +1542,6 @@ body {
   }
 }
 
-
-
 </style>
 """)
     html.append("</head>")
@@ -2155,21 +2303,28 @@ def check_uploaded_files(upload_dir):
         question_summaries = run_checker.summarize_by_question(file_results)
 
         question_ok_count = 0
+        question_warning_count = 0
         question_ng_count = 0
+        question_error_count = 0
 
         for summary in question_summaries:
             if summary["status"] == "OK":
                 question_ok_count += 1
-            else:
+            elif summary["status"] == "WARNING":
+                question_warning_count += 1
+            elif summary["status"] == "NG":
                 question_ng_count += 1
+            else:
+                question_error_count += 1
 
-        question_total = question_ok_count + question_ng_count
+        question_total = question_ok_count + question_warning_count + question_ng_count + question_error_count
 
         file_summaries.append({
             "file": ml_file.name,
             "ok": question_ok_count,
+            "warning": question_warning_count,
             "ng": question_ng_count,
-            "error": 0,
+            "error": question_error_count,
             "total": question_total,
             "questions": question_summaries,
         })
