@@ -8,6 +8,7 @@ import cgi
 import traceback
 
 import run_checker
+import second_period_pages
 
 
 import os
@@ -30,281 +31,615 @@ def html_escape(s):
 
 
 def build_result_html(all_results, file_summaries):
-    rows_by_file = {}
+    total_files = len(file_summaries)
+    total_questions = sum(summary.get("total", 0) for summary in file_summaries)
+    total_ok = sum(summary.get("ok", 0) for summary in file_summaries)
+    total_warning = sum(summary.get("warning", 0) for summary in file_summaries)
+    total_ng = sum(summary.get("ng", 0) for summary in file_summaries)
+    total_error = sum(summary.get("error", 0) for summary in file_summaries)
+    overall_rate = round((total_ok / total_questions) * 100) if total_questions else 0
 
-    for result in all_results:
-        filename = result["file"]
-        if filename not in rows_by_file:
-            rows_by_file[filename] = []
-        rows_by_file[filename].append(result)
+    def build_score_text(summary):
+        ok = summary.get("ok", 0)
+        warning = summary.get("warning", 0)
+        ng = summary.get("ng", 0)
+        error = summary.get("error", 0)
+        total = summary.get("total", 0)
+
+        if total and ok == total:
+            return "{}問正解/{}問".format(ok, total)
+
+        parts = []
+        if ok:
+            parts.append("{}問正解".format(ok))
+        if ng:
+            parts.append("{}問不正解".format(ng))
+        if warning:
+            parts.append("{}問警告".format(warning))
+        if error:
+            parts.append("{}問エラー".format(error))
+        if not parts:
+            parts.append("0問正解")
+        return "{}/{}問".format("".join(parts), total)
+
+    def build_issue_detail(question_summary, status):
+        question = html_escape(question_summary.get("question"))
+        related_results = [
+            result for result in question_summary.get("results", [])
+            if result.get("status") == status
+        ]
+        if not related_results:
+            related_results = question_summary.get("results", [])
+
+        if status == "WARNING":
+            reason = "実行結果は期待値と一致しましたが、実行後にOCamlの警告が出ています。"
+            detail_class = "issue-detail warning-detail"
+        elif status == "NG":
+            reason = "実行はできましたが、実行結果が期待値と違いました。"
+            detail_class = "issue-detail wrong-detail"
+        else:
+            reason = "文法エラー・未定義関数・型エラーなどにより、採点処理まで進めませんでした。"
+            detail_class = "issue-detail error-detail"
+
+        detail = []
+        detail.append("<details class='{}'>".format(detail_class))
+        detail.append("<summary>Q{}</summary>".format(question))
+        detail.append("<div class='issue-reason'>")
+        detail.append("<p>{}</p>".format(reason))
+        for result in related_results:
+            detail.append("<div class='test-detail'>")
+            detail.append("<p class='test-name'>{}</p>".format(html_escape(result.get("test"))))
+            stdout = result.get("stdout", "")
+            stderr = result.get("stderr", "")
+            if stdout:
+                detail.append("<p class='output-label'>stdout</p><pre>{}</pre>".format(html_escape(stdout)))
+            if stderr:
+                detail.append("<p class='output-label'>stderr</p><pre>{}</pre>".format(html_escape(stderr)))
+            if not stdout and not stderr:
+                detail.append("<p class='no-output'>stdout / stderr はありません。</p>")
+            detail.append("</div>")
+        detail.append("</div>")
+        detail.append("</details>")
+        return "".join(detail)
 
     html = []
     html.append("<!DOCTYPE html>")
     html.append("<html lang='ja'>")
     html.append("<head>")
     html.append("<meta charset='UTF-8'>")
-    html.append("<title>OCaml課題チェッカー Web版</title>")
+    html.append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>")
+    html.append("<title>採点結果 - Ocaml 1期</title>")
     html.append("""
 <style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f5f7fb;
-  color: #222;
-  margin: 0;
-  padding: 32px;
+:root {
+  --poster-mint: #86ddb1;
+  --poster-mint-soft: #dff6e9;
+  --poster-mint-dark: #258a59;
+  --poster-ink: #0b0b0d;
+  --poster-paper: #f3f3f0;
+  --poster-card: rgba(255, 255, 255, 0.9);
+  --poster-alert: #ff6b48;
+  --poster-alert-soft: rgba(255, 107, 72, 0.14);
+  --poster-warning: #d98b00;
+  --poster-warning-soft: rgba(255, 184, 77, 0.20);
+  --poster-error: #c62828;
+  --poster-error-soft: rgba(198, 40, 40, 0.12);
 }
 
-.container {
-  max-width: 1100px;
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 82% 12%, rgba(255, 107, 72, 0.30), transparent 24%),
+    linear-gradient(180deg, var(--poster-paper) 0%, #f7f7f3 44%, var(--poster-mint-soft) 44%, var(--poster-mint) 100%);
+  color: var(--poster-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.result-page {
+  position: relative;
+  min-height: 100vh;
+  padding: 48px 28px 64px;
+  overflow: hidden;
+}
+
+.result-page::before {
+  content: "";
+  position: absolute;
+  top: 76px;
+  right: min(8vw, 100px);
+  width: 260px;
+  height: 260px;
+  border-radius: 42% 58% 46% 54%;
+  background:
+    radial-gradient(circle at 38% 30%, rgba(255, 218, 122, 0.95), transparent 22%),
+    radial-gradient(circle at 58% 58%, rgba(255, 54, 72, 0.9), rgba(255, 121, 65, 0.78) 48%, transparent 68%);
+  filter: blur(1px);
+  opacity: 0.74;
+  z-index: 0;
+}
+
+.result-page::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  min-height: 300px;
+  background: linear-gradient(135deg, rgba(134, 221, 177, 0.92), rgba(167, 236, 199, 0.88));
+  z-index: 0;
+}
+
+.result-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
   margin: 0 auto;
 }
 
-.header {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-
-h1 {
-  margin: 0 0 8px;
-}
-
-.description {
-  color: #555;
-  margin: 0;
-  line-height: 1.7;
-}
-
-.summary-grid {
+.result-hero {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: minmax(260px, 0.92fr) minmax(320px, 1fr);
+  gap: 34px;
+  align-items: end;
+  margin-bottom: 34px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.result-title {
+  margin: 20px 0 0;
+  font-size: clamp(54px, 9vw, 112px);
+  line-height: 0.92;
+  letter-spacing: -0.08em;
+  font-weight: 950;
+}
+
+.hero-copy {
+  padding: 28px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 20px 55px rgba(24, 88, 59, 0.14);
+  backdrop-filter: blur(14px);
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--poster-mint-dark);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lead {
+  margin: 0;
+  color: rgba(11, 11, 13, 0.74);
+  font-size: 17px;
+  line-height: 1.8;
+  font-weight: 650;
+}
+
+.result-overview {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.overview-card {
+  padding: 18px 20px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow: 0 16px 38px rgba(24, 88, 59, 0.14);
+}
+
+.overview-label {
+  margin: 0 0 8px;
+  color: rgba(11, 11, 13, 0.56);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+}
+
+.overview-value {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 22px;
+}
+
+.result-card {
+  position: relative;
+  overflow: hidden;
+  padding: 26px;
+  border-radius: 32px;
+  background: var(--poster-card);
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  box-shadow: 0 24px 60px rgba(24, 88, 59, 0.20);
+  backdrop-filter: blur(16px);
+}
+
+.result-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 8px;
+  background: var(--poster-mint-dark);
+}
+
+.result-card.needs-review::before {
+  background: linear-gradient(90deg, var(--poster-alert), var(--poster-warning), var(--poster-error));
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 16px;
-  margin-bottom: 32px;
+  margin-bottom: 22px;
 }
 
-.summary-card {
-  background: white;
-  border-radius: 14px;
-  padding: 18px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-
-.summary-card h2 {
-  font-size: 18px;
-  margin: 0 0 12px;
+.file-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 950;
   word-break: break-all;
 }
 
-.score {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 8px;
+.status-pill {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(37, 138, 89, 0.12);
+  color: var(--poster-mint-dark);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
 }
 
-.ok {
-  color: #0a7f36;
-  font-weight: bold;
+.needs-review .status-pill {
+  background: var(--poster-alert-soft);
+  color: #c63c1c;
 }
 
-.ng {
-  color: #b77900;
-  font-weight: bold;
+.score-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
-.error {
-  color: #c62828;
-  font-weight: bold;
+.score-main {
+  font-size: clamp(24px, 4vw, 42px);
+  line-height: 1.14;
+  font-weight: 950;
+  letter-spacing: -0.05em;
 }
 
-.file-section {
-  background: white;
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 28px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+.score-sub {
+  color: rgba(11, 11, 13, 0.58);
+  font-size: 16px;
+  font-weight: 900;
 }
 
-.section-title {
-  margin-top: 28px;
-  margin-bottom: 8px;
-  font-size: 18px;
+.progress {
+  height: 12px;
+  margin: 0 0 18px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(11, 11, 13, 0.08);
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.progress-bar {
+  display: block;
+  height: 100%;
+  width: var(--score-width);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--poster-mint-dark), var(--poster-mint));
+}
+
+.needs-review .progress-bar {
+  background: linear-gradient(90deg, var(--poster-alert), #ffba6a);
+}
+
+.issue-block {
+  padding: 16px 18px;
+  border-radius: 22px;
+  background: rgba(134, 221, 177, 0.22);
+  border: 1px solid rgba(37, 138, 89, 0.18);
+}
+
+.needs-review .issue-block {
+  background: rgba(255, 255, 255, 0.58);
+  border-color: rgba(11, 11, 13, 0.10);
+}
+
+.issue-section + .issue-section {
+  margin-top: 14px;
+}
+
+.issue-title {
+  margin: 0 0 10px;
+  color: rgba(11, 11, 13, 0.64);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
+.no-issues {
+  margin: 0;
+  color: var(--poster-mint-dark);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.issue-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.issue-detail {
+  display: inline-block;
+}
+
+.issue-detail summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+  font-weight: 950;
+  cursor: pointer;
+  list-style: none;
+  box-shadow: 0 8px 18px rgba(181, 55, 24, 0.12);
+}
+
+.issue-detail summary::-webkit-details-marker {
+  display: none;
+}
+
+.wrong-detail summary {
+  color: #b83217;
+}
+
+.warning-detail summary {
+  color: #9a6200;
+  background: var(--poster-warning-soft);
+}
+
+.error-detail summary {
+  color: var(--poster-error);
+  background: var(--poster-error-soft);
+}
+
+.issue-reason {
+  width: min(620px, calc(100vw - 96px));
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(11, 11, 13, 0.10);
+  color: rgba(11, 11, 13, 0.76);
+  box-shadow: 0 16px 36px rgba(11, 11, 13, 0.12);
+}
+
+.issue-reason p {
+  margin: 0 0 10px;
+  line-height: 1.7;
+  font-weight: 700;
+}
+
+.test-detail {
+  padding-top: 10px;
+  border-top: 1px solid rgba(11, 11, 13, 0.08);
+}
+
+.test-detail + .test-detail {
   margin-top: 12px;
 }
 
-th, td {
-  border-bottom: 1px solid #e5e7eb;
-  padding: 10px;
-  text-align: left;
-  vertical-align: top;
-}
-
-th {
-  background: #f0f2f5;
-}
-
-.status-ok {
-  background: #e8f5e9;
-}
-
-.status-ng {
-  background: #fff8e1;
-}
-
-.status-error {
-  background: #ffebee;
-}
-
-details {
-  margin-top: 4px;
+.test-name,
+.output-label,
+.no-output {
+  margin: 0 0 6px;
+  color: rgba(11, 11, 13, 0.62);
+  font-size: 12px;
+  font-weight: 950;
 }
 
 pre {
+  margin: 0 0 10px;
+  max-height: 220px;
+  overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
-  background: #f6f8fa;
-  padding: 8px;
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(11, 11, 13, 0.06);
+  color: rgba(11, 11, 13, 0.78);
+  font-size: 12px;
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
 }
 
 .back-link {
-  display: inline-block;
-  margin-bottom: 20px;
-  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 28px;
+  border-radius: 999px;
+  background: var(--poster-ink);
+  color: white;
   text-decoration: none;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 950;
+  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.24);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.back-link:hover {
+  transform: translateY(-2px);
+  background: #1f1f22;
+  box-shadow: 0 18px 32px rgba(11, 11, 13, 0.30);
+}
+
+@media (max-width: 780px) {
+  .result-page {
+    padding: 28px 18px 44px;
+  }
+
+  .result-page::before {
+    width: 180px;
+    height: 180px;
+    right: -42px;
+    top: 42px;
+  }
+
+  .result-hero,
+  .result-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-copy {
+    padding: 22px;
+  }
+
+  .card-top,
+  .score-line {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .issue-reason {
+    width: calc(100vw - 72px);
+  }
 }
 </style>
 """)
     html.append("</head>")
     html.append("<body>")
-    html.append("<div class='container'>")
-
-    html.append("<div class='header'>")
-    html.append("<h1>OCaml課題チェッカー Web版</h1>")
-    html.append("<p class='description'>")
-    html.append("アップロードされた .ml ファイルに対して、各大問ごとに OK / NG を判定します。")
-    html.append("大問内の小テストがすべてOKなら大問OK、1つでもNGまたはERRORがあれば大問NGです。")
-    html.append("</p>")
+    html.append("<main class='result-page'>")
+    html.append("<div class='result-shell'>")
+    html.append("<section class='result-hero'>")
+    html.append("<div>")
+    html.append("<div class='badge'>Report Checker</div>")
+    html.append("<h1 class='result-title'>採点<br>結果</h1>")
     html.append("</div>")
+    html.append("<div class='hero-copy'>")
+    html.append("<p class='kicker'>Ocaml 1期 / Result</p>")
+    html.append("<p class='lead'>正解・警告・不正解・エラーを分けて表示します。確認が必要な問はクリックすると理由を確認できます。</p>")
+    html.append("</div>")
+    html.append("</section>")
 
-    html.append("<a class='back-link' href='/upload'>← 別のファイルをチェックする</a>")
+    html.append("<section class='result-overview' aria-label='採点結果の概要'>")
+    html.append("<div class='overview-card'><p class='overview-label'>FILES</p><p class='overview-value'>{}</p></div>".format(total_files))
+    html.append("<div class='overview-card'><p class='overview-label'>正解</p><p class='overview-value'>{}</p></div>".format(total_ok))
+    html.append("<div class='overview-card'><p class='overview-label'>警告</p><p class='overview-value'>{}</p></div>".format(total_warning))
+    html.append("<div class='overview-card'><p class='overview-label'>不正解 / エラー</p><p class='overview-value'>{}</p></div>".format(total_ng + total_error))
+    html.append("<div class='overview-card'><p class='overview-label'>正答率</p><p class='overview-value'>{}%</p></div>".format(overall_rate))
+    html.append("</section>")
 
-    html.append("<div class='summary-grid'>")
+    html.append("<section class='result-grid' aria-label='ファイルごとの採点結果'>")
     for summary in file_summaries:
         filename = html_escape(summary["file"])
-        ok = summary["ok"]
-        ng = summary["ng"]
-        total = summary["total"]
+        ok = summary.get("ok", 0)
+        total = summary.get("total", 0)
+        warning_questions = [q for q in summary.get("questions", []) if q.get("status") == "WARNING"]
+        wrong_questions = [q for q in summary.get("questions", []) if q.get("status") == "NG"]
+        error_questions = [q for q in summary.get("questions", []) if q.get("status") == "ERROR"]
+        has_issues = bool(warning_questions or wrong_questions or error_questions)
+        score_rate = round((ok / total) * 100) if total else 0
+        card_class = "result-card needs-review" if has_issues else "result-card"
+        status_label = "確認が必要" if has_issues else "全問正解"
 
-        html.append("<div class='summary-card'>")
-        html.append("<h2>{}</h2>".format(filename))
-        html.append("<div class='score'>大問OK {} / {}</div>".format(ok, total))
-        html.append("<div><span class='ok'>大問OK</span>: {}</div>".format(ok))
-        html.append("<div><span class='ng'>大問NG</span>: {}</div>".format(ng))
+        html.append("<article class='{}'>".format(card_class))
+        html.append("<div class='card-top'>")
+        html.append("<h2 class='file-name'>{}</h2>".format(filename))
+        html.append("<span class='status-pill'>{}</span>".format(status_label))
         html.append("</div>")
-    html.append("</div>")
-
-    for summary in file_summaries:
-        filename = summary["file"]
-        question_summaries = summary.get("questions", [])
-
-        html.append("<div class='file-section'>")
-        html.append("<h2>{}</h2>".format(html_escape(filename)))
-        html.append("<p>大問OK: {} / {}　大問NG: {}</p>".format(
-            summary["ok"],
-            summary["total"],
-            summary["ng"]
-        ))
-
-        html.append("<h3 class='section-title'>大問ごとの判定</h3>")
-        html.append("<table>")
-        html.append("<tr>")
-        html.append("<th>大問</th>")
-        html.append("<th>判定</th>")
-        html.append("<th>小テスト結果</th>")
-        html.append("</tr>")
-
-        for q_summary in question_summaries:
-            q = q_summary["question"]
-            status = q_summary["status"]
-            ok_count = q_summary["ok"]
-            ng_count = q_summary["ng"]
-            error_count = q_summary["error"]
-            total_count = q_summary["total"]
-
-            if status == "OK":
-                row_class = "status-ok"
-                status_class = "ok"
-            else:
-                row_class = "status-ng"
-                status_class = "ng"
-
-            html.append("<tr class='{}'>".format(row_class))
-            html.append("<td>Question {}</td>".format(html_escape(q)))
-            html.append("<td class='{}'>{}</td>".format(status_class, html_escape(status)))
-            html.append("<td>OK {}/{}　NG {}　ERROR {}</td>".format(
-                ok_count,
-                total_count,
-                ng_count,
-                error_count
-            ))
-            html.append("</tr>")
-
-        html.append("</table>")
-
-        html.append("<h3 class='section-title'>小テストごとの詳細</h3>")
-        html.append("<table>")
-        html.append("<tr>")
-        html.append("<th>テスト</th>")
-        html.append("<th>結果</th>")
-        html.append("<th>詳細</th>")
-        html.append("</tr>")
-
-        for result in rows_by_file.get(filename, []):
-            status = result["status"]
-            test_name = result["test"]
-            stdout = result["stdout"]
-            stderr = result["stderr"]
-
-            if status == "OK":
-                row_class = "status-ok"
-                status_class = "ok"
-            elif status == "NG":
-                row_class = "status-ng"
-                status_class = "ng"
-            else:
-                row_class = "status-error"
-                status_class = "error"
-
-            detail = ""
-            if stdout or stderr:
-                detail += "<details><summary>stdout / stderr を表示</summary>"
-                if stdout:
-                    detail += "<p>stdout</p><pre>{}</pre>".format(html_escape(stdout))
-                if stderr:
-                    detail += "<p>stderr</p><pre>{}</pre>".format(html_escape(stderr))
-                detail += "</details>"
-            else:
-                detail = "-"
-
-            html.append("<tr class='{}'>".format(row_class))
-            html.append("<td>{}</td>".format(html_escape(test_name)))
-            html.append("<td class='{}'>{}</td>".format(status_class, html_escape(status)))
-            html.append("<td>{}</td>".format(detail))
-            html.append("</tr>")
-
-        html.append("</table>")
+        html.append("<div class='score-line'>")
+        html.append("<span class='score-main'>{}</span>".format(html_escape(build_score_text(summary))))
         html.append("</div>")
+        html.append("<div class='progress' aria-label='正答率 {}%'>".format(score_rate))
+        html.append("<span class='progress-bar' style='--score-width: {}%;'></span>".format(score_rate))
+        html.append("</div>")
+        html.append("<div class='issue-block'>")
+        if wrong_questions:
+            html.append("<div class='issue-section'>")
+            html.append("<p class='issue-title'>間違えた問</p>")
+            html.append("<div class='issue-tags'>")
+            for question_summary in wrong_questions:
+                html.append(build_issue_detail(question_summary, "NG"))
+            html.append("</div>")
+            html.append("</div>")
+        if warning_questions:
+            html.append("<div class='issue-section'>")
+            html.append("<p class='issue-title'>警告の出た問</p>")
+            html.append("<div class='issue-tags'>")
+            for question_summary in warning_questions:
+                html.append(build_issue_detail(question_summary, "WARNING"))
+            html.append("</div>")
+            html.append("</div>")
+        if error_questions:
+            html.append("<div class='issue-section'>")
+            html.append("<p class='issue-title'>エラーの出た問</p>")
+            html.append("<div class='issue-tags'>")
+            for question_summary in error_questions:
+                html.append(build_issue_detail(question_summary, "ERROR"))
+            html.append("</div>")
+            html.append("</div>")
+        if not has_issues:
+            html.append("<p class='no-issues'>確認が必要な問はありません</p>")
+        html.append("</div>")
+        html.append("</article>")
+    html.append("</section>")
 
+    html.append("<div class='actions'>")
+    html.append("<a class='back-link' href='/upload'>別のファイルを採点する</a>")
     html.append("</div>")
+    html.append("</div>")
+    html.append("</main>")
     html.append("</body>")
     html.append("</html>")
 
@@ -616,7 +951,7 @@ def build_term_select_html():
 def build_period_select_html():
     items = [
         {"label": "1期\nocaml演習", "href": "/upload"},
-        {"label": "2期\nocaml演習", "href": "#", "coming_soon": True},
+        {"label": "2期\nocaml演習", "href": "/period/2"},
         {"label": "3期\nocaml演習", "href": "#", "coming_soon": True},
         {"label": "4期\nocaml演習", "href": "#", "coming_soon": True},
     ]
@@ -670,11 +1005,13 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
+  min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: white;
   background: #020817;
@@ -1071,45 +1408,6 @@ body {
   }
 }
 
-@media (max-height: 900px) {
-  .carousel-shell {
-    margin-top: 0;
-  }
-
-  .carousel-viewport {
-    padding: 10px 0 6px;
-  }
-
-  .carousel-card {
-    flex-basis: 230px;
-    height: 200px;
-    font-size: 26px;
-  }
-
-  .dots {
-    margin-top: 28px;
-  }
-}
-
-@media (max-height: 760px) {
-  .carousel-viewport {
-    padding: 6px 0 4px;
-  }
-
-  .carousel-card {
-    flex-basis: 210px;
-    height: 180px;
-    font-size: 24px;
-  }
-
-  .nav-btn {
-    font-size: 56px;
-  }
-
-  .dots {
-    margin-top: 22px;
-  }
-}
 
 </style>
 """)
@@ -1749,21 +2047,28 @@ def check_uploaded_files(upload_dir):
         question_summaries = run_checker.summarize_by_question(file_results)
 
         question_ok_count = 0
+        question_warning_count = 0
         question_ng_count = 0
+        question_error_count = 0
 
         for summary in question_summaries:
             if summary["status"] == "OK":
                 question_ok_count += 1
-            else:
+            elif summary["status"] == "WARNING":
+                question_warning_count += 1
+            elif summary["status"] == "NG":
                 question_ng_count += 1
+            else:
+                question_error_count += 1
 
-        question_total = question_ok_count + question_ng_count
+        question_total = question_ok_count + question_warning_count + question_ng_count + question_error_count
 
         file_summaries.append({
             "file": ml_file.name,
             "ok": question_ok_count,
+            "warning": question_warning_count,
             "ng": question_ng_count,
-            "error": 0,
+            "error": question_error_count,
             "total": question_total,
             "questions": question_summaries,
         })
@@ -1801,6 +2106,8 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_html(build_term_select_html())
         elif self.path == "/period" or self.path.startswith("/period?"):
             self.send_html(build_period_select_html())
+        elif self.path == "/period/2" or self.path.startswith("/period/2?"):
+            self.send_html(second_period_pages.build_week_select_html(build_carousel_select_html))
         elif self.path == "/upload" or self.path.startswith("/upload?"):
             self.send_html(build_index_html())
         elif self.path == "/background.png":

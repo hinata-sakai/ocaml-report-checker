@@ -349,8 +349,13 @@ def run_one_test(submission_file, test):
 
     stdout, stderr, returncode = run_ocaml_code(code)
 
+    has_warning = "warning" in stderr.lower()
+
     if "__RESULT__:OK" in stdout:
-        status = "OK"
+        if has_warning:
+            status = "WARNING"
+        else:
+            status = "OK"
     elif "__RESULT__:NG" in stdout:
         status = "NG"
     else:
@@ -376,8 +381,8 @@ def get_question_no(test_name):
 def summarize_by_question(results):
     """
     54個の小テスト結果を、1〜20の大問単位にまとめる。
-    大問内のすべての小テストがOKならOK。
-    1つでもNGまたはERRORがあればNG。
+    大問内の小テスト結果を OK / WARNING / NG / ERROR に分類する。
+    ERROR、NG、WARNING、OK の順に優先して大問の状態を決める。
     """
     summaries = []
 
@@ -394,36 +399,47 @@ def summarize_by_question(results):
                 "question": q_str,
                 "status": "NG",
                 "ok": 0,
+                "warning": 0,
                 "ng": 0,
                 "error": 0,
                 "total": 0,
+                "results": [],
             })
             continue
 
         ok_count = 0
+        warning_count = 0
         ng_count = 0
         error_count = 0
 
         for result in q_results:
             if result["status"] == "OK":
                 ok_count += 1
+            elif result["status"] == "WARNING":
+                warning_count += 1
             elif result["status"] == "NG":
                 ng_count += 1
             else:
                 error_count += 1
 
-        if ok_count == len(q_results):
-            status = "OK"
-        else:
+        if error_count > 0:
+            status = "ERROR"
+        elif ng_count > 0:
             status = "NG"
+        elif warning_count > 0:
+            status = "WARNING"
+        else:
+            status = "OK"
 
         summaries.append({
             "question": q_str,
             "status": status,
             "ok": ok_count,
+            "warning": warning_count,
             "ng": ng_count,
             "error": error_count,
             "total": len(q_results),
+            "results": q_results,
         })
 
     return summaries
@@ -508,8 +524,13 @@ h1 {
   font-weight: bold;
 }
 
-.ng {
+.warning {
   color: #b77900;
+  font-weight: bold;
+}
+
+.ng {
+  color: #b45309;
   font-weight: bold;
 }
 
@@ -547,8 +568,12 @@ th {
   background: #e8f5e9;
 }
 
-.status-ng {
+.status-warning {
   background: #fff8e1;
+}
+
+.status-ng {
+  background: #fff3e0;
 }
 
 .status-error {
@@ -579,6 +604,7 @@ pre {
     for summary in file_summaries:
         filename = html_escape(summary["file"])
         ok = summary["ok"]
+        warning = summary.get("warning", 0)
         ng = summary["ng"]
         error = summary["error"]
         total = summary["total"]
@@ -587,6 +613,7 @@ pre {
         html.append("<h2>{}</h2>".format(filename))
         html.append("<div class='score'>OK {} / {}</div>".format(ok, total))
         html.append("<div><span class='ok'>OK</span>: {}</div>".format(ok))
+        html.append("<div><span class='warning'>WARNING</span>: {}</div>".format(warning))
         html.append("<div><span class='ng'>NG</span>: {}</div>".format(ng))
         html.append("<div><span class='error'>ERROR</span>: {}</div>".format(error))
         html.append("</div>")
@@ -596,9 +623,10 @@ pre {
         filename = summary["file"]
         html.append("<div class='file-section'>")
         html.append("<h2>{}</h2>".format(html_escape(filename)))
-        html.append("<p>OK: {} / {}　NG: {}　ERROR: {}</p>".format(
+        html.append("<p>OK: {} / {}　WARNING: {}　NG: {}　ERROR: {}</p>".format(
             summary["ok"],
             summary["total"],
+            summary.get("warning", 0),
             summary["ng"],
             summary["error"]
         ))
@@ -622,6 +650,9 @@ pre {
             if status == "OK":
                 row_class = "status-ok"
                 status_class = "ok"
+            elif status == "WARNING":
+                row_class = "status-warning"
+                status_class = "warning"
             elif status == "NG":
                 row_class = "status-ng"
                 status_class = "ng"
@@ -686,7 +717,9 @@ def run_checker():
         question_summaries = summarize_by_question(file_results)
 
         question_ok_count = 0
+        question_warning_count = 0
         question_ng_count = 0
+        question_error_count = 0
 
         # 大問ごとの結果を表示する
         for summary in question_summaries:
@@ -695,32 +728,53 @@ def run_checker():
 
             if status == "OK":
                 question_ok_count += 1
-                print("[OK]    Question {}".format(question))
-            else:
+                print("[OK]      Question {}".format(question))
+            elif status == "WARNING":
+                question_warning_count += 1
+                print("[WARNING] Question {}  小テスト OK {}  WARNING {}".format(
+                    question,
+                    summary["ok"],
+                    summary["warning"]
+                ))
+            elif status == "NG":
                 question_ng_count += 1
-                print("[NG]    Question {}  小テスト OK {}/{}  NG {}  ERROR {}".format(
+                print("[NG]      Question {}  小テスト OK {}/{}  WARNING {}  NG {}  ERROR {}".format(
                     question,
                     summary["ok"],
                     summary["total"],
+                    summary["warning"],
+                    summary["ng"],
+                    summary["error"]
+                ))
+            else:
+                question_error_count += 1
+                print("[ERROR]   Question {}  小テスト OK {}/{}  WARNING {}  NG {}  ERROR {}".format(
+                    question,
+                    summary["ok"],
+                    summary["total"],
+                    summary["warning"],
                     summary["ng"],
                     summary["error"]
                 ))
 
-        question_total = question_ok_count + question_ng_count
+        question_total = question_ok_count + question_warning_count + question_ng_count + question_error_count
 
         print("-" * 60)
-        print("Result: OK {} / {}, NG {}".format(
+        print("Result: OK {}, WARNING {}, NG {}, ERROR {} / {}".format(
             question_ok_count,
-            question_total,
-            question_ng_count
+            question_warning_count,
+            question_ng_count,
+            question_error_count,
+            question_total
         ))
 
         # result.html の上部カードも、大問単位の集計にする
         file_summaries.append({
             "file": ml_file.name,
             "ok": question_ok_count,
+            "warning": question_warning_count,
             "ng": question_ng_count,
-            "error": 0,
+            "error": question_error_count,
             "total": question_total,
         })
 
