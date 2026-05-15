@@ -4,18 +4,32 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 import tempfile
 import shutil
-import cgi
+from email.parser import BytesParser
+from email import policy
 import traceback
 
 import run_checker
 import second_period_pages
-
 
 import os
 
 HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8000"))
 BACKGROUND_IMAGE = Path("webhaikei.png")
+
+VERSION_FILE = Path("VERSION")
+
+
+def get_app_version():
+    try:
+        if VERSION_FILE.exists():
+            version = VERSION_FILE.read_text(encoding="utf-8").strip()
+            if version:
+                return version
+    except Exception:
+        pass
+
+    return "version unknown"
 
 
 def html_escape(s):
@@ -31,12 +45,8 @@ def html_escape(s):
 
 
 def build_result_html(all_results, file_summaries):
-    total_files = len(file_summaries)
     total_questions = sum(summary.get("total", 0) for summary in file_summaries)
     total_ok = sum(summary.get("ok", 0) for summary in file_summaries)
-    total_warning = sum(summary.get("warning", 0) for summary in file_summaries)
-    total_ng = sum(summary.get("ng", 0) for summary in file_summaries)
-    total_error = sum(summary.get("error", 0) for summary in file_summaries)
     overall_rate = round((total_ok / total_questions) * 100) if total_questions else 0
 
     def build_score_text(summary):
@@ -68,6 +78,7 @@ def build_result_html(all_results, file_summaries):
             result for result in question_summary.get("results", [])
             if result.get("status") == status
         ]
+
         if not related_results:
             related_results = question_summary.get("results", [])
 
@@ -83,23 +94,32 @@ def build_result_html(all_results, file_summaries):
 
         detail = []
         detail.append("<details class='{}'>".format(detail_class))
-        detail.append("<summary>Q{}</summary>".format(question))
+        detail.append("<summary><span>Q{}</span><span class='detail-label'>詳細</span></summary>".format(question))
         detail.append("<div class='issue-reason'>")
         detail.append("<p>{}</p>".format(reason))
+
+        if not related_results:
+            detail.append("<p class='no-output'>詳細情報がありません。</p>")
+
         for result in related_results:
             detail.append("<div class='test-detail'>")
             detail.append("<p class='test-name'>{}</p>".format(html_escape(result.get("test"))))
+
             stdout = result.get("stdout", "")
             stderr = result.get("stderr", "")
+
             if stdout:
                 detail.append("<p class='output-label'>stdout</p><pre>{}</pre>".format(html_escape(stdout)))
             if stderr:
                 detail.append("<p class='output-label'>stderr</p><pre>{}</pre>".format(html_escape(stderr)))
             if not stdout and not stderr:
                 detail.append("<p class='no-output'>stdout / stderr はありません。</p>")
+
             detail.append("</div>")
+
         detail.append("</div>")
         detail.append("</details>")
+
         return "".join(detail)
 
     html = []
@@ -140,8 +160,13 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 82% 12%, rgba(255, 107, 72, 0.30), transparent 24%),
-    linear-gradient(180deg, var(--poster-paper) 0%, #f7f7f3 44%, var(--poster-mint-soft) 44%, var(--poster-mint) 100%);
+    linear-gradient(
+      180deg,
+      var(--poster-paper) 0%,
+      #f7f7f3 44%,
+      var(--poster-mint) 44%,
+      var(--poster-mint) 100%
+    );
   color: var(--poster-ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -149,35 +174,27 @@ body {
 .result-page {
   position: relative;
   min-height: 100vh;
-  padding: 48px 28px 64px;
+  padding: 42px 24px 56px;
   overflow: hidden;
 }
 
 .result-page::before {
   content: "";
   position: absolute;
-  top: 76px;
-  right: min(8vw, 100px);
-  width: 260px;
-  height: 260px;
-  border-radius: 42% 58% 46% 54%;
+  top: -60px;
+  right: -20px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
   background:
-    radial-gradient(circle at 38% 30%, rgba(255, 218, 122, 0.95), transparent 22%),
-    radial-gradient(circle at 58% 58%, rgba(255, 54, 72, 0.9), rgba(255, 121, 65, 0.78) 48%, transparent 68%);
-  filter: blur(1px);
-  opacity: 0.74;
-  z-index: 0;
-}
-
-.result-page::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 42%;
-  min-height: 300px;
-  background: linear-gradient(135deg, rgba(134, 221, 177, 0.92), rgba(167, 236, 199, 0.88));
+    radial-gradient(circle at 30% 28%,
+      rgba(255, 240, 165, 0.95) 0%,
+      rgba(255, 227, 150, 0.78) 10%,
+      rgba(255, 190, 145, 0.56) 22%,
+      rgba(255, 135, 135, 0.72) 52%,
+      rgba(255, 172, 120, 0.82) 100%);
+  filter: blur(42px);
+  opacity: 0.9;
   z-index: 0;
 }
 
@@ -199,15 +216,29 @@ body {
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
+  gap: 7px;
+  width: fit-content;
+  padding: 7px 12px;
   border: 2px solid var(--poster-ink);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   font-size: 13px;
-  font-weight: 950;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.badge::before {
+  content: "TA";
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--poster-ink);
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
 }
 
 .result-title {
@@ -244,40 +275,10 @@ body {
   font-weight: 650;
 }
 
-.result-overview {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 24px;
-}
-
-.overview-card {
-  padding: 18px 20px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.78);
-  box-shadow: 0 16px 38px rgba(24, 88, 59, 0.14);
-}
-
-.overview-label {
-  margin: 0 0 8px;
-  color: rgba(11, 11, 13, 0.56);
-  font-size: 12px;
-  font-weight: 950;
-  letter-spacing: 0.06em;
-}
-
-.overview-value {
-  margin: 0;
-  font-size: 30px;
-  font-weight: 950;
-  letter-spacing: -0.04em;
-}
-
 .result-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
 }
 
 .result-card {
@@ -348,12 +349,6 @@ body {
   letter-spacing: -0.05em;
 }
 
-.score-sub {
-  color: rgba(11, 11, 13, 0.58);
-  font-size: 16px;
-  font-weight: 900;
-}
-
 .progress {
   height: 12px;
   margin: 0 0 18px;
@@ -419,6 +414,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-width: 46px;
   padding: 8px 10px;
   border-radius: 999px;
@@ -432,6 +428,15 @@ body {
 
 .issue-detail summary::-webkit-details-marker {
   display: none;
+}
+
+.detail-label {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(11, 11, 13, 0.86);
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .wrong-detail summary {
@@ -496,32 +501,41 @@ pre {
   font-size: 12px;
 }
 
-.actions {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-}
-
 .back-link {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 52px;
-  padding: 0 28px;
+  gap: 10px;
+  width: fit-content;
+  margin-bottom: 28px;
+  padding: 10px 18px;
+  border: 2px solid var(--poster-ink);
   border-radius: 999px;
-  background: var(--poster-ink);
-  color: white;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--poster-ink);
   text-decoration: none;
-  font-size: 16px;
-  font-weight: 950;
-  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.24);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 24px rgba(11, 11, 13, 0.08);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.back-link::before {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 11px solid var(--poster-ink);
 }
 
 .back-link:hover {
   transform: translateY(-2px);
-  background: #1f1f22;
-  box-shadow: 0 18px 32px rgba(11, 11, 13, 0.30);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.14);
 }
 
 @media (max-width: 780px) {
@@ -536,8 +550,11 @@ pre {
     top: 42px;
   }
 
-  .result-hero,
-  .result-overview {
+  .result-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .result-grid {
     grid-template-columns: 1fr;
   }
 
@@ -560,6 +577,7 @@ pre {
     html.append("</head>")
     html.append("<body>")
     html.append("<main class='result-page'>")
+    html.append("<a class='back-link' href='/upload'>ファイル選択へ戻る</a>")
     html.append("<div class='result-shell'>")
     html.append("<section class='result-hero'>")
     html.append("<div>")
@@ -570,14 +588,6 @@ pre {
     html.append("<p class='kicker'>Ocaml 1期 / Result</p>")
     html.append("<p class='lead'>正解・警告・不正解・エラーを分けて表示します。確認が必要な問はクリックすると理由を確認できます。</p>")
     html.append("</div>")
-    html.append("</section>")
-
-    html.append("<section class='result-overview' aria-label='採点結果の概要'>")
-    html.append("<div class='overview-card'><p class='overview-label'>FILES</p><p class='overview-value'>{}</p></div>".format(total_files))
-    html.append("<div class='overview-card'><p class='overview-label'>正解</p><p class='overview-value'>{}</p></div>".format(total_ok))
-    html.append("<div class='overview-card'><p class='overview-label'>警告</p><p class='overview-value'>{}</p></div>".format(total_warning))
-    html.append("<div class='overview-card'><p class='overview-label'>不正解 / エラー</p><p class='overview-value'>{}</p></div>".format(total_ng + total_error))
-    html.append("<div class='overview-card'><p class='overview-label'>正答率</p><p class='overview-value'>{}%</p></div>".format(overall_rate))
     html.append("</section>")
 
     html.append("<section class='result-grid' aria-label='ファイルごとの採点結果'>")
@@ -605,6 +615,7 @@ pre {
         html.append("<span class='progress-bar' style='--score-width: {}%;'></span>".format(score_rate))
         html.append("</div>")
         html.append("<div class='issue-block'>")
+
         if wrong_questions:
             html.append("<div class='issue-section'>")
             html.append("<p class='issue-title'>間違えた問</p>")
@@ -613,6 +624,7 @@ pre {
                 html.append(build_issue_detail(question_summary, "NG"))
             html.append("</div>")
             html.append("</div>")
+
         if warning_questions:
             html.append("<div class='issue-section'>")
             html.append("<p class='issue-title'>警告の出た問</p>")
@@ -621,6 +633,7 @@ pre {
                 html.append(build_issue_detail(question_summary, "WARNING"))
             html.append("</div>")
             html.append("</div>")
+
         if error_questions:
             html.append("<div class='issue-section'>")
             html.append("<p class='issue-title'>エラーの出た問</p>")
@@ -629,15 +642,14 @@ pre {
                 html.append(build_issue_detail(question_summary, "ERROR"))
             html.append("</div>")
             html.append("</div>")
+
         if not has_issues:
             html.append("<p class='no-issues'>確認が必要な問はありません</p>")
+
         html.append("</div>")
         html.append("</article>")
-    html.append("</section>")
 
-    html.append("<div class='actions'>")
-    html.append("<a class='back-link' href='/upload'>別のファイルを採点する</a>")
-    html.append("</div>")
+    html.append("</section>")
     html.append("</div>")
     html.append("</main>")
     html.append("</body>")
@@ -758,6 +770,49 @@ body {
   opacity: 0;
 }
 
+.version-badge {
+  position: fixed;
+  top: 28px;
+  right: 32px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.version-badge::before {
+  content: "VERSION";
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.65);
+}
+
+@media (max-width: 700px) {
+  .version-badge {
+    top: 18px;
+    right: 18px;
+    padding: 0;
+    font-size: 14px;
+  }
+
+  .version-badge::before {
+    font-size: 14px;
+  }
+}
+                
 /* 文字とボタン */
 .start-screen {
   position: relative;
@@ -816,6 +871,25 @@ body {
   background: #4320b8;
   transform: translateY(-2px);
   box-shadow: 0 8px 22px rgba(0,0,0,0.45), 0 0 18px rgba(120, 90, 255, 0.45);
+}
+
+@keyframes startButtonLaunch {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  }
+  45% {
+    transform: scale(1.20);
+    box-shadow: 0 0 34px rgba(170, 210, 255, 0.75), 0 12px 34px rgba(0,0,0,0.58);
+  }
+  100% {
+    transform: scale(1.14);
+    box-shadow: 0 0 26px rgba(120, 190, 255, 0.65), 0 10px 30px rgba(0,0,0,0.55);
+  }
+}
+
+.start-button.launch {
+  animation: startButtonLaunch 0.45s ease forwards;
 }
 
 /* 背景画像のゆっくりした動き */
@@ -899,6 +973,7 @@ body {
     html.append("<body>")
     html.append("<div class='space-bg'></div>")
     html.append("<div class='dark-overlay'></div>")
+    html.append("<div class='version-badge'>{}</div>".format(html_escape(get_app_version().lstrip("vV"))))
 
     html.append("<div class='stars'>")
     html.append("<span class='star s1'></span>")
@@ -931,9 +1006,32 @@ body {
     html.append("<div class='school'>東京理科大学 創域理工学部<br>情報計算科学科</div>")
     html.append("<div class='title'>計算機科学基礎実験<br>計算機科学基礎演習</div>")
     html.append("<div class='year'>2026</div>")
-    html.append("<a class='start-button' href='/term'>採点をはじめる</a>")
+    html.append("<a class='start-button' id='start-button' href='/term'>採点をはじめる</a>")
     html.append("</div>")
     html.append("</div>")
+
+    html.append("""
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const startButton = document.getElementById('start-button');
+
+  startButton.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    const href = startButton.getAttribute('href');
+
+    startButton.classList.remove('launch');
+    void startButton.offsetWidth;
+    startButton.classList.add('launch');
+
+    setTimeout(function () {
+      window.location.href = href;
+    }, 450);
+  });
+});
+</script>
+""")
+
     html.append("</body>")
     html.append("</html>")
 
@@ -942,7 +1040,7 @@ body {
 
 def build_term_select_html():
     items = [
-        {"label": "前期\nocaml演習", "href": "/period"},
+        {"label": "前期\nOCaml演習", "href": "/period"},
         {"label": "後期\nJava演習", "href": "#", "coming_soon": True},
     ]
     return build_carousel_select_html("前期・後期選択", items, initial_index=0, back_href="/")
@@ -950,10 +1048,10 @@ def build_term_select_html():
 
 def build_period_select_html():
     items = [
-        {"label": "1期\nocaml演習", "href": "/upload"},
-        {"label": "2期\nocaml演習", "href": "/period/2"},
-        {"label": "3期\nocaml演習", "href": "#", "coming_soon": True},
-        {"label": "4期\nocaml演習", "href": "#", "coming_soon": True},
+        {"label": "1期\nOCaml演習", "href": "/upload"},
+        {"label": "2期\nOCaml演習", "href": "/period/2"},
+        {"label": "3期\nOCaml演習", "href": "#", "coming_soon": True},
+        {"label": "4期\nOCaml演習", "href": "#", "coming_soon": True},
     ]
     return build_carousel_select_html("期選択", items, initial_index=0, back_href="/term")
 
@@ -1038,6 +1136,22 @@ body {
   z-index: 1;
 }
 
+.page-fade-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: background 1.0s ease, opacity 1.0s ease;
+}
+
+.page-fade-overlay.show {
+  background: rgba(0, 0, 0, 1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .page {
   position: relative;
   z-index: 4;
@@ -1048,8 +1162,8 @@ body {
 }
 
 .back-button {
-  position: fixed;
-  top: 40%;
+  position: absolute;
+  top: 55%;
   right: 20%;
   z-index: 10;
   width: 42px;
@@ -1139,9 +1253,10 @@ body {
 
 .carousel-viewport {
   width: min(920px, 78vw);
-  overflow: hidden;
+  overflow: visible;
   position: relative;
-  padding: 24px 0 8px;
+  padding: 52px 0 52px;
+  clip-path: inset(-80px 0 -80px 0);
 }
 
 .carousel-track {
@@ -1300,6 +1415,25 @@ body {
   animation: cardShake 0.35s ease;
 }
 
+@keyframes cardLaunch {
+  0% {
+    transform: scale(1.12);
+    box-shadow: 0 0 24px rgba(80, 160, 255, 0.45), 0 8px 24px rgba(0,0,0,0.5);
+  }
+  45% {
+    transform: scale(1.20);
+    box-shadow: 0 0 38px rgba(170, 210, 255, 0.75), 0 12px 34px rgba(0,0,0,0.58);
+  }
+  100% {
+    transform: scale(1.17);
+    box-shadow: 0 0 30px rgba(120, 190, 255, 0.65), 0 10px 30px rgba(0,0,0,0.55);
+  }
+}
+
+.carousel-card.launch.active {
+  animation: cardLaunch 0.45s ease forwards;
+}
+
 @media (max-width: 640px) {
   .comms-panel {
     right: 16px;
@@ -1319,7 +1453,7 @@ body {
 }
 
 .dots {
-  margin-top: 36px;
+  margin-top: 12px;
   display: flex;
   justify-content: center;
   gap: 14px;
@@ -1408,13 +1542,13 @@ body {
   }
 }
 
-
 </style>
 """)
     html.append("</head>")
     html.append("<body>")
     html.append("<div class='space-bg'></div>")
     html.append("<div class='dark-overlay'></div>")
+    html.append("<div class='page-fade-overlay' id='page-fade-overlay'></div>")
     html.append("<a class='back-button' href='{}' aria-label='戻る'>×</a>".format(html_escape(back_href)))
 
     html.append("<div class='page'>")
@@ -1454,6 +1588,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
   const commsPanel = document.getElementById('comms-panel');
+  const fadeOverlay = document.getElementById('page-fade-overlay');
   let commsTimer = null;
 
   let currentIndex = window.INITIAL_CAROUSEL_INDEX || 0;
@@ -1529,14 +1664,42 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-　cards.forEach(function (card) {
- 　 card.addEventListener('click', function (e) {
- 　   if (card.classList.contains('coming-soon-card')) {
- 　     e.preventDefault();
- 　     showCommsMessage(card);
- 　   }
- 　 });
-　});
+  cards.forEach(function (card) {
+    card.addEventListener('click', function (e) {
+      if (card.classList.contains('coming-soon-card')) {
+        e.preventDefault();
+        showCommsMessage(card);
+        return;
+      }
+
+      const href = card.getAttribute('href');
+
+      if (href && href !== '#') {
+        e.preventDefault();
+
+        const index = parseInt(card.getAttribute('data-index'), 10);
+        updateCarousel(index);
+
+        card.classList.remove('launch');
+        void card.offsetWidth;
+        card.classList.add('launch');
+
+        if (href === '/upload') {
+          setTimeout(function () {
+            fadeOverlay.classList.add('show');
+          }, 180);
+
+          setTimeout(function () {
+            window.location.href = href;
+          }, 1300);
+        } else {
+          setTimeout(function () {
+            window.location.href = href;
+          }, 450);
+        }
+      }
+    });
+  });
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'ArrowLeft') {
@@ -1584,7 +1747,7 @@ def build_index_html(message=""):
     html.append("<head>")
     html.append("<meta charset='UTF-8'>")
     html.append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>")
-    html.append("<title>Ocaml 1期</title>")
+    html.append("<title>OCaml 1期</title>")
     html.append("""
 <style>
 :root {
@@ -1619,6 +1782,43 @@ body {
   padding: 42px 24px 56px;
 }
 
+.upload-back-link {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  margin-bottom: 28px;
+  padding: 10px 18px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--poster-ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 24px rgba(11, 11, 13, 0.08);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.upload-back-link::before {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 11px solid var(--poster-ink);
+}
+
+.upload-back-link:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.14);
+}
+
 .upload-page::before {
   content: "";
   position: absolute;
@@ -1634,16 +1834,6 @@ body {
   filter: blur(20px);
   opacity: 0.95;
   transform: rotate(4deg);
-}
-
-.upload-page::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 42%;
-  left: 31%;
-  width: 3px;
-  background: rgba(255, 255, 255, 0.85);
 }
 
 .hero {
@@ -1677,7 +1867,7 @@ body {
 }
 
 .badge::before {
-  content: "OC";
+  content: "TA";
   display: grid;
   place-items: center;
   width: 30px;
@@ -1715,15 +1905,6 @@ h1 {
   font-size: clamp(17px, 2.1vw, 22px);
   font-weight: 750;
   line-height: 1.85;
-}
-
-.arrow-mark {
-  width: 74px;
-  height: 74px;
-  margin-top: 42px;
-  border-top: 5px solid var(--poster-ink);
-  border-right: 5px solid var(--poster-ink);
-  transform: rotate(45deg);
 }
 
 .work-panel {
@@ -1909,6 +2090,67 @@ h1 {
   font-weight: 900;
 }
 
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(241, 241, 239, 0.82);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.loading-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.loading-card {
+  width: min(380px, 100%);
+  padding: 34px 30px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 24px 60px rgba(11, 11, 13, 0.22);
+  text-align: center;
+}
+
+.loading-ring {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 20px;
+  border: 5px solid rgba(11, 11, 13, 0.12);
+  border-top-color: var(--poster-ink);
+  border-radius: 50%;
+  animation: loadingSpin 0.85s linear infinite;
+}
+
+.loading-title {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.loading-text {
+  margin: 0;
+  color: rgba(11, 11, 13, 0.62);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.7;
+}
+
+@keyframes loadingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 780px) {
   .upload-page {
     padding: 28px 18px 40px;
@@ -1928,10 +2170,6 @@ h1 {
     gap: 24px;
   }
 
-  .arrow-mark {
-    display: none;
-  }
-
   .info-block {
     padding-top: 0;
   }
@@ -1941,22 +2179,22 @@ h1 {
     html.append("</head>")
     html.append("<body>")
     html.append("<main class='upload-page'>")
+    html.append("<a class='upload-back-link' href='/period'>選択画面へ戻る</a>")
     html.append("<section class='hero'>")
     html.append("<div class='hero-top'>")
     html.append("<div>")
     html.append("<div class='badge'>Report Checker</div>")
-    html.append("<h1>Ocaml<br>1期</h1>")
-    html.append("<div class='arrow-mark' aria-hidden='true'></div>")
+    html.append("<h1>OCaml<br>1期</h1>")
     html.append("</div>")
     html.append("<div class='hero-copy'>")
-    html.append("<p class='kicker'>Simple grading site</p>")
-    html.append("<p class='lead'>OCaml課題の .ml ファイルをアップロードすると、自動でテストを実行し、大問ごとの OK / NG を確認できる簡単な採点サイトです。</p>")
+    html.append("<p class='kicker'>SUBMISSION CHECKER</p>")
+    html.append("<p class='lead'>OCaml課題の .ml ファイルを自動でテストし、各大問の判定結果をわかりやすく表示します。</p>")
     html.append("</div>")
     html.append("</div>")
 
     html.append("<div class='work-panel'>")
     html.append("<div class='info-block'>")
-    html.append("<h2>選んで、<br>採点する。</h2>")
+    html.append("<h2>採点作業を、<br>シンプルに。</h2>")
     html.append("<p>複数ファイルにも対応しています。選択後にファイル名一覧が表示されるので、採点前に対象ファイルを確認できます。</p>")
     html.append("</div>")
 
@@ -1970,7 +2208,7 @@ h1 {
     html.append("<li><span class='step-num'>03</span><span>採点を実行し、結果画面で大問ごとの判定を確認します。</span></li>")
     html.append("</ol>")
 
-    html.append("<form method='POST' enctype='multipart/form-data' action='/check'>")
+    html.append("<form id='upload-form' method='POST' enctype='multipart/form-data' action='/check'>")
     html.append("<p class='form-title'>ファイルの選択</p>")
     html.append("<label class='file-drop'>")
     html.append("<span class='file-drop-title'>.ml ファイルをアップロード</span>")
@@ -1992,9 +2230,18 @@ h1 {
     html.append("</div>")
     html.append("</section>")
     html.append("</main>")
+    html.append("<div class='loading-overlay' id='loading-overlay' aria-live='polite'>")
+    html.append("<div class='loading-card'>")
+    html.append("<div class='loading-ring' aria-hidden='true'></div>")
+    html.append("<p class='loading-title'>採点中...</p>")
+    html.append("<p class='loading-text'>提出ファイルをチェックしています。<br>しばらくお待ちください。</p>")
+    html.append("</div>")
+    html.append("</div>")
     html.append("""
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  const uploadForm = document.getElementById('upload-form');
+  const loadingOverlay = document.getElementById('loading-overlay');
   const fileInput = document.getElementById('file-input');
   const selectedFiles = document.getElementById('selected-files');
   const selectedFileList = document.getElementById('selected-file-list');
@@ -2020,6 +2267,15 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   fileInput.addEventListener('change', updateSelectedFiles);
+    uploadForm.addEventListener('submit', function () {
+      const files = Array.from(fileInput.files || []);
+
+      if (files.length === 0) {
+        return;
+      }
+
+      loadingOverlay.classList.add('show');
+    });
 });
 </script>
 """)
@@ -2131,28 +2387,40 @@ class CheckerHandler(BaseHTTPRequestHandler):
 
             temp_dir = Path(tempfile.mkdtemp(prefix="ocaml_upload_"))
 
-            form = cgi.FieldStorage(
-                fp=self.rfile,
-                headers=self.headers,
-                environ={
-                    "REQUEST_METHOD": "POST",
-                    "CONTENT_TYPE": content_type,
-                }
+            content_length = int(self.headers.get("Content-Length", "0"))
+
+            if content_length <= 0:
+                self.send_html(build_index_html("ファイルが送信されていません。"), status=400)
+                return
+
+            body = self.rfile.read(content_length)
+
+            raw_message = (
+                b"Content-Type: " + content_type.encode("utf-8") +
+                b"\r\nMIME-Version: 1.0\r\n\r\n" +
+                body
             )
 
-            if "files" not in form:
+            message = BytesParser(policy=policy.default).parsebytes(raw_message)
+
+            if not message.is_multipart():
                 self.send_html(build_index_html(".ml ファイルを選択してください。"), status=400)
                 return
 
-            uploaded_items = form["files"]
-
-            if not isinstance(uploaded_items, list):
-                uploaded_items = [uploaded_items]
-
             saved_count = 0
 
-            for item in uploaded_items:
-                filename = Path(item.filename or "").name
+            for part in message.iter_parts():
+                disposition = part.get_content_disposition()
+
+                if disposition != "form-data":
+                    continue
+
+                field_name = part.get_param("name", header="content-disposition")
+
+                if field_name != "files":
+                    continue
+
+                filename = Path(part.get_filename() or "").name
 
                 if not filename:
                     continue
@@ -2160,10 +2428,15 @@ class CheckerHandler(BaseHTTPRequestHandler):
                 if not filename.endswith(".ml"):
                     continue
 
+                payload = part.get_payload(decode=True)
+
+                if payload is None:
+                    continue
+
                 save_path = temp_dir / filename
 
                 with save_path.open("wb") as f:
-                    shutil.copyfileobj(item.file, f)
+                    f.write(payload)
 
                 saved_count += 1
 
