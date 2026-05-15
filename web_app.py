@@ -111,7 +111,7 @@ def build_result_html(all_results, file_summaries):
 
         detail = []
         detail.append("<details class='{}'>".format(detail_class))
-        detail.append("<summary><span>Q{}</span><span class='detail-label'>詳細</span></summary>".format(question))
+        detail.append("<summary><span>Q{}</span></summary>".format(question))
         detail.append("<div class='issue-reason'>")
         detail.append("<p>{}</p>".format(reason))
 
@@ -478,15 +478,6 @@ body {
 
 .issue-detail summary::-webkit-details-marker {
   display: none;
-}
-
-.detail-label {
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(11, 11, 13, 0.86);
-  color: white;
-  font-size: 11px;
-  font-weight: 900;
 }
 
 .wrong-detail summary {
