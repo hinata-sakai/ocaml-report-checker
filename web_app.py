@@ -49,45 +49,45 @@ def build_result_html(all_results, file_summaries):
     total_ok = sum(summary.get("ok", 0) for summary in file_summaries)
     overall_rate = round((total_ok / total_questions) * 100) if total_questions else 0
 
-    def build_score_html(summary):
-        ok = summary.get("ok", 0)
-        warning = summary.get("warning", 0)
-        ng = summary.get("ng", 0)
-        error = summary.get("error", 0)
-        total = summary.get("total", 0)
+        def build_score_html(summary):
+            ok = summary.get("ok", 0)
+            warning = summary.get("warning", 0)
+            ng = summary.get("ng", 0)
+            error = summary.get("error", 0)
+            total = summary.get("total", 0)
 
-        pieces = []
+            pieces = []
 
-        pieces.append(
-            "<span class='score-piece'><span class='score-large'>{}問中</span></span>".format(total)
-        )
+            if ok:
+                pieces.append(
+                    "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small ok'>正解</span></span>".format(ok)
+                )
 
-        if ok:
+            if ng:
+                pieces.append(
+                    "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small issue'>不正解</span></span>".format(ng)
+                )
+
+            if warning:
+                pieces.append(
+                    "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small issue'>警告</span></span>".format(warning)
+                )
+
+            if error:
+                pieces.append(
+                    "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small issue'>エラー</span></span>".format(error)
+                )
+
+            if not ok and not ng and not warning and not error:
+                pieces.append(
+                    "<span class='score-piece'><span class='score-large'>0問</span><span class='score-small ok'>正解</span></span>"
+                )
+
             pieces.append(
-                "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small'>正解</span></span>".format(ok)
+                "<span class='score-total'>/{}問</span>".format(total)
             )
 
-        if ng:
-            pieces.append(
-                "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small'>不正解</span></span>".format(ng)
-            )
-
-        if warning:
-            pieces.append(
-                "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small'>警告</span></span>".format(warning)
-            )
-
-        if error:
-            pieces.append(
-                "<span class='score-piece'><span class='score-large'>{}問</span><span class='score-small'>エラー</span></span>".format(error)
-            )
-
-        if not ok and not ng and not warning and not error:
-            pieces.append(
-                "<span class='score-piece'><span class='score-large'>0問</span><span class='score-small'>正解</span></span>"
-            )
-
-        return "".join(pieces)
+            return "".join(pieces)
 
     def build_issue_detail(question_summary, status):
         question = html_escape(question_summary.get("question"))
@@ -378,6 +378,20 @@ body {
   font-size: 16px;
   font-weight: 900;
   margin-left: 4px;
+}
+
+.score-small.ok {
+  color: var(--poster-mint-dark);
+}
+
+.score-small.issue {
+  color: #c63c1c;
+}
+
+.score-total {
+  color: rgba(11, 11, 13, 0.58);
+  font-size: 16px;
+  font-weight: 900;
 }
 
 .score-piece {
