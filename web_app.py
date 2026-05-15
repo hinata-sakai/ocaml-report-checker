@@ -2294,11 +2294,52 @@ document.addEventListener('DOMContentLoaded', function () {
   const selectedFiles = document.getElementById('selected-files');
   const selectedFileList = document.getElementById('selected-file-list');
 
+  let selectedFileStore = [];
+
+  function fileKey(file) {
+    return file.name + '|' + file.size + '|' + file.lastModified;
+  }
+
+  function syncFileInput() {
+    const dataTransfer = new DataTransfer();
+
+    selectedFileStore.forEach(function (file) {
+      dataTransfer.items.add(file);
+    });
+
+    fileInput.files = dataTransfer.files;
+  }
+
+  function addFiles(filesToAdd) {
+    const incomingFiles = Array.from(filesToAdd || []).filter(function (file) {
+      return file.name.toLowerCase().endsWith('.ml');
+    });
+
+    if (incomingFiles.length === 0) {
+      return;
+    }
+
+    const seen = new Set(selectedFileStore.map(fileKey));
+
+    incomingFiles.forEach(function (file) {
+      const key = fileKey(file);
+
+      if (seen.has(key)) {
+        return;
+      }
+
+      seen.add(key);
+      selectedFileStore.push(file);
+    });
+
+    syncFileInput();
+    updateSelectedFiles();
+  }
+
   function updateSelectedFiles() {
-    const files = Array.from(fileInput.files || []);
     selectedFileList.innerHTML = '';
 
-    if (files.length === 0) {
+    if (selectedFileStore.length === 0) {
       selectedFiles.classList.add('is-empty');
       const emptyItem = document.createElement('li');
       emptyItem.textContent = 'まだファイルが選択されていません。';
@@ -2307,42 +2348,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     selectedFiles.classList.remove('is-empty');
-    files.forEach(function (file) {
+
+    selectedFileStore.forEach(function (file) {
       const item = document.createElement('li');
       item.textContent = file.name;
       selectedFileList.appendChild(item);
     });
   }
 
-  function addDroppedFiles(filesToAdd) {
-    const currentFiles = Array.from(fileInput.files || []);
-    const newFiles = Array.from(filesToAdd || []).filter(function (file) {
-      return file.name.toLowerCase().endsWith('.ml');
-    });
-
-    if (newFiles.length === 0) {
-      return;
-    }
-
-    const dataTransfer = new DataTransfer();
-    const seen = new Set();
-
-    currentFiles.concat(newFiles).forEach(function (file) {
-      const key = file.name + '|' + file.size + '|' + file.lastModified;
-
-      if (seen.has(key)) {
-        return;
-      }
-
-      seen.add(key);
-      dataTransfer.items.add(file);
-    });
-
-    fileInput.files = dataTransfer.files;
-    updateSelectedFiles();
-  }
-
-  fileInput.addEventListener('change', updateSelectedFiles);
+  fileInput.addEventListener('change', function () {
+    addFiles(fileInput.files);
+  });
 
   if (fileDrop) {
     fileDrop.addEventListener('dragenter', function (e) {
@@ -2371,7 +2387,7 @@ document.addEventListener('DOMContentLoaded', function () {
       e.stopPropagation();
 
       fileDrop.classList.remove('is-dragging');
-      addDroppedFiles(e.dataTransfer.files);
+      addFiles(e.dataTransfer.files);
     });
   }
 
@@ -2386,16 +2402,18 @@ document.addEventListener('DOMContentLoaded', function () {
       fileDrop.classList.remove('is-dragging');
     }
   });
-  
-  uploadForm.addEventListener('submit', function () {
-    const files = Array.from(fileInput.files || []);
 
-    if (files.length === 0) {
+  uploadForm.addEventListener('submit', function () {
+    syncFileInput();
+
+    if (selectedFileStore.length === 0) {
       return;
     }
 
     loadingOverlay.classList.add('show');
   });
+
+  updateSelectedFiles();
 });
 </script>
 """)
