@@ -2279,11 +2279,13 @@ h1 {
     html.append("</div>")
     html.append("</div>")
     html.append("""
+    html.append("""
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const uploadForm = document.getElementById('upload-form');
   const loadingOverlay = document.getElementById('loading-overlay');
   const fileInput = document.getElementById('file-input');
+  const fileDrop = document.querySelector('.file-drop');
   const selectedFiles = document.getElementById('selected-files');
   const selectedFileList = document.getElementById('selected-file-list');
 
@@ -2307,16 +2309,64 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  fileInput.addEventListener('change', updateSelectedFiles);
-    uploadForm.addEventListener('submit', function () {
-      const files = Array.from(fileInput.files || []);
+  function addDroppedFiles(filesToAdd) {
+    const currentFiles = Array.from(fileInput.files || []);
+    const newFiles = Array.from(filesToAdd || []).filter(function (file) {
+      return file.name.toLowerCase().endsWith('.ml');
+    });
 
-      if (files.length === 0) {
+    if (newFiles.length === 0) {
+      return;
+    }
+
+    const dataTransfer = new DataTransfer();
+    const seen = new Set();
+
+    currentFiles.concat(newFiles).forEach(function (file) {
+      const key = file.name + '|' + file.size + '|' + file.lastModified;
+
+      if (seen.has(key)) {
         return;
       }
 
-      loadingOverlay.classList.add('show');
+      seen.add(key);
+      dataTransfer.items.add(file);
     });
+
+    fileInput.files = dataTransfer.files;
+    updateSelectedFiles();
+  }
+
+  fileInput.addEventListener('change', updateSelectedFiles);
+
+  if (fileDrop) {
+    fileDrop.addEventListener('dragenter', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    fileDrop.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    fileDrop.addEventListener('drop', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      addDroppedFiles(e.dataTransfer.files);
+    });
+  }
+
+  uploadForm.addEventListener('submit', function () {
+    const files = Array.from(fileInput.files || []);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    loadingOverlay.classList.add('show');
+  });
 });
 </script>
 """)
