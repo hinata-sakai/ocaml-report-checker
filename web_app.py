@@ -580,6 +580,10 @@ body {
 
 .issue-modal-content {
   color: rgba(11, 11, 13, 0.76);
+  max-height: calc(82vh - 170px);
+  overflow-y: auto;
+  padding-right: 10px;
+  scrollbar-gutter: stable;
 }
 
 .issue-modal-content > p {
@@ -2381,7 +2385,9 @@ h1 {
 .issue-modal {
   width: min(720px, 100%);
   max-height: min(82vh, 720px);
-  overflow: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   padding: 28px;
   border: 2px solid var(--poster-ink);
   border-radius: 30px;
