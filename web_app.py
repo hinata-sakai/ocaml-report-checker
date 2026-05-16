@@ -100,19 +100,32 @@ def build_result_html(all_results, file_summaries):
             related_results = question_summary.get("results", [])
 
         if status == "WARNING":
+            status_label = "警告"
             reason = "実行結果は期待値と一致しましたが、実行後にOCamlの警告が出ています。"
             detail_class = "issue-detail warning-detail"
+            status_class = "warning"
         elif status == "NG":
+            status_label = "不正解"
             reason = "実行はできましたが、実行結果が期待値と違いました。"
             detail_class = "issue-detail wrong-detail"
+            status_class = "wrong"
         else:
+            status_label = "エラー"
             reason = "文法エラー・未定義関数・型エラーなどにより、採点処理まで進めませんでした。"
             detail_class = "issue-detail error-detail"
+            status_class = "error"
 
         detail = []
-        detail.append("<details class='{}'>".format(detail_class))
-        detail.append("<summary><span>Q{}</span></summary>".format(question))
-        detail.append("<div class='issue-reason'>")
+        detail.append("<div class='{}'>".format(detail_class))
+        detail.append(
+            "<button class='issue-detail-button' type='button' data-status-label='{}' data-status-class='{}' data-question='Q{}'>Q{}</button>".format(
+                html_escape(status_label),
+                html_escape(status_class),
+                question,
+                question
+            )
+        )
+        detail.append("<div class='issue-reason-source' hidden>")
         detail.append("<p>{}</p>".format(reason))
 
         if not related_results:
@@ -135,7 +148,7 @@ def build_result_html(all_results, file_summaries):
             detail.append("</div>")
 
         detail.append("</div>")
-        detail.append("</details>")
+        detail.append("</div>")
 
         return "".join(detail)
 
@@ -460,36 +473,38 @@ body {
   display: inline-block;
 }
 
-.issue-detail summary {
+.issue-detail-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   min-width: 46px;
   padding: 8px 10px;
+  border: none;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.78);
   font-size: 14px;
   font-weight: 950;
   cursor: pointer;
-  list-style: none;
   box-shadow: 0 8px 18px rgba(181, 55, 24, 0.12);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.issue-detail summary::-webkit-details-marker {
-  display: none;
+.issue-detail-button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 22px rgba(181, 55, 24, 0.16);
 }
 
-.wrong-detail summary {
+.wrong-detail .issue-detail-button {
   color: #b83217;
 }
 
-.warning-detail summary {
+.warning-detail .issue-detail-button {
   color: #9a6200;
   background: var(--poster-warning-soft);
 }
 
-.error-detail summary {
+.error-detail .issue-detail-button {
   color: var(--poster-error);
   background: var(--poster-error-soft);
 }
@@ -693,6 +708,72 @@ pre {
     html.append("</section>")
     html.append("</div>")
     html.append("</main>")
+
+    html.append("<div class='issue-modal-overlay' id='issue-modal-overlay' aria-hidden='true'>")
+    html.append("<div class='issue-modal' role='dialog' aria-modal='true' aria-labelledby='issue-modal-question'>")
+    html.append("<div class='issue-modal-header'>")
+    html.append("<span class='issue-modal-status' id='issue-modal-status'></span>")
+    html.append("<span class='issue-modal-question' id='issue-modal-question'></span>")
+    html.append("</div>")
+    html.append("<div class='issue-modal-content' id='issue-modal-content'></div>")
+    html.append("<div class='issue-modal-actions'>")
+    html.append("<button class='issue-modal-close' type='button' id='issue-modal-close'>閉じる</button>")
+    html.append("</div>")
+    html.append("</div>")
+    html.append("</div>")
+
+    html.append("""
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const issueModalOverlay = document.getElementById('issue-modal-overlay');
+  const issueModalStatus = document.getElementById('issue-modal-status');
+  const issueModalQuestion = document.getElementById('issue-modal-question');
+  const issueModalContent = document.getElementById('issue-modal-content');
+  const issueModalClose = document.getElementById('issue-modal-close');
+
+  function closeIssueModal() {
+    issueModalOverlay.classList.remove('show');
+    issueModalOverlay.setAttribute('aria-hidden', 'true');
+    issueModalStatus.textContent = '';
+    issueModalStatus.className = 'issue-modal-status';
+    issueModalQuestion.textContent = '';
+    issueModalContent.innerHTML = '';
+  }
+
+  document.querySelectorAll('.issue-detail-button').forEach(function (button) {
+    button.addEventListener('click', function () {
+      const source = button.parentElement.querySelector('.issue-reason-source');
+      const statusLabel = button.getAttribute('data-status-label') || '確認';
+      const statusClass = button.getAttribute('data-status-class') || '';
+      const question = button.getAttribute('data-question') || '';
+
+      issueModalStatus.textContent = statusLabel;
+      issueModalStatus.className = 'issue-modal-status ' + statusClass;
+      issueModalQuestion.textContent = question;
+      issueModalContent.innerHTML = source ? source.innerHTML : '<p>詳細情報がありません。</p>';
+
+      issueModalOverlay.classList.add('show');
+      issueModalOverlay.setAttribute('aria-hidden', 'false');
+    });
+  });
+
+  issueModalClose.addEventListener('click', closeIssueModal);
+
+  issueModalOverlay.addEventListener('click', function (e) {
+    if (e.target === issueModalOverlay) {
+      closeIssueModal();
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && issueModalOverlay.classList.contains('show')) {
+      closeIssueModal();
+    }
+  });
+});
+</script>
+""")
+
     html.append("</body>")
     html.append("</html>")
 
@@ -2172,6 +2253,111 @@ h1 {
   pointer-events: auto;
 }
 
+.issue-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(11, 11, 13, 0.38);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.issue-modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.issue-modal {
+  width: min(720px, 100%);
+  max-height: min(82vh, 720px);
+  overflow: auto;
+  padding: 28px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 28px 70px rgba(11, 11, 13, 0.28);
+}
+
+.issue-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.issue-modal-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.issue-modal-status.wrong {
+  background: var(--poster-alert-soft);
+  color: #c63c1c;
+}
+
+.issue-modal-status.warning {
+  background: var(--poster-warning-soft);
+  color: #9a6200;
+}
+
+.issue-modal-status.error {
+  background: var(--poster-error-soft);
+  color: var(--poster-error);
+}
+
+.issue-modal-question {
+  font-size: 26px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.issue-modal-content {
+  color: rgba(11, 11, 13, 0.76);
+}
+
+.issue-modal-content > p {
+  margin: 0 0 14px;
+  line-height: 1.7;
+  font-weight: 750;
+}
+
+.issue-modal-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.issue-modal-close {
+  min-width: 120px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  padding: 11px 18px;
+  background: var(--poster-ink);
+  color: white;
+  font-size: 14px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(11, 11, 13, 0.22);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.issue-modal-close:hover {
+  transform: translateY(-2px);
+  background: #1f1f22;
+  box-shadow: 0 16px 30px rgba(11, 11, 13, 0.26);
+}
+
 .delete-modal {
   width: min(420px, 100%);
   padding: 30px 28px;
@@ -2546,7 +2732,7 @@ document.addEventListener('DOMContentLoaded', function () {
     deleteMode = 'all';
     deleteTargetKey = null;
 
-    deleteModalTitle.textContent = '選択中のファイルをすべて削除しますか？';
+    deleteModalTitle.innerHTML = '選択中のファイルを<br>すべて削除しますか？';
     deleteModalText.textContent = selectedFileStore.length + '件のファイルが選択されています。';
     deleteConfirmButton.textContent = 'すべて削除';
 
