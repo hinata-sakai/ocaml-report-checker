@@ -509,6 +509,111 @@ body {
   background: var(--poster-error-soft);
 }
 
+.issue-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(11, 11, 13, 0.38);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.issue-modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.issue-modal {
+  width: min(720px, 100%);
+  max-height: min(82vh, 720px);
+  overflow: auto;
+  padding: 28px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 28px 70px rgba(11, 11, 13, 0.28);
+}
+
+.issue-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.issue-modal-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.issue-modal-status.wrong {
+  background: var(--poster-alert-soft);
+  color: #c63c1c;
+}
+
+.issue-modal-status.warning {
+  background: var(--poster-warning-soft);
+  color: #9a6200;
+}
+
+.issue-modal-status.error {
+  background: var(--poster-error-soft);
+  color: var(--poster-error);
+}
+
+.issue-modal-question {
+  font-size: 26px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.issue-modal-content {
+  color: rgba(11, 11, 13, 0.76);
+}
+
+.issue-modal-content > p {
+  margin: 0 0 14px;
+  line-height: 1.7;
+  font-weight: 750;
+}
+
+.issue-modal-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.issue-modal-close {
+  min-width: 120px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  padding: 11px 18px;
+  background: var(--poster-ink);
+  color: white;
+  font-size: 14px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(11, 11, 13, 0.22);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.issue-modal-close:hover {
+  transform: translateY(-2px);
+  background: #1f1f22;
+  box-shadow: 0 16px 30px rgba(11, 11, 13, 0.26);
+}
+
 .issue-reason {
   width: min(620px, calc(100vw - 96px));
   margin-top: 10px;
