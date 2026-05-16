@@ -43,6 +43,23 @@ def html_escape(s):
         .replace('"', "&quot;")
     )
 
+def get_form_text(part):
+    payload = part.get_payload(decode=True)
+
+    if payload is not None:
+        charset = part.get_content_charset() or "utf-8"
+
+        try:
+            return payload.decode(charset)
+        except UnicodeDecodeError:
+            return payload.decode("utf-8", errors="replace")
+
+    value = part.get_payload()
+
+    if value is None:
+        return ""
+
+    return str(value)
 
 def build_result_html(all_results, file_summaries):
     total_questions = sum(summary.get("total", 0) for summary in file_summaries)
@@ -3101,6 +3118,31 @@ document.addEventListener('DOMContentLoaded', function () {
     studentUploadRows.appendChild(row);
   }
 
+  function getNextStudentId() {
+    const rows = Array.from(document.querySelectorAll('.student-upload-row'));
+
+    if (rows.length === 0) {
+      return '';
+    }
+
+    const lastRow = rows[rows.length - 1];
+    const studentInput = lastRow.querySelector('.student-id-input');
+
+    if (!studentInput) {
+      return '';
+    }
+
+    const value = studentInput.value.trim();
+
+    if (!/^[0-9]+$/.test(value)) {
+      return '';
+    }
+
+    const nextValue = (BigInt(value) + 1n).toString();
+
+    return nextValue.padStart(value.length, '0');
+  }
+
   function openDeleteModal(file) {
     deleteMode = 'single';
     deleteTargetKey = fileKey(file);
@@ -3220,7 +3262,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   addStudentRowButton.addEventListener('click', function () {
-    addStudentRow('');
+    addStudentRow(getNextStudentId());
   });
 
   addStudentRow('');
@@ -3421,25 +3463,13 @@ class CheckerHandler(BaseHTTPRequestHandler):
                 field_name = part.get_param("name", header="content-disposition")
 
                 if field_name == "upload_mode":
-                    try:
-                        value = part.get_content()
-                    except Exception:
-                        payload = part.get_payload(decode=True) or b""
-                        value = payload.decode("utf-8", errors="ignore")
-
-                    upload_mode = value.strip() or "bulk"
+                    upload_mode = get_form_text(part).strip() or "bulk"
 
                 elif field_name == "files":
                     bulk_file_parts.append(part)
 
                 elif field_name == "student_ids":
-                    try:
-                        value = part.get_content()
-                    except Exception:
-                        payload = part.get_payload(decode=True) or b""
-                        value = payload.decode("utf-8", errors="ignore")
-
-                    student_ids.append(value.strip())
+                    student_ids.append(get_form_text(part).strip())
 
                 elif field_name == "student_files":
                     student_file_parts.append(part)
