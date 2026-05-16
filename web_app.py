@@ -2085,6 +2085,44 @@ h1 {
   letter-spacing: 0.04em;
 }
 
+.selected-files-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 8px;
+}
+
+.selected-files-header .selected-files-title {
+  margin: 0;
+}
+
+.clear-files-button {
+  display: none;
+  flex: 0 0 auto;
+  border: 1px solid rgba(11, 11, 13, 0.20);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.70);
+  color: rgba(11, 11, 13, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.clear-files-button.show {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-files-button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 18px rgba(11, 11, 13, 0.08);
+}
+
 .selected-files ul {
   margin: 0;
   padding-left: 20px;
@@ -2354,7 +2392,10 @@ h1 {
     html.append("<input id='file-input' type='file' name='files' accept='.ml' multiple required>")
     html.append("</label>")
     html.append("<div class='selected-files is-empty' id='selected-files' aria-live='polite'>")
+    html.append("<div class='selected-files-header'>")
     html.append("<p class='selected-files-title'>選択中のファイル</p>")
+    html.append("<button class='clear-files-button' id='clear-files-button' type='button'>すべてクリア</button>")
+    html.append("</div>")
     html.append("<ul id='selected-file-list'><li>まだファイルが選択されていません。</li></ul>")
     html.append("</div>")
     html.append("<button class='submit-button' type='submit'>採点を実行</button>")
@@ -2394,12 +2435,16 @@ document.addEventListener('DOMContentLoaded', function () {
   const fileDrop = document.querySelector('.file-drop');
   const selectedFiles = document.getElementById('selected-files');
   const selectedFileList = document.getElementById('selected-file-list');
+  const clearFilesButton = document.getElementById('clear-files-button');
+
   const deleteModalOverlay = document.getElementById('delete-modal-overlay');
+  const deleteModalTitle = document.getElementById('delete-modal-title');
   const deleteModalText = document.getElementById('delete-modal-text');
   const deleteCancelButton = document.getElementById('delete-cancel-button');
   const deleteConfirmButton = document.getElementById('delete-confirm-button');
 
   let deleteTargetKey = null;
+  let deleteMode = null;
   let selectedFileStore = [];
 
   function fileKey(file) {
@@ -2447,6 +2492,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (selectedFileStore.length === 0) {
       selectedFiles.classList.add('is-empty');
+      clearFilesButton.classList.remove('show');
+
       const emptyItem = document.createElement('li');
       emptyItem.textContent = 'まだファイルが選択されていません。';
       selectedFileList.appendChild(emptyItem);
@@ -2454,6 +2501,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     selectedFiles.classList.remove('is-empty');
+    clearFilesButton.classList.add('show');
 
     selectedFileStore.forEach(function (file) {
       const item = document.createElement('li');
@@ -2479,30 +2527,61 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function openDeleteModal(file) {
+    deleteMode = 'single';
     deleteTargetKey = fileKey(file);
+
+    deleteModalTitle.textContent = 'このファイルを削除しますか？';
     deleteModalText.textContent = file.name;
+    deleteConfirmButton.textContent = '削除';
+
+    deleteModalOverlay.classList.add('show');
+    deleteModalOverlay.setAttribute('aria-hidden', 'false');
+  }
+
+  function openClearAllModal() {
+    if (selectedFileStore.length === 0) {
+      return;
+    }
+
+    deleteMode = 'all';
+    deleteTargetKey = null;
+
+    deleteModalTitle.textContent = '選択中のファイルをすべて削除しますか？';
+    deleteModalText.textContent = selectedFileStore.length + '件のファイルが選択されています。';
+    deleteConfirmButton.textContent = 'すべて削除';
+
     deleteModalOverlay.classList.add('show');
     deleteModalOverlay.setAttribute('aria-hidden', 'false');
   }
 
   function closeDeleteModal() {
     deleteTargetKey = null;
+    deleteMode = null;
+
     deleteModalOverlay.classList.remove('show');
     deleteModalOverlay.setAttribute('aria-hidden', 'true');
   }
 
   function deleteSelectedFile() {
-    if (!deleteTargetKey) {
+    if (deleteMode === 'all') {
+      selectedFileStore = [];
+      syncFileInput();
+      updateSelectedFiles();
       closeDeleteModal();
       return;
     }
 
-    selectedFileStore = selectedFileStore.filter(function (file) {
-      return fileKey(file) !== deleteTargetKey;
-    });
+    if (deleteMode === 'single' && deleteTargetKey) {
+      selectedFileStore = selectedFileStore.filter(function (file) {
+        return fileKey(file) !== deleteTargetKey;
+      });
 
-    syncFileInput();
-    updateSelectedFiles();
+      syncFileInput();
+      updateSelectedFiles();
+      closeDeleteModal();
+      return;
+    }
+
     closeDeleteModal();
   }
 
@@ -2555,6 +2634,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   deleteCancelButton.addEventListener('click', closeDeleteModal);
   deleteConfirmButton.addEventListener('click', deleteSelectedFile);
+  clearFilesButton.addEventListener('click', openClearAllModal);
 
   deleteModalOverlay.addEventListener('click', function (e) {
     if (e.target === deleteModalOverlay) {
@@ -2567,7 +2647,7 @@ document.addEventListener('DOMContentLoaded', function () {
       closeDeleteModal();
     }
   });
-  
+
   uploadForm.addEventListener('submit', function () {
     syncFileInput();
 
