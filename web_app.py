@@ -2101,6 +2101,97 @@ h1 {
   color: rgba(11, 11, 13, 0.48);
 }
 
+.selected-file-item {
+  cursor: pointer;
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.selected-file-item:hover {
+  background: rgba(255, 255, 255, 0.62);
+  transform: translateX(2px);
+}
+
+.delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(11, 11, 13, 0.38);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.delete-modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.delete-modal {
+  width: min(420px, 100%);
+  padding: 30px 28px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 28px 70px rgba(11, 11, 13, 0.28);
+  text-align: center;
+}
+
+.delete-modal-title {
+  margin: 0 0 10px;
+  font-size: 24px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.delete-modal-text {
+  margin: 0 0 22px;
+  color: rgba(11, 11, 13, 0.66);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.7;
+  word-break: break-all;
+}
+
+.delete-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.delete-modal-button {
+  min-width: 120px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 950;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.delete-modal-button:hover {
+  transform: translateY(-2px);
+}
+
+.delete-modal-button.cancel {
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--poster-ink);
+}
+
+.delete-modal-button.delete {
+  background: var(--poster-ink);
+  color: white;
+  box-shadow: 0 12px 26px rgba(11, 11, 13, 0.22);
+}
+
 .submit-button {
   width: 100%;
   border: none;
@@ -2277,6 +2368,16 @@ h1 {
     html.append("</div>")
     html.append("</section>")
     html.append("</main>")
+    html.append("<div class='delete-modal-overlay' id='delete-modal-overlay' aria-hidden='true'>")
+    html.append("<div class='delete-modal' role='dialog' aria-modal='true' aria-labelledby='delete-modal-title'>")
+    html.append("<p class='delete-modal-title' id='delete-modal-title'>このファイルを削除しますか？</p>")
+    html.append("<p class='delete-modal-text' id='delete-modal-text'></p>")
+    html.append("<div class='delete-modal-actions'>")
+    html.append("<button class='delete-modal-button cancel' type='button' id='delete-cancel-button'>キャンセル</button>")
+    html.append("<button class='delete-modal-button delete' type='button' id='delete-confirm-button'>削除</button>")
+    html.append("</div>")
+    html.append("</div>")
+    html.append("</div>")
     html.append("<div class='loading-overlay' id='loading-overlay' aria-live='polite'>")
     html.append("<div class='loading-card'>")
     html.append("<div class='loading-ring' aria-hidden='true'></div>")
@@ -2293,7 +2394,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const fileDrop = document.querySelector('.file-drop');
   const selectedFiles = document.getElementById('selected-files');
   const selectedFileList = document.getElementById('selected-file-list');
+  const deleteModalOverlay = document.getElementById('delete-modal-overlay');
+  const deleteModalText = document.getElementById('delete-modal-text');
+  const deleteCancelButton = document.getElementById('delete-cancel-button');
+  const deleteConfirmButton = document.getElementById('delete-confirm-button');
 
+  let deleteTargetKey = null;
   let selectedFileStore = [];
 
   function fileKey(file) {
@@ -2351,9 +2457,53 @@ document.addEventListener('DOMContentLoaded', function () {
 
     selectedFileStore.forEach(function (file) {
       const item = document.createElement('li');
+      item.className = 'selected-file-item';
       item.textContent = file.name;
+      item.setAttribute('tabindex', '0');
+      item.setAttribute('role', 'button');
+      item.setAttribute('aria-label', file.name + ' を削除');
+
+      item.addEventListener('click', function () {
+        openDeleteModal(file);
+      });
+
+      item.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openDeleteModal(file);
+        }
+      });
+
       selectedFileList.appendChild(item);
     });
+  }
+
+  function openDeleteModal(file) {
+    deleteTargetKey = fileKey(file);
+    deleteModalText.textContent = file.name;
+    deleteModalOverlay.classList.add('show');
+    deleteModalOverlay.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeDeleteModal() {
+    deleteTargetKey = null;
+    deleteModalOverlay.classList.remove('show');
+    deleteModalOverlay.setAttribute('aria-hidden', 'true');
+  }
+
+  function deleteSelectedFile() {
+    if (!deleteTargetKey) {
+      closeDeleteModal();
+      return;
+    }
+
+    selectedFileStore = selectedFileStore.filter(function (file) {
+      return fileKey(file) !== deleteTargetKey;
+    });
+
+    syncFileInput();
+    updateSelectedFiles();
+    closeDeleteModal();
   }
 
   fileInput.addEventListener('change', function () {
@@ -2403,6 +2553,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  deleteCancelButton.addEventListener('click', closeDeleteModal);
+  deleteConfirmButton.addEventListener('click', deleteSelectedFile);
+
+  deleteModalOverlay.addEventListener('click', function (e) {
+    if (e.target === deleteModalOverlay) {
+      closeDeleteModal();
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && deleteModalOverlay.classList.contains('show')) {
+      closeDeleteModal();
+    }
+  });
+  
   uploadForm.addEventListener('submit', function () {
     syncFileInput();
 
