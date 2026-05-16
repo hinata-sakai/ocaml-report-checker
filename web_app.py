@@ -2618,9 +2618,9 @@ h1 {
 }
 
 .mode-switch-button.active {
-  background: var(--poster-ink);
+  background: var(--poster-mint-dark);
   color: white;
-  box-shadow: 0 10px 22px rgba(11, 11, 13, 0.18);
+  box-shadow: 0 10px 22px rgba(37, 138, 89, 0.22);
 }
 
 .mode-switch-button:hover {
