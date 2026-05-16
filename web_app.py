@@ -349,6 +349,25 @@ body {
   word-break: break-all;
 }
 
+.file-name-with-student {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.student-id-label {
+  color: var(--poster-ink);
+  font-size: 22px;
+  font-weight: 950;
+}
+
+.student-file-label {
+  color: rgba(11, 11, 13, 0.52);
+  font-size: 20px;
+  font-weight: 950;
+}
+
 .status-pill {
   flex: 0 0 auto;
   padding: 8px 12px;
@@ -761,6 +780,7 @@ pre {
     html.append("<section class='result-grid' aria-label='ファイルごとの採点結果'>")
     for summary in file_summaries:
         filename = html_escape(summary["file"])
+        student_id = html_escape(summary.get("student_id", ""))
         ok = summary.get("ok", 0)
         total = summary.get("total", 0)
         warning_questions = [q for q in summary.get("questions", []) if q.get("status") == "WARNING"]
@@ -773,7 +793,15 @@ pre {
 
         html.append("<article class='{}'>".format(card_class))
         html.append("<div class='card-top'>")
-        html.append("<h2 class='file-name'>{}</h2>".format(filename))
+        if student_id:
+            html.append(
+                "<h2 class='file-name file-name-with-student'>"
+                "<span class='student-id-label'>{}</span>"
+                "<span class='student-file-label'>{}</span>"
+                "</h2>".format(student_id, filename)
+            )
+        else:
+            html.append("<h2 class='file-name'>{}</h2>".format(filename))
         html.append("<span class='status-pill'>{}</span>".format(status_label))
         html.append("</div>")
         html.append("<div class='score-line'>")
@@ -2550,6 +2578,153 @@ h1 {
   box-shadow: 0 18px 32px rgba(11, 11, 13, 0.30);
 }
 
+.mode-switch-block {
+  margin: 0 0 18px;
+}
+
+.mode-switch-title {
+  margin: 0 0 8px;
+  color: rgba(11, 11, 13, 0.68);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.mode-switch {
+  display: inline-flex;
+  padding: 4px;
+  border: 1px solid rgba(11, 11, 13, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 10px 22px rgba(11, 11, 13, 0.06);
+}
+
+.mode-switch-button {
+  border: none;
+  border-radius: 999px;
+  padding: 9px 16px;
+  background: transparent;
+  color: rgba(11, 11, 13, 0.68);
+  font-size: 13px;
+  font-weight: 950;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mode-switch-button.active {
+  background: var(--poster-ink);
+  color: white;
+  box-shadow: 0 10px 22px rgba(11, 11, 13, 0.18);
+}
+
+.mode-switch-button:hover {
+  transform: translateY(-1px);
+}
+
+.student-upload-panel {
+  margin: 0 0 20px;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(11, 11, 13, 0.10);
+}
+
+.student-panel-heading {
+  margin-bottom: 16px;
+}
+
+.student-panel-title {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.student-panel-text {
+  margin: 0;
+  color: rgba(11, 11, 13, 0.58);
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 650;
+}
+
+.student-upload-head,
+.student-upload-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(180px, 1.2fr) 36px;
+  gap: 12px;
+  align-items: center;
+}
+
+.student-upload-head {
+  margin: 0 0 8px;
+  color: rgba(11, 11, 13, 0.62);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
+.student-upload-row {
+  margin-bottom: 10px;
+}
+
+.student-id-input {
+  width: 100%;
+  border: 1px solid rgba(11, 11, 13, 0.18);
+  border-radius: 14px;
+  padding: 11px 12px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--poster-ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.student-file-input {
+  width: 100%;
+  color: rgba(11, 11, 13, 0.72);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.remove-student-row-button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(11, 11, 13, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  color: rgba(11, 11, 13, 0.72);
+  font-size: 18px;
+  font-weight: 950;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.remove-student-row-button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.add-student-row-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  border: 1px solid rgba(11, 11, 13, 0.20);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(11, 11, 13, 0.74);
+  font-size: 13px;
+  font-weight: 950;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.add-student-row-button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 18px rgba(11, 11, 13, 0.08);
+}
+
 .note {
   margin: 18px 0 0;
   color: rgba(11, 11, 13, 0.56);
@@ -2686,11 +2861,23 @@ h1 {
 
     html.append("<form id='upload-form' method='POST' enctype='multipart/form-data' action='/check'>")
     html.append("<p class='form-title'>ファイルの選択</p>")
+    html.append("<input type='hidden' name='upload_mode' id='upload-mode-input' value='bulk'>")
+
+    html.append("<div class='mode-switch-block'>")
+    html.append("<p class='mode-switch-title'>採点方法</p>")
+    html.append("<div class='mode-switch' role='tablist' aria-label='採点方法'>")
+    html.append("<button class='mode-switch-button active' type='button' id='bulk-mode-button'>一括アップロード</button>")
+    html.append("<button class='mode-switch-button' type='button' id='student-mode-button'>学籍番号ごと</button>")
+    html.append("</div>")
+    html.append("</div>")
+
+    html.append("<div id='bulk-upload-panel'>")
     html.append("<label class='file-drop'>")
     html.append("<span class='file-drop-title'>.ml ファイルをアップロード</span>")
     html.append("<span class='file-drop-text'>複数選択できます。選択したファイル名は下に表示されます。</span>")
-    html.append("<input id='file-input' type='file' name='files' accept='.ml' multiple required>")
+    html.append("<input id='file-input' type='file' name='files' accept='.ml' multiple>")
     html.append("</label>")
+
     html.append("<div class='selected-files is-empty' id='selected-files' aria-live='polite'>")
     html.append("<div class='selected-files-header'>")
     html.append("<p class='selected-files-title'>選択中のファイル</p>")
@@ -2698,11 +2885,29 @@ h1 {
     html.append("</div>")
     html.append("<ul id='selected-file-list'><li>まだファイルが選択されていません。</li></ul>")
     html.append("</div>")
+    html.append("</div>")
+
+    html.append("<div id='student-upload-panel' class='student-upload-panel' hidden>")
+    html.append("<div class='student-panel-heading'>")
+    html.append("<p class='student-panel-title'>学籍番号ごとにファイルを登録</p>")
+    html.append("<p class='student-panel-text'>学籍番号と対応する .ml ファイルを選択してください。</p>")
+    html.append("</div>")
+
+    html.append("<div class='student-upload-head'>")
+    html.append("<span>学籍番号</span>")
+    html.append("<span>ファイル</span>")
+    html.append("<span></span>")
+    html.append("</div>")
+
+    html.append("<div id='student-upload-rows'></div>")
+    html.append("<button class='add-student-row-button' type='button' id='add-student-row-button'>＋ 行を追加</button>")
+    html.append("</div>")
+
     html.append("<button class='submit-button' type='submit'>採点を実行</button>")
     html.append("</form>")
 
     html.append("<p class='note'>")
-    html.append("注意: Exception が出る実行例を提出ファイル内で直接実行している場合、読み込み時点で ERROR になることがあります。")
+    html.append("注意: Exception が出る実行例を提出ファイル内で直接実行している場合、読み込み時点でエラーになることがあります。")
     html.append("課題文の指示通り、例外が出る呼び出しはコメントアウトしてください。")
     html.append("</p>")
     html.append("</div>")
@@ -2736,6 +2941,14 @@ document.addEventListener('DOMContentLoaded', function () {
   const selectedFiles = document.getElementById('selected-files');
   const selectedFileList = document.getElementById('selected-file-list');
   const clearFilesButton = document.getElementById('clear-files-button');
+
+  const bulkModeButton = document.getElementById('bulk-mode-button');
+  const studentModeButton = document.getElementById('student-mode-button');
+  const uploadModeInput = document.getElementById('upload-mode-input');
+  const bulkUploadPanel = document.getElementById('bulk-upload-panel');
+  const studentUploadPanel = document.getElementById('student-upload-panel');
+  const studentUploadRows = document.getElementById('student-upload-rows');
+  const addStudentRowButton = document.getElementById('add-student-row-button');
 
   const deleteModalOverlay = document.getElementById('delete-modal-overlay');
   const deleteModalTitle = document.getElementById('delete-modal-title');
@@ -2824,6 +3037,62 @@ document.addEventListener('DOMContentLoaded', function () {
 
       selectedFileList.appendChild(item);
     });
+  }
+
+  function setUploadMode(mode) {
+    const isBulk = mode === 'bulk';
+
+    uploadModeInput.value = mode;
+
+    bulkModeButton.classList.toggle('active', isBulk);
+    studentModeButton.classList.toggle('active', !isBulk);
+
+    bulkUploadPanel.hidden = !isBulk;
+    studentUploadPanel.hidden = isBulk;
+
+    if (!isBulk) {
+      fileInput.disabled = true;
+    } else {
+      fileInput.disabled = false;
+    }
+  }
+
+  function addStudentRow(studentIdValue) {
+    const row = document.createElement('div');
+    row.className = 'student-upload-row';
+
+    const studentInput = document.createElement('input');
+    studentInput.className = 'student-id-input';
+    studentInput.type = 'text';
+    studentInput.name = 'student_ids';
+    studentInput.placeholder = '例：6322031';
+    studentInput.value = studentIdValue || '';
+
+    const fileInput = document.createElement('input');
+    fileInput.className = 'student-file-input';
+    fileInput.type = 'file';
+    fileInput.name = 'student_files';
+    fileInput.accept = '.ml';
+
+    const removeButton = document.createElement('button');
+    removeButton.className = 'remove-student-row-button';
+    removeButton.type = 'button';
+    removeButton.textContent = '×';
+    removeButton.setAttribute('aria-label', 'この行を削除');
+
+    removeButton.addEventListener('click', function () {
+      row.remove();
+
+      if (studentUploadRows.children.length === 0) {
+        addStudentRow('');
+      }
+    });
+
+    row.appendChild(studentInput);
+    row.appendChild(fileInput);
+    row.appendChild(removeButton);
+
+    studentUploadRows.appendChild(row);
   }
 
   function openDeleteModal(file) {
@@ -2936,6 +3205,21 @@ document.addEventListener('DOMContentLoaded', function () {
   deleteConfirmButton.addEventListener('click', deleteSelectedFile);
   clearFilesButton.addEventListener('click', openClearAllModal);
 
+  bulkModeButton.addEventListener('click', function () {
+    setUploadMode('bulk');
+  });
+
+  studentModeButton.addEventListener('click', function () {
+    setUploadMode('student');
+  });
+
+  addStudentRowButton.addEventListener('click', function () {
+    addStudentRow('');
+  });
+
+  addStudentRow('');
+  setUploadMode('bulk');
+
   deleteModalOverlay.addEventListener('click', function (e) {
     if (e.target === deleteModalOverlay) {
       closeDeleteModal();
@@ -2948,11 +3232,29 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  uploadForm.addEventListener('submit', function () {
-    syncFileInput();
+  uploadForm.addEventListener('submit', function (e) {
+    if (uploadModeInput.value === 'bulk') {
+      syncFileInput();
 
-    if (selectedFileStore.length === 0) {
-      return;
+      if (selectedFileStore.length === 0) {
+        e.preventDefault();
+        return;
+      }
+    }
+
+    if (uploadModeInput.value === 'student') {
+      const rows = Array.from(document.querySelectorAll('.student-upload-row'));
+      const hasValidRow = rows.some(function (row) {
+        const studentInput = row.querySelector('.student-id-input');
+        const fileInput = row.querySelector('.student-file-input');
+
+        return studentInput && studentInput.value.trim() && fileInput && fileInput.files.length > 0;
+      });
+
+      if (!hasValidRow) {
+        e.preventDefault();
+        return;
+      }
     }
 
     loadingOverlay.classList.add('show');
@@ -2967,9 +3269,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     return "\n".join(html)
 
-def check_uploaded_files(upload_dir):
+def check_uploaded_files(upload_dir, file_metadata=None):
     all_results = []
     file_summaries = []
+    file_metadata = file_metadata or {}
 
     ml_files = sorted(upload_dir.glob("*.ml"))
 
@@ -3000,10 +3303,18 @@ def check_uploaded_files(upload_dir):
             else:
                 question_error_count += 1
 
-        question_total = question_ok_count + question_warning_count + question_ng_count + question_error_count
+        question_total = (
+            question_ok_count
+            + question_warning_count
+            + question_ng_count
+            + question_error_count
+        )
+
+        metadata = file_metadata.get(ml_file.name, {})
 
         file_summaries.append({
-            "file": ml_file.name,
+            "file": metadata.get("original_filename", ml_file.name),
+            "student_id": metadata.get("student_id", ""),
             "ok": question_ok_count,
             "warning": question_warning_count,
             "ng": question_ng_count,
@@ -3090,7 +3401,10 @@ class CheckerHandler(BaseHTTPRequestHandler):
                 self.send_html(build_index_html(".ml ファイルを選択してください。"), status=400)
                 return
 
-            saved_count = 0
+            upload_mode = "bulk"
+            bulk_file_parts = []
+            student_ids = []
+            student_file_parts = []
 
             for part in message.iter_parts():
                 disposition = part.get_content_disposition()
@@ -3100,34 +3414,111 @@ class CheckerHandler(BaseHTTPRequestHandler):
 
                 field_name = part.get_param("name", header="content-disposition")
 
-                if field_name != "files":
-                    continue
+                if field_name == "upload_mode":
+                    try:
+                        value = part.get_content()
+                    except Exception:
+                        payload = part.get_payload(decode=True) or b""
+                        value = payload.decode("utf-8", errors="ignore")
 
-                filename = Path(part.get_filename() or "").name
+                    upload_mode = value.strip() or "bulk"
 
-                if not filename:
-                    continue
+                elif field_name == "files":
+                    bulk_file_parts.append(part)
 
-                if not filename.endswith(".ml"):
-                    continue
+                elif field_name == "student_ids":
+                    try:
+                        value = part.get_content()
+                    except Exception:
+                        payload = part.get_payload(decode=True) or b""
+                        value = payload.decode("utf-8", errors="ignore")
 
-                payload = part.get_payload(decode=True)
+                    student_ids.append(value.strip())
 
-                if payload is None:
-                    continue
+                elif field_name == "student_files":
+                    student_file_parts.append(part)
 
-                save_path = temp_dir / filename
+            saved_count = 0
+            file_metadata = {}
 
-                with save_path.open("wb") as f:
-                    f.write(payload)
+            if upload_mode == "student":
+                for index, part in enumerate(student_file_parts):
+                    student_id = student_ids[index].strip() if index < len(student_ids) else ""
+                    filename = Path(part.get_filename() or "").name
 
-                saved_count += 1
+                    if not student_id:
+                        continue
 
-            if saved_count == 0:
-                self.send_html(build_index_html(".ml ファイルがアップロードされていません。"), status=400)
-                return
+                    if not filename:
+                        continue
 
-            all_results, file_summaries = check_uploaded_files(temp_dir)
+                    if not filename.endswith(".ml"):
+                        continue
+
+                    payload = part.get_payload(decode=True)
+
+                    if payload is None:
+                        continue
+
+                    safe_student_id = "".join(
+                        ch for ch in student_id
+                        if ch.isalnum() or ch in ("-", "_")
+                    )
+
+                    if not safe_student_id:
+                        safe_student_id = "student"
+
+                    save_name = "{}_{}_{}".format(
+                        index + 1,
+                        safe_student_id,
+                        filename
+                    )
+                    save_path = temp_dir / save_name
+
+                    with save_path.open("wb") as f:
+                        f.write(payload)
+
+                    file_metadata[save_name] = {
+                        "student_id": student_id,
+                        "original_filename": filename,
+                    }
+
+                    saved_count += 1
+
+                if saved_count == 0:
+                    self.send_html(
+                        build_index_html("学籍番号と .ml ファイルの組み合わせを入力してください。"),
+                        status=400
+                    )
+                    return
+
+            else:
+                for part in bulk_file_parts:
+                    filename = Path(part.get_filename() or "").name
+
+                    if not filename:
+                        continue
+
+                    if not filename.endswith(".ml"):
+                        continue
+
+                    payload = part.get_payload(decode=True)
+
+                    if payload is None:
+                        continue
+
+                    save_path = temp_dir / filename
+
+                    with save_path.open("wb") as f:
+                        f.write(payload)
+
+                    saved_count += 1
+
+                if saved_count == 0:
+                    self.send_html(build_index_html(".ml ファイルがアップロードされていません。"), status=400)
+                    return
+
+            all_results, file_summaries = check_uploaded_files(temp_dir, file_metadata)
 
             html = build_result_html(all_results, file_summaries)
             self.send_html(html)
@@ -3141,7 +3532,6 @@ class CheckerHandler(BaseHTTPRequestHandler):
         finally:
             if temp_dir is not None and temp_dir.exists():
                 shutil.rmtree(str(temp_dir))
-
 
 def main():
     server = HTTPServer((HOST, PORT), CheckerHandler)
