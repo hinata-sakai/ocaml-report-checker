@@ -2034,7 +2034,13 @@ body {
   color: var(--poster-ink);
   background:
     radial-gradient(circle at 72% 22%, rgba(255, 69, 79, 0.34), transparent 12rem),
-    linear-gradient(180deg, var(--poster-paper) 0%, var(--poster-paper) 44%, var(--poster-mint) 44%, var(--poster-mint) 100%);
+    linear-gradient(
+      180deg,
+      var(--poster-paper) 0,
+      var(--poster-paper) 360px,
+      var(--poster-mint) 360px,
+      var(--poster-mint) 100%
+    );
 }
 
 .upload-page {
