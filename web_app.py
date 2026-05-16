@@ -2037,8 +2037,8 @@ body {
     linear-gradient(
       180deg,
       var(--poster-paper) 0,
-      var(--poster-paper) 360px,
-      var(--poster-mint) 360px,
+      var(--poster-paper) 440px,
+      var(--poster-mint) 440px,
       var(--poster-mint) 100%
     );
 }
