@@ -2810,6 +2810,10 @@ h1 {
   background: var(--poster-paper);
 }
 
+body.result-frame-open {
+  overflow: hidden;
+}
+
 .result-frame-overlay[hidden] {
   display: none;
 }
@@ -3361,6 +3365,7 @@ document.addEventListener('DOMContentLoaded', function () {
     isSubmittingToFrame = false;
     loadingOverlay.classList.remove('show');
     resultFrameOverlay.hidden = false;
+    document.body.classList.add('result-frame-open');
   });
 
   window.addEventListener('message', function (e) {
@@ -3370,6 +3375,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     resultFrameOverlay.hidden = true;
     resultFrame.src = 'about:blank';
+    document.body.classList.remove('result-frame-open');
   });
 
   updateSelectedFiles();
