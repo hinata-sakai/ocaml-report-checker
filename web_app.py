@@ -209,9 +209,9 @@ body {
   background:
     linear-gradient(
       180deg,
-      var(--poster-paper) 0%,
-      #f7f7f3 44%,
-      var(--poster-mint) 44%,
+      var(--poster-paper) 0,
+      #f7f7f3 44vh,
+      var(--poster-mint) 44vh,
       var(--poster-mint) 100%
     );
   color: var(--poster-ink);
