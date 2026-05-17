@@ -888,6 +888,11 @@ document.addEventListener('DOMContentLoaded', function () {
     backToUploadLink.addEventListener('click', function (e) {
       e.preventDefault();
 
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'close-result-frame' }, '*');
+        return;
+      }
+
       if (window.history.length > 1) {
         window.history.back();
       } else {
@@ -895,7 +900,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
-  
+
   const issueModalOverlay = document.getElementById('issue-modal-overlay');
   const issueModalStatus = document.getElementById('issue-modal-status');
   const issueModalQuestion = document.getElementById('issue-modal-question');
@@ -2798,6 +2803,25 @@ h1 {
   pointer-events: auto;
 }
 
+.result-frame-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  background: var(--poster-paper);
+}
+
+.result-frame-overlay[hidden] {
+  display: none;
+}
+
+.result-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background: white;
+}
+
 .loading-card {
   width: min(380px, 100%);
   padding: 34px 30px;
@@ -2896,7 +2920,7 @@ h1 {
     html.append("<li><span class='step-num'>03</span><span>採点を実行し、結果画面で大問ごとの判定を確認します。</span></li>")
     html.append("</ol>")
 
-    html.append("<form id='upload-form' method='POST' enctype='multipart/form-data' action='/check'>")
+    html.append("<form id='upload-form' method='POST' enctype='multipart/form-data' action='/check' target='result-frame'>")
     html.append("<p class='form-title'>ファイルの選択</p>")
     html.append("<input type='hidden' name='upload_mode' id='upload-mode-input' value='bulk'>")
 
@@ -2968,12 +2992,18 @@ h1 {
     html.append("<p class='loading-text'>提出ファイルをチェックしています。<br>しばらくお待ちください。</p>")
     html.append("</div>")
     html.append("</div>")
+    html.append("<div class='result-frame-overlay' id='result-frame-overlay' hidden>")
+    html.append("<iframe class='result-frame' id='result-frame' name='result-frame' title='採点結果'></iframe>")
+    html.append("</div>")
     html.append("""
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const uploadForm = document.getElementById('upload-form');
   const loadingOverlay = document.getElementById('loading-overlay');
   const fileInput = document.getElementById('file-input');
+  const resultFrameOverlay = document.getElementById('result-frame-overlay');
+  const resultFrame = document.getElementById('result-frame');
+  let isSubmittingToFrame = false;
   const fileDrop = document.querySelector('.file-drop');
   const selectedFiles = document.getElementById('selected-files');
   const selectedFileList = document.getElementById('selected-file-list');
@@ -3319,7 +3349,27 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
+    isSubmittingToFrame = true;
     loadingOverlay.classList.add('show');
+  });
+
+  resultFrame.addEventListener('load', function () {
+    if (!isSubmittingToFrame) {
+      return;
+    }
+
+    isSubmittingToFrame = false;
+    loadingOverlay.classList.remove('show');
+    resultFrameOverlay.hidden = false;
+  });
+
+  window.addEventListener('message', function (e) {
+    if (!e.data || e.data.type !== 'close-result-frame') {
+      return;
+    }
+
+    resultFrameOverlay.hidden = true;
+    resultFrame.src = 'about:blank';
   });
 
   updateSelectedFiles();
