@@ -781,7 +781,7 @@ pre {
     html.append("</head>")
     html.append("<body>")
     html.append("<main class='result-page'>")
-    html.append("<a class='back-link' href='/upload'>ファイル選択へ戻る</a>")
+    html.append("<a class='back-link' href='/upload' id='back-to-upload-link'>ファイル選択へ戻る</a>")
     html.append("<div class='result-shell'>")
     html.append("<section class='result-hero'>")
     html.append("<div>")
@@ -882,6 +882,20 @@ pre {
     html.append("""
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  const backToUploadLink = document.getElementById('back-to-upload-link');
+
+  if (backToUploadLink) {
+    backToUploadLink.addEventListener('click', function (e) {
+      e.preventDefault();
+
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = '/upload';
+      }
+    });
+  }
+  
   const issueModalOverlay = document.getElementById('issue-modal-overlay');
   const issueModalStatus = document.getElementById('issue-modal-status');
   const issueModalQuestion = document.getElementById('issue-modal-question');
