@@ -2766,6 +2766,12 @@ body.student-sorting-active * {
   cursor: grabbing !important;
 }
 
+body.student-sorting-active .student-file-input,
+body.student-sorting-active .student-file-input::file-selector-button,
+body.student-sorting-active .student-file-input::-webkit-file-upload-button {
+  cursor: grabbing !important;
+}
+
 body.student-sorting-active .student-upload-row {
   transition:
     transform 0.16s ease,
