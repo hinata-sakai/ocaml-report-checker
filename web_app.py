@@ -2773,6 +2773,11 @@ body.student-sorting-active {
   user-select: none;
 }
 
+body.student-sorting-active,
+body.student-sorting-active * {
+  cursor: grabbing !important;
+}
+
 body.student-sorting-active .student-upload-row {
   transition:
     transform 0.16s ease,
