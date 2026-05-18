@@ -3230,6 +3230,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let isStudentSorting = false;
   let sortingStudentRow = null;
+  let sortingPointerId = null;
+  let pendingSortRow = null;
+  let pendingLongPressTimer = null;
+  let pointerStartX = 0;
+  let pointerStartY = 0;
 
   function clearStudentSortTargets() {
     document.querySelectorAll('.student-upload-row').forEach(function (row) {
@@ -3269,18 +3274,110 @@ document.addEventListener('DOMContentLoaded', function () {
     };
   }
 
+  function startStudentSorting(row, pointerId) {
+    isStudentSorting = true;
+    sortingStudentRow = row;
+    sortingPointerId = pointerId;
+
+    row.classList.remove('is-dragging-file');
+    row.classList.remove('is-sort-ready');
+    row.classList.add('is-sorting');
+
+    document.body.classList.add('student-sorting-active');
+  }
+
   function stopStudentSorting() {
     clearStudentSortTargets();
+
+    if (pendingLongPressTimer) {
+      clearTimeout(pendingLongPressTimer);
+      pendingLongPressTimer = null;
+    }
+
+    if (pendingSortRow) {
+      pendingSortRow.classList.remove('is-sort-ready');
+    }
 
     if (sortingStudentRow) {
       sortingStudentRow.classList.remove('is-sorting');
       sortingStudentRow.classList.remove('is-sort-ready');
     }
 
-    sortingStudentRow = null;
     isStudentSorting = false;
+    sortingStudentRow = null;
+    sortingPointerId = null;
+    pendingSortRow = null;
+
     document.body.classList.remove('student-sorting-active');
   }
+
+  function moveSortingStudentRow(pointerY) {
+    if (!isStudentSorting || !sortingStudentRow) {
+      return;
+    }
+
+    const insertPosition = getStudentRowInsertPosition(pointerY);
+
+    clearStudentSortTargets();
+
+    if (insertPosition.row && insertPosition.position === 'before') {
+      insertPosition.row.classList.add('is-sort-target-before');
+      studentUploadRows.insertBefore(sortingStudentRow, insertPosition.row);
+    } else {
+      if (insertPosition.row) {
+        insertPosition.row.classList.add('is-sort-target-after');
+      }
+
+      studentUploadRows.appendChild(sortingStudentRow);
+    }
+  }
+
+  document.addEventListener('pointermove', function (e) {
+    if (sortingPointerId !== null && e.pointerId !== sortingPointerId) {
+      return;
+    }
+
+    if (pendingSortRow && !isStudentSorting) {
+      const moveX = Math.abs(e.clientX - pointerStartX);
+      const moveY = Math.abs(e.clientY - pointerStartY);
+
+      if (moveX > 8 || moveY > 8) {
+        if (pendingLongPressTimer) {
+          clearTimeout(pendingLongPressTimer);
+          pendingLongPressTimer = null;
+        }
+
+        pendingSortRow.classList.remove('is-sort-ready');
+        pendingSortRow = null;
+        sortingPointerId = null;
+      }
+
+      return;
+    }
+
+    if (!isStudentSorting) {
+      return;
+    }
+
+    e.preventDefault();
+    moveSortingStudentRow(e.clientY);
+  });
+
+  document.addEventListener('pointerup', function (e) {
+    if (sortingPointerId !== null && e.pointerId !== sortingPointerId) {
+      return;
+    }
+
+    stopStudentSorting();
+  });
+
+  document.addEventListener('pointercancel', function (e) {
+    if (sortingPointerId !== null && e.pointerId !== sortingPointerId) {
+      return;
+    }
+
+    stopStudentSorting();
+  });
 
   function addStudentRow(studentIdValue) {
     const row = document.createElement('div');
@@ -3304,11 +3401,6 @@ document.addEventListener('DOMContentLoaded', function () {
     removeButton.type = 'button';
     removeButton.textContent = '×';
     removeButton.setAttribute('aria-label', 'この行を削除');
-
-    let longPressTimer = null;
-    let pointerStartX = 0;
-    let pointerStartY = 0;
-    let isPointerDown = false;
 
     function setStudentRowFile(file) {
       const dataTransfer = new DataTransfer();
@@ -3339,32 +3431,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function isInteractiveTarget(target) {
       return Boolean(target.closest('input, button, label, select, textarea'));
-    }
-
-    function clearLongPressTimer() {
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-      }
-
-      row.classList.remove('is-sort-ready');
-    }
-
-    function startLongPressSort(pointerId) {
-      isStudentSorting = true;
-      sortingStudentRow = row;
-
-      row.classList.remove('is-dragging-file');
-      row.classList.remove('is-sort-ready');
-      row.classList.add('is-sorting');
-
-      document.body.classList.add('student-sorting-active');
-
-      try {
-        row.setPointerCapture(pointerId);
-      } catch (error) {
-        // 対応していない環境では何もしない
-      }
     }
 
     row.addEventListener('dragenter', function (e) {
@@ -3427,72 +3493,25 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      isPointerDown = true;
+      if (pendingLongPressTimer) {
+        clearTimeout(pendingLongPressTimer);
+      }
+
+      pendingSortRow = row;
+      sortingPointerId = e.pointerId;
       pointerStartX = e.clientX;
       pointerStartY = e.clientY;
 
       row.classList.add('is-sort-ready');
 
-      longPressTimer = setTimeout(function () {
-        if (!isPointerDown) {
+      pendingLongPressTimer = setTimeout(function () {
+        if (pendingSortRow !== row) {
           return;
         }
 
-        startLongPressSort(e.pointerId);
+        pendingLongPressTimer = null;
+        startStudentSorting(row, e.pointerId);
       }, 520);
-    });
-
-    row.addEventListener('pointermove', function (e) {
-      if (!isPointerDown) {
-        return;
-      }
-
-      const moveX = Math.abs(e.clientX - pointerStartX);
-      const moveY = Math.abs(e.clientY - pointerStartY);
-
-      if (!isStudentSorting && (moveX > 8 || moveY > 8)) {
-        clearLongPressTimer();
-        return;
-      }
-
-      if (!isStudentSorting || sortingStudentRow !== row) {
-        return;
-      }
-
-      e.preventDefault();
-
-      const insertPosition = getStudentRowInsertPosition(e.clientY);
-
-      clearStudentSortTargets();
-
-      if (insertPosition.row && insertPosition.position === 'before') {
-        insertPosition.row.classList.add('is-sort-target-before');
-        studentUploadRows.insertBefore(row, insertPosition.row);
-      } else {
-        if (insertPosition.row) {
-          insertPosition.row.classList.add('is-sort-target-after');
-        }
-
-        studentUploadRows.appendChild(row);
-      }
-    });
-
-    row.addEventListener('pointerup', function () {
-      isPointerDown = false;
-      clearLongPressTimer();
-
-      if (sortingStudentRow === row) {
-        stopStudentSorting();
-      }
-    });
-
-    row.addEventListener('pointercancel', function () {
-      isPointerDown = false;
-      clearLongPressTimer();
-
-      if (sortingStudentRow === row) {
-        stopStudentSorting();
-      }
     });
 
     removeButton.addEventListener('click', function () {
