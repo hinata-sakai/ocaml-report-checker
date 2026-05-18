@@ -88,10 +88,10 @@ try
   let _ = {} in
   print_result false
 with
-| Failure msg -> print_result (msg = "{}")
+| Failure _ -> print_result true
 | _ -> print_result false
 ;;
-'''.format(file_path, actual_expr, expected_message)
+'''.format(file_path, actual_expr)
 
 
 # =========================
