@@ -2706,7 +2706,73 @@ h1 {
 }
 
 .student-upload-row {
-  margin-bottom: 10px;
+  position: relative;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid rgba(11, 11, 13, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 8px 20px rgba(11, 11, 13, 0.06);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.student-upload-row:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 24px rgba(11, 11, 13, 0.09);
+}
+
+.student-upload-row.is-dragging-file {
+  border-color: var(--poster-mint-dark);
+  background: rgba(134, 221, 177, 0.24);
+  box-shadow: 0 12px 28px rgba(51, 167, 108, 0.20);
+}
+
+.student-upload-row.is-invalid-file {
+  border-color: var(--poster-red);
+  background: rgba(255, 69, 79, 0.10);
+  animation: studentCardShake 0.28s ease;
+}
+
+.student-file-input {
+  width: 100%;
+  color: rgba(11, 11, 13, 0.72);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.student-file-input::file-selector-button {
+  margin-right: 10px;
+  border: 1px solid rgba(11, 11, 13, 0.18);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.82);
+  color: rgba(11, 11, 13, 0.78);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.student-file-input::file-selector-button:hover {
+  background: rgba(255, 255, 255, 0.98);
+}
+
+@keyframes studentCardShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
 }
 
 .student-id-input {
@@ -3150,6 +3216,72 @@ document.addEventListener('DOMContentLoaded', function () {
     removeButton.type = 'button';
     removeButton.textContent = '×';
     removeButton.setAttribute('aria-label', 'この行を削除');
+
+    function setStudentRowFile(file) {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+
+      fileInput.files = dataTransfer.files;
+
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function getDroppedMlFile(files) {
+      const droppedFiles = Array.from(files || []);
+
+      return droppedFiles.find(function (file) {
+        return file.name.toLowerCase().endsWith('.ml');
+      });
+    }
+
+    function showInvalidFileFeedback() {
+      row.classList.remove('is-invalid-file');
+      void row.offsetWidth;
+      row.classList.add('is-invalid-file');
+
+      setTimeout(function () {
+        row.classList.remove('is-invalid-file');
+      }, 350);
+    }
+
+    row.addEventListener('dragenter', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      row.classList.add('is-dragging-file');
+    });
+
+    row.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      row.classList.add('is-dragging-file');
+    });
+
+    row.addEventListener('dragleave', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!row.contains(e.relatedTarget)) {
+        row.classList.remove('is-dragging-file');
+      }
+    });
+
+    row.addEventListener('drop', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      row.classList.remove('is-dragging-file');
+
+      const mlFile = getDroppedMlFile(e.dataTransfer.files);
+
+      if (!mlFile) {
+        showInvalidFileFeedback();
+        return;
+      }
+
+      setStudentRowFile(mlFile);
+    });
 
     removeButton.addEventListener('click', function () {
       row.remove();
