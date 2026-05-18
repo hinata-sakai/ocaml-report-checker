@@ -2757,18 +2757,6 @@ h1 {
   cursor: grabbing;
 }
 
-.student-upload-row.is-sort-target-before {
-  box-shadow:
-    inset 0 3px 0 rgba(51, 167, 108, 0.72),
-    0 8px 20px rgba(11, 11, 13, 0.06);
-}
-
-.student-upload-row.is-sort-target-after {
-  box-shadow:
-    inset 0 -3px 0 rgba(51, 167, 108, 0.72),
-    0 8px 20px rgba(11, 11, 13, 0.06);
-}
-
 body.student-sorting-active {
   user-select: none;
 }
@@ -3326,11 +3314,9 @@ document.addEventListener('DOMContentLoaded', function () {
     clearStudentSortTargets();
 
     if (insertPosition.row && insertPosition.position === 'before') {
-      insertPosition.row.classList.add('is-sort-target-before');
       studentUploadRows.insertBefore(sortingStudentRow, insertPosition.row);
     } else {
       if (insertPosition.row) {
-        insertPosition.row.classList.add('is-sort-target-after');
       }
 
       studentUploadRows.appendChild(sortingStudentRow);
