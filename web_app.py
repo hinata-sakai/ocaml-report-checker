@@ -2739,6 +2739,54 @@ h1 {
   animation: studentCardShake 0.28s ease;
 }
 
+.student-upload-row.is-sort-ready {
+  border-color: rgba(51, 167, 108, 0.38);
+  background: rgba(255, 255, 255, 0.90);
+  box-shadow: 0 12px 28px rgba(51, 167, 108, 0.12);
+  cursor: grab;
+}
+
+.student-upload-row.is-sorting {
+  z-index: 20;
+  border-color: rgba(51, 167, 108, 0.58);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 18px 42px rgba(11, 11, 13, 0.16),
+    0 0 0 4px rgba(134, 221, 177, 0.20);
+  transform: translateY(-2px) scale(1.01);
+  cursor: grabbing;
+}
+
+.student-upload-row.is-sort-target-before {
+  box-shadow:
+    inset 0 3px 0 rgba(51, 167, 108, 0.72),
+    0 8px 20px rgba(11, 11, 13, 0.06);
+}
+
+.student-upload-row.is-sort-target-after {
+  box-shadow:
+    inset 0 -3px 0 rgba(51, 167, 108, 0.72),
+    0 8px 20px rgba(11, 11, 13, 0.06);
+}
+
+body.student-sorting-active {
+  user-select: none;
+}
+
+body.student-sorting-active .student-upload-row {
+  transition:
+    transform 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+body.student-sorting-active .student-upload-row.is-dragging-file {
+  border-color: rgba(11, 11, 13, 0.14);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 8px 20px rgba(11, 11, 13, 0.06);
+}
+
 .student-file-input {
   width: 100%;
   color: rgba(11, 11, 13, 0.72);
@@ -3180,6 +3228,60 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  let isStudentSorting = false;
+  let sortingStudentRow = null;
+
+  function clearStudentSortTargets() {
+    document.querySelectorAll('.student-upload-row').forEach(function (row) {
+      row.classList.remove('is-sort-target-before');
+      row.classList.remove('is-sort-target-after');
+    });
+  }
+
+  function getStudentRowInsertPosition(pointerY) {
+    const rows = Array.from(studentUploadRows.querySelectorAll('.student-upload-row'))
+      .filter(function (row) {
+        return row !== sortingStudentRow;
+      });
+
+    for (const row of rows) {
+      const box = row.getBoundingClientRect();
+      const middleY = box.top + box.height / 2;
+
+      if (pointerY < middleY) {
+        return {
+          row: row,
+          position: 'before'
+        };
+      }
+    }
+
+    if (rows.length > 0) {
+      return {
+        row: rows[rows.length - 1],
+        position: 'after'
+      };
+    }
+
+    return {
+      row: null,
+      position: 'after'
+    };
+  }
+
+  function stopStudentSorting() {
+    clearStudentSortTargets();
+
+    if (sortingStudentRow) {
+      sortingStudentRow.classList.remove('is-sorting');
+      sortingStudentRow.classList.remove('is-sort-ready');
+    }
+
+    sortingStudentRow = null;
+    isStudentSorting = false;
+    document.body.classList.remove('student-sorting-active');
+  }
+
   function addStudentRow(studentIdValue) {
     const row = document.createElement('div');
     row.className = 'student-upload-row';
@@ -3202,6 +3304,11 @@ document.addEventListener('DOMContentLoaded', function () {
     removeButton.type = 'button';
     removeButton.textContent = '×';
     removeButton.setAttribute('aria-label', 'この行を削除');
+
+    let longPressTimer = null;
+    let pointerStartX = 0;
+    let pointerStartY = 0;
+    let isPointerDown = false;
 
     function setStudentRowFile(file) {
       const dataTransfer = new DataTransfer();
@@ -3230,9 +3337,43 @@ document.addEventListener('DOMContentLoaded', function () {
       }, 350);
     }
 
+    function isInteractiveTarget(target) {
+      return Boolean(target.closest('input, button, label, select, textarea'));
+    }
+
+    function clearLongPressTimer() {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+
+      row.classList.remove('is-sort-ready');
+    }
+
+    function startLongPressSort(pointerId) {
+      isStudentSorting = true;
+      sortingStudentRow = row;
+
+      row.classList.remove('is-dragging-file');
+      row.classList.remove('is-sort-ready');
+      row.classList.add('is-sorting');
+
+      document.body.classList.add('student-sorting-active');
+
+      try {
+        row.setPointerCapture(pointerId);
+      } catch (error) {
+        // 対応していない環境では何もしない
+      }
+    }
+
     row.addEventListener('dragenter', function (e) {
       e.preventDefault();
       e.stopPropagation();
+
+      if (isStudentSorting) {
+        return;
+      }
 
       row.classList.add('is-dragging-file');
     });
@@ -3240,6 +3381,10 @@ document.addEventListener('DOMContentLoaded', function () {
     row.addEventListener('dragover', function (e) {
       e.preventDefault();
       e.stopPropagation();
+
+      if (isStudentSorting) {
+        return;
+      }
 
       row.classList.add('is-dragging-file');
     });
@@ -3259,6 +3404,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
       row.classList.remove('is-dragging-file');
 
+      if (isStudentSorting) {
+        return;
+      }
+
       const mlFile = getDroppedMlFile(e.dataTransfer.files);
 
       if (!mlFile) {
@@ -3267,6 +3416,83 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       setStudentRowFile(mlFile);
+    });
+
+    row.addEventListener('pointerdown', function (e) {
+      if (e.button !== 0) {
+        return;
+      }
+
+      if (isInteractiveTarget(e.target)) {
+        return;
+      }
+
+      isPointerDown = true;
+      pointerStartX = e.clientX;
+      pointerStartY = e.clientY;
+
+      row.classList.add('is-sort-ready');
+
+      longPressTimer = setTimeout(function () {
+        if (!isPointerDown) {
+          return;
+        }
+
+        startLongPressSort(e.pointerId);
+      }, 520);
+    });
+
+    row.addEventListener('pointermove', function (e) {
+      if (!isPointerDown) {
+        return;
+      }
+
+      const moveX = Math.abs(e.clientX - pointerStartX);
+      const moveY = Math.abs(e.clientY - pointerStartY);
+
+      if (!isStudentSorting && (moveX > 8 || moveY > 8)) {
+        clearLongPressTimer();
+        return;
+      }
+
+      if (!isStudentSorting || sortingStudentRow !== row) {
+        return;
+      }
+
+      e.preventDefault();
+
+      const insertPosition = getStudentRowInsertPosition(e.clientY);
+
+      clearStudentSortTargets();
+
+      if (insertPosition.row && insertPosition.position === 'before') {
+        insertPosition.row.classList.add('is-sort-target-before');
+        studentUploadRows.insertBefore(row, insertPosition.row);
+      } else {
+        if (insertPosition.row) {
+          insertPosition.row.classList.add('is-sort-target-after');
+        }
+
+        studentUploadRows.appendChild(row);
+      }
+    });
+
+    row.addEventListener('pointerup', function () {
+      isPointerDown = false;
+      clearLongPressTimer();
+
+      if (sortingStudentRow === row) {
+        stopStudentSorting();
+      }
+    });
+
+    row.addEventListener('pointercancel', function () {
+      isPointerDown = false;
+      clearLongPressTimer();
+
+      if (sortingStudentRow === row) {
+        stopStudentSorting();
+      }
     });
 
     removeButton.addEventListener('click', function () {
