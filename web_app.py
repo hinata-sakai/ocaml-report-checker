@@ -2699,6 +2699,7 @@ h1 {
 
 .student-upload-head {
   margin: 0 0 8px;
+  padding: 0 12px;
   color: rgba(11, 11, 13, 0.62);
   font-size: 12px;
   font-weight: 950;
@@ -2742,22 +2743,7 @@ h1 {
   width: 100%;
   color: rgba(11, 11, 13, 0.72);
   font-size: 13px;
-  font-weight: 800;
-}
-
-.student-file-input::file-selector-button {
-  margin-right: 10px;
-  border: 1px solid rgba(11, 11, 13, 0.18);
-  border-radius: 999px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.82);
-  color: rgba(11, 11, 13, 0.78);
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.student-file-input::file-selector-button:hover {
-  background: rgba(255, 255, 255, 0.98);
+  font-weight: 700;
 }
 
 @keyframes studentCardShake {
