@@ -2991,7 +2991,7 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
 .student-file-control {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   width: 100%;
 }
