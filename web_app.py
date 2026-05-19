@@ -752,26 +752,26 @@ pre {
 .guide-menu-button {
   width: 44px;
   height: 44px;
-  border: 2px solid var(--poster-ink);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.74);
+  border: none;
+  border-radius: 0;
+  background: transparent;
   color: var(--poster-ink);
-  font-size: 22px;
-  font-weight: 950;
+  font-size: 28px;
+  font-weight: 900;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(11, 11, 13, 0.10);
-  backdrop-filter: blur(12px);
+  box-shadow: none;
+  backdrop-filter: none;
   transition:
     transform 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
+    opacity 0.2s ease;
 }
 
 .guide-menu-button:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.16);
+  transform: translateY(-1px);
+  background: transparent;
+  box-shadow: none;
+  opacity: 0.72;
 }
 
 .guide-menu-panel {
@@ -2511,26 +2511,26 @@ body {
 .guide-menu-button {
   width: 44px;
   height: 44px;
-  border: 2px solid var(--poster-ink);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.74);
+  border: none;
+  border-radius: 0;
+  background: transparent;
   color: var(--poster-ink);
-  font-size: 22px;
-  font-weight: 950;
+  font-size: 28px;
+  font-weight: 900;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(11, 11, 13, 0.10);
-  backdrop-filter: blur(12px);
+  box-shadow: none;
+  backdrop-filter: none;
   transition:
     transform 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
+    opacity 0.2s ease;
 }
 
 .guide-menu-button:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.16);
+  transform: translateY(-1px);
+  background: transparent;
+  box-shadow: none;
+  opacity: 0.72;
 }
 
 .guide-menu-panel {
