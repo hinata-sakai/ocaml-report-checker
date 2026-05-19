@@ -3466,26 +3466,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function rubberHorizontalMove(moveX, moveY) {
-    if (studentDragMode !== 'delete') {
-      if (moveX > 0) {
-        const softLimit = 24;
-        const hardLimit = 52;
-        const resistance = 34;
-
-        if (moveX <= softLimit) {
-          return moveX;
-        }
-
-        const extra = moveX - softLimit;
-        const rubberExtra = (1 - Math.exp(-extra / resistance)) * (hardLimit - softLimit);
-
-        return Math.min(softLimit + rubberExtra, hardLimit);
-      }
-
-      return 0;
+    if (studentDragMode === 'delete') {
+      return clamp(moveX, -160, 0);
     }
 
-    return clamp(moveX, -160, 0);
+    return 0;
   }
 
   function moveStudentDragGhost(clientX, clientY) {
@@ -3494,11 +3479,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const baseX = pointerStartX - studentDragGhostOffsetX;
+    const baseY = pointerStartY - studentDragGhostOffsetY;
     const currentX = clientX - studentDragGhostOffsetX;
     const currentY = clientY - studentDragGhostOffsetY;
 
     const moveX = currentX - baseX;
-    const moveY = currentY - (pointerStartY - studentDragGhostOffsetY);
+    const moveY = currentY - baseY;
     const limitedMoveX = rubberHorizontalMove(moveX, moveY);
 
     const listBox = studentUploadRows.getBoundingClientRect();
@@ -3510,7 +3496,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const limitedY = clamp(currentY, topLimit, bottomLimit);
 
     studentDragGhost.style.left = (baseX + limitedMoveX) + 'px';
-    studentDragGhost.style.top = limitedY + 'px';
+
+    if (studentDragMode === 'delete') {
+      studentDragGhost.style.top = baseY + 'px';
+    } else {
+      studentDragGhost.style.top = limitedY + 'px';
+    }
   }
 
   function removeStudentDragGhost() {
