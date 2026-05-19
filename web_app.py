@@ -1537,11 +1537,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     guideModalContent.querySelectorAll('.guide-card-code').forEach(function (codeBlock) {
       codeBlock.textContent = codeBlock.textContent
-        .split('\n')
+        .split('\\n')
         .map(function (line) {
-          return line.replace(/^\s+/, '');
+          return line.replace(/^\\s+/, '');
         })
-        .join('\n')
+        .join('\\n')
         .trim();
     });
 
@@ -4607,11 +4607,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     guideModalContent.querySelectorAll('.guide-card-code').forEach(function (codeBlock) {
       codeBlock.textContent = codeBlock.textContent
-        .split('\n')
+        .split('\\n')
         .map(function (line) {
-          return line.replace(/^\s+/, '');
+          return line.replace(/^\\s+/, '');
         })
-        .join('\n')
+        .join('\\n')
         .trim();
     });
 
