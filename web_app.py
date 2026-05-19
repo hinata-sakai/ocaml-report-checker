@@ -2747,13 +2747,6 @@ h1 {
 }
 
 .student-upload-row.is-sorting {
-  z-index: 20;
-  border-color: rgba(51, 167, 108, 0.58);
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow:
-    0 18px 42px rgba(11, 11, 13, 0.16),
-    0 0 0 4px rgba(134, 221, 177, 0.20);
-  transform: translateY(-2px) scale(1.01);
   cursor: grabbing;
 }
 
@@ -2784,6 +2777,51 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   border-color: rgba(11, 11, 13, 0.14);
   background: rgba(255, 255, 255, 0.78);
   box-shadow: 0 8px 20px rgba(11, 11, 13, 0.06);
+}
+
+.student-upload-row.is-ghost-source {
+  opacity: 0.36;
+  background: rgba(255, 255, 255, 0.54);
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.student-drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2000;
+  pointer-events: none;
+  margin: 0;
+  opacity: 0.98;
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(51, 167, 108, 0.52);
+  box-shadow:
+    0 24px 54px rgba(11, 11, 13, 0.20),
+    0 0 0 4px rgba(134, 221, 177, 0.18);
+  transform: translate3d(0, 0, 0) scale(1.015);
+  transition: none;
+}
+
+.student-drag-ghost input,
+.student-drag-ghost button {
+  pointer-events: none;
+}
+
+.student-drag-ghost-pickup {
+  animation: studentGhostPickup 0.16s ease;
+}
+
+@keyframes studentGhostPickup {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  70% {
+    transform: translate3d(0, -3px, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.015);
+  }
 }
 
 .student-file-input {
@@ -3234,6 +3272,9 @@ document.addEventListener('DOMContentLoaded', function () {
   let pendingLongPressTimer = null;
   let pointerStartX = 0;
   let pointerStartY = 0;
+  let studentDragGhost = null;
+  let studentDragGhostOffsetX = 0;
+  let studentDragGhostOffsetY = 0;
 
   function clearStudentSortTargets() {
     document.querySelectorAll('.student-upload-row').forEach(function (row) {
@@ -3273,6 +3314,59 @@ document.addEventListener('DOMContentLoaded', function () {
     };
   }
 
+  function createStudentDragGhost(row) {
+    const box = row.getBoundingClientRect();
+
+    studentDragGhost = row.cloneNode(true);
+
+    studentDragGhost.classList.remove('is-sorting');
+    studentDragGhost.classList.remove('is-sort-ready');
+    studentDragGhost.classList.remove('is-ghost-source');
+    studentDragGhost.classList.remove('is-dragging-file');
+    studentDragGhost.classList.remove('is-invalid-file');
+
+    studentDragGhost.classList.add('student-drag-ghost');
+    studentDragGhost.classList.add('student-drag-ghost-pickup');
+
+    studentDragGhost.style.width = box.width + 'px';
+    studentDragGhost.style.height = box.height + 'px';
+    studentDragGhost.style.left = box.left + 'px';
+    studentDragGhost.style.top = box.top + 'px';
+
+    studentDragGhostOffsetX = pointerStartX - box.left;
+    studentDragGhostOffsetY = pointerStartY - box.top;
+
+    document.body.appendChild(studentDragGhost);
+
+    setTimeout(function () {
+      if (studentDragGhost) {
+        studentDragGhost.classList.remove('student-drag-ghost-pickup');
+      }
+    }, 180);
+  }
+
+  function moveStudentDragGhost(clientX, clientY) {
+    if (!studentDragGhost) {
+      return;
+    }
+
+    const x = clientX - studentDragGhostOffsetX;
+    const y = clientY - studentDragGhostOffsetY;
+
+    studentDragGhost.style.left = x + 'px';
+    studentDragGhost.style.top = y + 'px';
+  }
+
+  function removeStudentDragGhost() {
+    if (studentDragGhost) {
+      studentDragGhost.remove();
+      studentDragGhost = null;
+    }
+
+    studentDragGhostOffsetX = 0;
+    studentDragGhostOffsetY = 0;
+  }
+
   function startStudentSorting(row, pointerId) {
     isStudentSorting = true;
     sortingStudentRow = row;
@@ -3281,6 +3375,9 @@ document.addEventListener('DOMContentLoaded', function () {
     row.classList.remove('is-dragging-file');
     row.classList.remove('is-sort-ready');
     row.classList.add('is-sorting');
+    row.classList.add('is-ghost-source');
+
+    createStudentDragGhost(row);
 
     document.body.classList.add('student-sorting-active');
   }
@@ -3297,9 +3394,12 @@ document.addEventListener('DOMContentLoaded', function () {
       pendingSortRow.classList.remove('is-sort-ready');
     }
 
+    removeStudentDragGhost();
+
     if (sortingStudentRow) {
       sortingStudentRow.classList.remove('is-sorting');
       sortingStudentRow.classList.remove('is-sort-ready');
+      sortingStudentRow.classList.remove('is-ghost-source');
     }
 
     isStudentSorting = false;
@@ -3357,6 +3457,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     e.preventDefault();
+    moveStudentDragGhost(e.clientX, e.clientY);
     moveSortingStudentRow(e.clientY);
   });
 
