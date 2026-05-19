@@ -1535,6 +1535,16 @@ document.addEventListener('DOMContentLoaded', function () {
       guideModalContent.innerHTML = criteriaGuideHtml;
     }
 
+    guideModalContent.querySelectorAll('.guide-card-code').forEach(function (codeBlock) {
+      codeBlock.textContent = codeBlock.textContent
+        .split('\n')
+        .map(function (line) {
+          return line.replace(/^\s+/, '');
+        })
+        .join('\n')
+        .trim();
+    });
+
     closeGuideMenu();
     guideModalOverlay.classList.add('show');
     guideModalOverlay.setAttribute('aria-hidden', 'false');
@@ -4274,7 +4284,8 @@ document.addEventListener('DOMContentLoaded', function () {
       この結果になるときどのような動作をするか考えて，それらを日本語で説明しなさい。
       また，17についても実行例についてどのように動作しているのか，日本語で説明しなさい。
       18から20は説明に対する動作例を自分で考え，そのときの動作を日本語で説明しなさい。
-      また，各問いに対するOCaml定義を行い，すべてのソースコードを一つのファイルにまとめなさい。
+      また，各問いに対するOCaml定義を行い，ソースコードを作成しなさい。
+      すべてのソースコードは一つのファイルにまとめること。
     </p>
 
     <h3 class="guide-section-title">1〜16. 実行例から動作を説明する関数</h3>
@@ -4283,129 +4294,201 @@ document.addEventListener('DOMContentLoaded', function () {
       <li class="guide-card">
         <p class="guide-card-title">1. checkl</p>
         <p class="guide-card-text">指定した値がリストの中に含まれているかを判定する関数。</p>
-        <pre class="guide-card-code">checkl 3 [1; 2; 3; 4; 5; 6]  → true
-  checkl 1 [2; 3; 4; 5]        → false</pre>
+        <pre class="guide-card-code"># checkl;;
+  - : 'a -> 'a list -> bool = &lt;fun&gt;
+  # checkl 3 [1; 2; 3; 4; 5; 6];;
+  - : bool = true
+  # checkl 1 [2; 3; 4; 5];;
+  - : bool = false</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">2. dellt</p>
         <p class="guide-card-text">指定した位置以降のリストを返す関数。負の値の場合は例外を発生させる。</p>
-        <pre class="guide-card-code">dellt 0 [1;2;3;4] → [1; 2; 3; 4]
-  dellt 1 [1;2;3;4] → [2; 3; 4]
-  dellt 2 [1;2;3;4] → [3; 4]
-  dellt 3 [1;2;3;4] → [4]
-  dellt 5 [1;2;3;4] → []</pre>
+        <pre class="guide-card-code"># dellt;;
+  - : int -> 'a list -> 'a list = &lt;fun&gt;
+  # dellt 0 [1;2;3;4];;
+  - : int list = [1; 2; 3; 4]
+  # dellt 1 [1;2;3;4];;
+  - : int list = [2; 3; 4]
+  # dellt 2 [1;2;3;4];;
+  - : int list = [3; 4]
+  # dellt 3 [1;2;3;4];;
+  - : int list = [4]
+  # dellt 5 [1;2;3;4];;
+  - : int list = []
+  # dellt 3 ["A"; "B"; "C"; "D"; "E"; "F"];;
+  - : string list = ["D"; "E"; "F"]
+  # dellt(-2) [1; 2];;
+  Exception: Failure "Error".</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">3. dellt2</p>
         <p class="guide-card-text">指定した位置の要素だけをリストから取り除く関数。</p>
-        <pre class="guide-card-code">dellt2 1 ["A"; "B"; "C"; "D"; "E"; "F"]
-  → ["B"; "C"; "D"; "E"; "F"]
-
-  dellt2 3 ["A"; "B"; "C"; "D"; "E"; "F"]
-  → ["A"; "B"; "D"; "E"; "F"]</pre>
+        <pre class="guide-card-code"># dellt2;;
+  - : int -> 'a list -> 'a list = &lt;fun&gt;
+  # dellt2 1 ["A"; "B"; "C"; "D"; "E"; "F"];;
+  - : string list = ["B"; "C"; "D"; "E"; "F"]
+  # dellt2 3 ["A"; "B"; "C"; "D"; "E"; "F"];;
+  - : string list = ["A"; "B"; "D"; "E"; "F"]
+  # dellt2 3 [1; 2; 3; 4; 5; 6];;
+  - : int list = [1; 2; 4; 5; 6]</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">4. posl</p>
         <p class="guide-card-text">指定した位置の要素を取り出す関数。存在しない位置の場合は例外を発生させる。</p>
-        <pre class="guide-card-code">posl 3 ["AB"; "C"; "DEF"; "G"; "H"; "IJ"] → "DEF"
-  posl 2 [1; 2; 3; 4; 5]                   → 2</pre>
+        <pre class="guide-card-code"># posl;;
+  - : int -> 'a list -> 'a = &lt;fun&gt;
+  # posl 3 ["AB"; "C"; "DEF"; "G"; "H"; "IJ"];;
+  - : string = "DEF"
+  # posl 2 [ 1; 2; 3; 4; 5];;
+  - : int = 2
+  # posl 0 [ 1; 2; 3; 4; 5];;
+  Exception: Failure "Not Exist...".</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">5. add2list</p>
         <p class="guide-card-text">隣り合う要素同士を足し合わせた結果をリストとして返す関数。</p>
-        <pre class="guide-card-code">add2list [1; 2]             → [3]
-  add2list [1; 2; 3]          → [3; 5]
-  add2list [1; 2; 3; 4; 5]    → [3; 5; 7; 9]</pre>
+        <pre class="guide-card-code"># add2list;;
+  - : int list -> int list = &lt;fun&gt;
+  # add2list [1; 2];;
+  - : int list = [3]
+  # add2list [1; 2; 3];;
+  - : int list = [3; 5]
+  # add2list [1; 2; 3; 4; 5];;
+  - : int list = [3; 5; 7; 9]</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">6. mullist</p>
         <p class="guide-card-text">2つのリストの同じ位置にある要素同士を掛け合わせたリストを返す関数。</p>
-        <pre class="guide-card-code">mullist [1; 3; 5; 7] [2; 4; 6; 8]
-  → [2; 12; 30; 56]</pre>
+        <pre class="guide-card-code"># mullist;;
+  - : int list -> int list -> int list = &lt;fun&gt;
+  # mullist [1; 3; 5; 7] [2; 4; 6; 8];;
+  - : int list = [2; 12; 30; 56]</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">7. chglist</p>
         <p class="guide-card-text">リスト内の指定した値を，別の値に置き換える関数。</p>
-        <pre class="guide-card-code">chglist ("A", "*") ["1"; "A"; "2"; "B"; "A"; "A"; "3"; "4"]
-  → ["1"; "*"; "2"; "B"; "*"; "*"; "3"; "4"]</pre>
+        <pre class="guide-card-code"># chglist;;
+  - : 'a * 'a -> 'a list -> 'a list = &lt;fun&gt;
+  # chglist ("A", "*") ["1"; "A"; "2"; "B"; "A"; "A"; "3"; "4"];;
+  - : string list = ["1"; "*"; "2"; "B"; "*"; "*"; "3"; "4"]</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">8. replicate</p>
         <p class="guide-card-text">指定した値を指定回数だけ繰り返したリストを作る関数。</p>
-        <pre class="guide-card-code">replicate 3 ["A"]       → [["A"]; ["A"]; ["A"]]
-  replicate 5 "A"         → ["A"; "A"; "A"; "A"; "A"]
-  replicate 3 ["1"; "#"]  → [["1"; "#"]; ["1"; "#"]; ["1"; "#"]]</pre>
+        <pre class="guide-card-code"># replicate;;
+  - : int -> 'a -> 'a list = &lt;fun&gt;
+  # replicate 3 ["A"];;
+  - : string list list = [["A"]; ["A"]; ["A"]]
+  # replicate 5 "A";;
+  - : string list = ["A"; "A"; "A"; "A"; "A"]
+  # replicate 3 ["1"; "#"];;
+  - : string list list = [["1"; "#"]; ["1"; "#"]; ["1"; "#"]]</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">9. inslist</p>
         <p class="guide-card-text">指定した位置に要素を挿入する関数。位置が0の場合は例外を発生させる。</p>
-        <pre class="guide-card-code">inslist 2 "*" ["A"; "B"; "C"; "D"; "E"]
-  → ["A"; "*"; "B"; "C"; "D"; "E"]
-
-  inslist 6 "*" ["A"; "B"; "C"; "D"; "E"]
-  → ["A"; "B"; "C"; "D"; "E"; "*"]</pre>
+        <pre class="guide-card-code"># inslist;;
+  - : int -> 'a -> 'a list -> 'a list = &lt;fun&gt;
+  # inslist 2 "*" ["A"; "B"; "C"; "D"; "E"];;
+  - : string list = ["A"; "*"; "B"; "C"; "D"; "E"]
+  # inslist 6 "*" ["A"; "B"; "C"; "D"; "E"];;
+  - : string list = ["A"; "B"; "C"; "D"; "E"; "*"]
+  # inslist 1 "+" [];;
+  - : string list = ["+"]
+  # inslist 1 "+" ["A"];;
+  - : string list = ["+"; "A"]
+  # inslist 0 "+" ["A"];;
+  Exception: Failure "Error".</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">10. merge</p>
         <p class="guide-card-text">2つのリストの要素を交互に並べたリストを返す関数。</p>
-        <pre class="guide-card-code">merge [1; 2; 3] [4; 5; 6]
-  → [1; 4; 2; 5; 3; 6]
-
-  merge ["A"; "B"] ["C"; "D"; "EF"; "GH"]
-  → ["A"; "C"; "B"; "D"; "EF"; "GH"]</pre>
+        <pre class="guide-card-code"># merge;;
+  - : 'a list -> 'a list -> 'a list = &lt;fun&gt;
+  # merge [1; 2; 3] [4; 5; 6];;
+  - : int list = [1; 4; 2; 5; 3; 6]
+  # merge ["A"; "B"] [ "C"; "D"; "EF"; "GH"];;
+  - : string list = ["A"; "C"; "B"; "D"; "EF"; "GH"]</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">11. inside_length</p>
         <p class="guide-card-text">リストの中にある各リストの要素数を合計して返す関数。</p>
-        <pre class="guide-card-code">inside_length [[1; 2; 3]; [4; 5]; [6]; [7; 8; 9; 10]]
-  → 10</pre>
+        <pre class="guide-card-code"># inside_length;;
+  - : 'a list list -> int = &lt;fun&gt;
+  # inside_length[[1; 2; 3]; [4; 5]; [6]; [7; 8; 9; 10]];;
+  - : int = 10
+  # inside_length[["A"; "B"]; [ "C"; "D"]; ["EF"; "GH"]];;
+  - : int = 6</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">12. concat</p>
         <p class="guide-card-text">リストの中にある複数のリストを，1つのリストにつなげる関数。</p>
-        <pre class="guide-card-code">concat [[0; 3; 4]; [2]; [0]; [5; 0]]
-  → [0; 3; 4; 2; 0; 5; 0]</pre>
+        <pre class="guide-card-code"># concat;;
+  - : 'a list list -> 'a list = &lt;fun&gt;
+  # concat [[0; 3; 4]; [2]; [0]; [5; 0]];;
+  - : int list = [0; 3; 4; 2; 0; 5; 0]</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">13. assoc</p>
         <p class="guide-card-text">ペアのリストから，指定した値と対応する値を探して返す関数。</p>
-        <pre class="guide-card-code">assoc 33 [(3,4); (33,5); (11,2); (55,1)] → 5
-  assoc 2  [(3,4); (33,5); (11,2); (55,1)] → 11
-  assoc "03" [("Kyoto", "075"); ("Osaka", "06"); ("Tokyo", "03")]
-  → "Tokyo"</pre>
+        <pre class="guide-card-code"># assoc;;
+  - : 'a -> ('a * 'a) list -> 'a = &lt;fun&gt;
+  # assoc 33 [(3,4); (33,5); (11,2); (55,1)];;
+  - : int = 5
+  # assoc 2 [(3,4); (33,5); (11,2); (55,1)];;
+  - : int = 11
+  # assoc "03" [("Kyoto", "075"); ("Osaka", "06"); ("Tokyo", "03")];;
+  - : string = "Tokyo"
+  # assoc "Kyoto" [("Kyoto", "075"); ("Osaka", "06"); ("Tokyo", "03")];;
+  - : string = "075"
+  # assoc 6 [(3,4); (33,5); (11,2); (55,1)];;
+  Exception: Failure "Not found...".</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">14. minimum</p>
         <p class="guide-card-text">リストの中で最小の要素を返す関数。空リストの場合は例外を発生させる。</p>
-        <pre class="guide-card-code">minimum [3; 2; 5; 1] → 1
-  minimum ["abc"; "sdf"] → "abc"</pre>
+        <pre class="guide-card-code"># minimum;;
+  - : 'a list -> 'a = &lt;fun&gt;
+  # minimum [3; 2; 5; 1];;
+  - : int = 1
+  # minimum ["abc"; "sdf"];;
+  - : string = "abc"
+  # minimum [];;
+  Exception: Failure "Error".</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">15. extract</p>
         <p class="guide-card-text">条件を満たす要素だけを取り出したリストを返す関数。</p>
-        <pre class="guide-card-code">extract (fun x -> x > 10) [21; 2; 31; 1]
-  → [21; 31]</pre>
+        <pre class="guide-card-code"># extract;;
+  - : ('a -> bool) -> 'a list -> 'a list = &lt;fun&gt;
+  # extract (fun x -> x > 10) [21; 2; 31; 1];;
+  - : int list = [21; 31]</pre>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">16. index</p>
         <p class="guide-card-text">指定した要素がリストの何番目にあるかを返す関数。先頭は0番目として数える。</p>
-        <pre class="guide-card-code">index [21; 2; 31; 1] 21 → 0
-  index ['a'; '3'; 'b'; 'z'; '1'] 'z' → 3</pre>
+        <pre class="guide-card-code"># index;;
+  - : 'a list -> 'a -> int = &lt;fun&gt;
+  # index [21; 2; 31; 1] 21;;
+  - : int = 0
+  # index ['a'; '3'; 'b'; 'z'; '1'] 'z';;
+  - : int = 3</pre>
       </li>
     </ul>
 
@@ -4414,31 +4497,43 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="guide-card">
       <p class="guide-card-title">17. 経路数: numOfRotes</p>
       <p class="guide-card-text">
-        碁盤目状の道路において，始点から終点までの最短経路の数を求める関数。
-        進める方向は右方向または上方向のみであり，左方向または下方向には進めない。
+        碁盤目状の道路がある。始点から終点までの経路の数を求める。
+        ただし，始点から終点までの経路は最短経路のみとする。
+        すなわち，進行方向は右方向または上方向に限られ，左方向または下方向に進むことはできない。
       </p>
       <div class="guide-image-wrap">
         <img class="guide-image" src="/task17_routes.png" alt="numOfRotes の経路図">
       </div>
-      <pre class="guide-card-code">numOfRotes (5, 4) → 126</pre>
+      <pre class="guide-card-code"># numOfRotes;;
+  - : int * int -> int = &lt;fun&gt;
+  # numOfRotes (5, 4);;
+  - : int = 126</pre>
     </div>
 
     <h3 class="guide-section-title">18〜20. 集合の計算</h3>
 
+    <div class="guide-card">
+      <p class="guide-card-title">集合の計算</p>
+      <p class="guide-card-text">
+        リストを集合と見なして，以下の集合計算をする関数を定義する。
+        ただし，各集合では同じ要素の重複は許されない。
+      </p>
+    </div>
+
     <ul class="guide-list">
       <li class="guide-card">
         <p class="guide-card-title">18. inter</p>
-        <p class="guide-card-text">2つの集合の積，共通要素を返す関数。</p>
+        <p class="guide-card-text">二つの集合の積，共通要素を返す関数。</p>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">19. union</p>
-        <p class="guide-card-text">2つの集合の和，どちらか一方に含まれる要素を重複なしで返す関数。</p>
+        <p class="guide-card-text">二つの集合の和を返す関数。</p>
       </li>
 
       <li class="guide-card">
         <p class="guide-card-title">20. diff</p>
-        <p class="guide-card-text">2つの集合の差，1つ目の集合から2つ目の集合に含まれる要素を取り除いた結果を返す関数。</p>
+        <p class="guide-card-text">二つの集合の差を返す関数。</p>
       </li>
     </ul>
 
@@ -4449,11 +4544,12 @@ document.addEventListener('DOMContentLoaded', function () {
       <ul class="guide-submit-list">
         <li>提出期限: 2026/5/13（水）13:00</li>
         <li>提出方法: LETUSにて提出</li>
-        <li>提出物: レポートPDFとプログラムソースコード（.ml）</li>
+        <li>提出物: レポート（LaTeXで作成したPDF）と，プログラムソースコード（拡張子ml）</li>
         <li>PDFおよびmlファイルは，それぞれ一つのファイルにまとめること</li>
         <li>実行例と同じ結果が出る関数を定義する</li>
-        <li>18〜20は自分で実行例を作成する</li>
-        <li>Exceptionが出る呼び出しは，プログラムの動作が止まるためコメントアウトすること</li>
+        <li>18，19，20は自分で実行例を作成する</li>
+        <li>実行例が表示される関数呼び出しもソースコード内に含めること</li>
+        <li>Exceptionが出る呼び出しは，プログラムの動作が止まってしまうのでコメントアウトしておくこと</li>
         <li>今回の課題は考察不要</li>
       </ul>
     </div>
@@ -4502,12 +4598,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (type === 'tasks') {
-      guideModalTitle.textContent = '課題一覧';
+      guideModalTitle.textContent = '課題内容';
       guideModalContent.innerHTML = taskGuideHtml;
     } else {
       guideModalTitle.textContent = '採点基準';
       guideModalContent.innerHTML = criteriaGuideHtml;
     }
+
+    guideModalContent.querySelectorAll('.guide-card-code').forEach(function (codeBlock) {
+      codeBlock.textContent = codeBlock.textContent
+        .split('\n')
+        .map(function (line) {
+          return line.replace(/^\s+/, '');
+        })
+        .join('\n')
+        .trim();
+    });
 
     closeGuideMenu();
     guideModalOverlay.classList.add('show');
