@@ -851,6 +851,16 @@ pre {
   border-radius: 30px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 28px 70px rgba(11, 11, 13, 0.28);
+  opacity: 0;
+  transform: translateY(8px) scale(0.985);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.guide-modal-overlay.show .guide-modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 .guide-modal-title {
@@ -2605,6 +2615,16 @@ body {
   border-radius: 30px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 28px 70px rgba(11, 11, 13, 0.28);
+  opacity: 0;
+  transform: translateY(8px) scale(0.985);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.guide-modal-overlay.show .guide-modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 .guide-modal-title {
@@ -3760,7 +3780,7 @@ body.result-frame-open {
     html.append("<div class='guide-menu-wrap' id='guide-menu-wrap'>")
     html.append("<button class='guide-menu-button' id='guide-menu-button' type='button' aria-label='課題一覧と採点基準を開く'>☰</button>")
     html.append("<div class='guide-menu-panel' id='guide-menu-panel'>")
-    html.append("<button class='guide-menu-item' type='button' data-guide='tasks'>課題一覧</button>")
+    html.append("<button class='guide-menu-item' type='button' data-guide='tasks'>課題内容</button>")
     html.append("<button class='guide-menu-item' type='button' data-guide='criteria'>採点基準</button>")
     html.append("</div>")
     html.append("</div>")
@@ -4001,7 +4021,7 @@ document.addEventListener('DOMContentLoaded', function () {
       closeGuideMenu();
     }
   });
-  
+
   const uploadForm = document.getElementById('upload-form');
   const loadingOverlay = document.getElementById('loading-overlay');
   const fileInput = document.getElementById('file-input');
