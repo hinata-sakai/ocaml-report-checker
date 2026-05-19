@@ -3464,8 +3464,18 @@ document.addEventListener('DOMContentLoaded', function () {
     return Math.min(Math.max(value, min), max);
   }
 
-  function rubberRightMove(moveX) {
-    if (moveX <= 0) {
+  function rubberHorizontalMove(moveX, moveY) {
+    const absX = Math.abs(moveX);
+    const absY = Math.abs(moveY);
+
+    const isMostlyHorizontal = absX > absY * 1.15;
+    const isNearOriginalY = absY < 48;
+
+    if (moveX < 0) {
+      if (!isMostlyHorizontal || !isNearOriginalY) {
+        return 0;
+      }
+
       return clamp(moveX, -160, 0);
     }
 
@@ -3493,7 +3503,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const currentY = clientY - studentDragGhostOffsetY;
 
     const moveX = currentX - baseX;
-    const limitedMoveX = rubberRightMove(moveX);
+    const moveY = currentY - (pointerStartY - studentDragGhostOffsetY);
+    const limitedMoveX = rubberHorizontalMove(moveX, moveY);
 
     const listBox = studentUploadRows.getBoundingClientRect();
     const ghostBox = studentDragGhost.getBoundingClientRect();
