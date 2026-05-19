@@ -10,6 +10,8 @@ import traceback
 
 import run_checker
 import second_period_pages
+import second_period_week1_app
+import second_period_week1_checker
 
 import os
 
