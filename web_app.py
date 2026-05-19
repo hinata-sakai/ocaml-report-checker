@@ -2818,6 +2818,7 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
 }
 
 .student-delete-slide-area {
+  --delete-progress: 0;
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -2830,39 +2831,42 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
     linear-gradient(
       90deg,
       rgba(255, 69, 79, 0.02),
-      rgba(255, 69, 79, 0.18)
+      rgba(255, 69, 79, calc(0.06 + 0.18 * var(--delete-progress)))
     );
-  color: rgba(198, 40, 40, 0.78);
+  color: rgba(198, 40, 40, calc(0.42 + 0.38 * var(--delete-progress)));
   font-size: 13px;
   font-weight: 950;
   letter-spacing: 0.04em;
-  opacity: 0;
-  transform: scale(0.985);
+  opacity: calc(0.18 + 0.82 * var(--delete-progress));
+  transform: scale(calc(0.985 + 0.015 * var(--delete-progress)));
   transition:
-    opacity 0.16s ease,
-    transform 0.16s ease,
-    background 0.16s ease;
+    opacity 0.08s linear,
+    transform 0.08s linear,
+    background 0.08s linear,
+    color 0.08s linear;
   pointer-events: none;
 }
 
 .student-delete-slide-area::after {
   content: "削除";
-  color: rgba(198, 40, 40, 0.68);
+  color: rgba(198, 40, 40, calc(0.48 + 0.38 * var(--delete-progress)));
   font-size: 13px;
   font-weight: 950;
-  letter-spacing: 0.08em;
+  letter-spacing: calc(0.04em + 0.04em * var(--delete-progress));
+  transform: translateX(calc(8px - 8px * var(--delete-progress)));
+  opacity: calc(0.42 + 0.58 * var(--delete-progress));
+  transition:
+    opacity 0.08s linear,
+    transform 0.08s linear,
+    color 0.08s linear,
+    letter-spacing 0.08s linear;
 }
 
 .student-sort-placeholder.has-delete-slide-area {
   position: relative;
   overflow: hidden;
-  border-color: rgba(255, 69, 79, 0.26);
+  border-color: rgba(255, 69, 79, calc(0.14 + 0.22 * var(--delete-progress, 0)));
   background: rgba(255, 255, 255, 0.42);
-}
-
-.student-sort-placeholder.has-delete-slide-area .student-delete-slide-area {
-  opacity: 1;
-  transform: scale(1);
 }
 
 .student-drag-ghost.is-delete-ready {
@@ -3506,12 +3510,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  function setStudentDeleteSlideArea(isVisible) {
+  function setStudentDeleteSlideArea(isVisible, progress) {
     if (!studentSortPlaceholder) {
       return;
     }
 
+    const safeProgress = clamp(progress || 0, 0, 1);
+
     studentSortPlaceholder.classList.toggle('has-delete-slide-area', isVisible);
+    studentSortPlaceholder.style.setProperty('--delete-progress', safeProgress.toFixed(3));
 
     let area = studentSortPlaceholder.querySelector('.student-delete-slide-area');
 
@@ -3521,8 +3528,13 @@ document.addEventListener('DOMContentLoaded', function () {
       studentSortPlaceholder.appendChild(area);
     }
 
+    if (area) {
+      area.style.setProperty('--delete-progress', safeProgress.toFixed(3));
+    }
+
     if (!isVisible && area) {
       area.remove();
+      studentSortPlaceholder.style.removeProperty('--delete-progress');
     }
   }
 
@@ -3538,11 +3550,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const moveX = clientX - pointerStartX;
     const moveY = clientY - pointerStartY;
 
-    const isSlidingLeft = moveX < -studentDeleteHintX;
-    const isLeftEnough = moveX < -studentDeleteThresholdX;
+    const leftDistance = Math.max(0, -moveX);
+    const isSlidingLeft = leftDistance > studentDeleteHintX;
+    const isLeftEnough = leftDistance > studentDeleteThresholdX;
     const isMostlyHorizontal = Math.abs(moveX) > Math.abs(moveY) * 1.15;
 
-    setStudentDeleteSlideArea(isSlidingLeft && isMostlyHorizontal);
+    const deleteProgress = clamp(
+      (leftDistance - studentDeleteHintX) / (studentDeleteThresholdX - studentDeleteHintX),
+      0,
+      1
+    );
+
+    setStudentDeleteSlideArea(isSlidingLeft && isMostlyHorizontal, deleteProgress);
     setStudentDeleteReady(isLeftEnough && isMostlyHorizontal);
   }
 
