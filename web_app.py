@@ -2786,6 +2786,27 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   box-shadow: none;
 }
 
+.student-sort-placeholder {
+  height: 0;
+  margin-bottom: 12px;
+  border: 1px dashed rgba(51, 167, 108, 0.42);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(134, 221, 177, 0.18),
+      rgba(255, 255, 255, 0.42)
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.50),
+    0 8px 18px rgba(51, 167, 108, 0.08);
+  transition:
+    height 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
 .student-drag-ghost {
   position: fixed;
   left: 0;
@@ -3275,6 +3296,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let studentDragGhost = null;
   let studentDragGhostOffsetX = 0;
   let studentDragGhostOffsetY = 0;
+  let studentSortPlaceholder = null;
 
   function clearStudentSortTargets() {
     document.querySelectorAll('.student-upload-row').forEach(function (row) {
@@ -3367,6 +3389,23 @@ document.addEventListener('DOMContentLoaded', function () {
     studentDragGhostOffsetY = 0;
   }
 
+  function createStudentSortPlaceholder(row) {
+    const box = row.getBoundingClientRect();
+
+    studentSortPlaceholder = document.createElement('div');
+    studentSortPlaceholder.className = 'student-sort-placeholder';
+    studentSortPlaceholder.style.height = box.height + 'px';
+
+    studentUploadRows.insertBefore(studentSortPlaceholder, row);
+  }
+
+  function removeStudentSortPlaceholder() {
+    if (studentSortPlaceholder) {
+      studentSortPlaceholder.remove();
+      studentSortPlaceholder = null;
+    }
+  }
+
   function startStudentSorting(row, pointerId) {
     isStudentSorting = true;
     sortingStudentRow = row;
@@ -3375,9 +3414,11 @@ document.addEventListener('DOMContentLoaded', function () {
     row.classList.remove('is-dragging-file');
     row.classList.remove('is-sort-ready');
     row.classList.add('is-sorting');
-    row.classList.add('is-ghost-source');
 
     createStudentDragGhost(row);
+    createStudentSortPlaceholder(row);
+
+    row.remove();
 
     document.body.classList.add('student-sorting-active');
   }
@@ -3400,7 +3441,13 @@ document.addEventListener('DOMContentLoaded', function () {
       sortingStudentRow.classList.remove('is-sorting');
       sortingStudentRow.classList.remove('is-sort-ready');
       sortingStudentRow.classList.remove('is-ghost-source');
+
+      if (studentSortPlaceholder) {
+        studentUploadRows.insertBefore(sortingStudentRow, studentSortPlaceholder);
+      }
     }
+
+    removeStudentSortPlaceholder();
 
     isStudentSorting = false;
     sortingStudentRow = null;
@@ -3411,7 +3458,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function moveSortingStudentRow(pointerY) {
-    if (!isStudentSorting || !sortingStudentRow) {
+    if (!isStudentSorting || !studentSortPlaceholder) {
       return;
     }
 
@@ -3420,12 +3467,9 @@ document.addEventListener('DOMContentLoaded', function () {
     clearStudentSortTargets();
 
     if (insertPosition.row && insertPosition.position === 'before') {
-      studentUploadRows.insertBefore(sortingStudentRow, insertPosition.row);
+      studentUploadRows.insertBefore(studentSortPlaceholder, insertPosition.row);
     } else {
-      if (insertPosition.row) {
-      }
-
-      studentUploadRows.appendChild(sortingStudentRow);
+      studentUploadRows.appendChild(studentSortPlaceholder);
     }
   }
 
