@@ -898,6 +898,19 @@ pre {
   font-weight: 700;
 }
 
+.guide-subitems {
+  margin-top: 14px;
+}
+
+.guide-subitem {
+  padding-top: 14px;
+}
+
+.guide-subitem + .guide-subitem {
+  margin-top: 14px;
+  border-top: 1px solid rgba(37, 138, 89, 0.16);
+}
+
 .guide-intro {
   margin: 0 0 16px;
   padding: 14px 16px;
