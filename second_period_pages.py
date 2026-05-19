@@ -11,7 +11,7 @@ web_app.py larger.
 def build_week_select_html(build_carousel_select_html):
     """Build the 2期 week selection page using the shared carousel layout."""
     items = [
-        {"label": "第１週", "href": "#", "coming_soon": True},
+        {"label": "第１週", "href": "/period/2/week1"},
         {"label": "第２週", "href": "#", "coming_soon": True},
         {"label": "第３週", "href": "#", "coming_soon": True},
     ]
