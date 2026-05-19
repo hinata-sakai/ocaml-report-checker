@@ -11,11 +11,19 @@ def build_index_html(message=""):
     import web_app
 
     html = web_app.build_index_html(message)
-    return html.replace("action='/check'", "action='/period/2/week1/check'")
+    html = html.replace("action='/check'", "action='/period/2/week1/check'")
+    html = html.replace("Ocaml 1期", "Ocaml 2期")
+    html = html.replace("OCaml 1期", "OCaml 2期")
+    html = html.replace("1期", "2期")
+    return html
 
 
 def build_result_html(all_results, file_summaries):
     import web_app
 
     html = web_app.build_result_html(all_results, file_summaries)
-    return html.replace("採点結果 - Ocaml 1期", "採点結果 - Ocaml 2期 第1週")
+    html = html.replace("採点結果 - Ocaml 1期", "採点結果 - Ocaml 2期 第1週")
+    html = html.replace("Ocaml 1期", "Ocaml 2期")
+    html = html.replace("OCaml 1期", "OCaml 2期")
+    html = html.replace("1期", "2期")
+    return html
