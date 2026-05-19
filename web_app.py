@@ -4074,9 +4074,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function deleteSelectedFile() {
     if (deleteMode === 'student-row') {
-      if (pendingDeleteStudentPlaceholder) {
-        pendingDeleteStudentPlaceholder.remove();
-      }
+      const placeholderToRemove = pendingDeleteStudentPlaceholder;
 
       pendingDeleteStudentRow = null;
       pendingDeleteStudentPlaceholder = null;
@@ -4088,7 +4086,17 @@ document.addEventListener('DOMContentLoaded', function () {
       deleteModalOverlay.classList.remove('show');
       deleteModalOverlay.setAttribute('aria-hidden', 'true');
 
-      if (studentUploadRows.children.length === 0) {
+      if (placeholderToRemove) {
+        requestAnimationFrame(function () {
+          animateStudentListChange(function () {
+            placeholderToRemove.remove();
+          });
+
+          if (studentUploadRows.children.length === 0) {
+            addStudentRow('');
+          }
+        });
+      } else if (studentUploadRows.children.length === 0) {
         addStudentRow('');
       }
 
