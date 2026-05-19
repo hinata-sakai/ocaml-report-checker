@@ -2824,7 +2824,7 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
 @keyframes studentRowLanded {
   0% {
     opacity: 0.72;
-    transform: translate3d(0, 8px, 0) scale(0.992);
+    transform: translate3d(0, 4px, 0) scale(0.992);
     box-shadow:
       0 10px 24px rgba(11, 11, 13, 0.08),
       0 0 0 2px rgba(134, 221, 177, 0.10);
