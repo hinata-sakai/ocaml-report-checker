@@ -2977,10 +2977,10 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
 
 .student-file-input {
   position: static;
-  flex: 0 0 104px;
-  width: 104px;
-  min-width: 104px;
-  max-width: 104px;
+  flex: 0 0 112px;
+  width: 112px;
+  min-width: 112px;
+  max-width: 112px;
   height: auto;
   opacity: 1;
   pointer-events: auto;
