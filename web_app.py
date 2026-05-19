@@ -3476,8 +3476,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const moveX = currentX - baseX;
     const limitedMoveX = clamp(moveX, -160, 32);
 
+    const listBox = studentUploadRows.getBoundingClientRect();
+    const ghostBox = studentDragGhost.getBoundingClientRect();
+
+    const topLimit = listBox.top - 24;
+    const bottomLimit = listBox.bottom - ghostBox.height + 24;
+
+    const limitedY = clamp(currentY, topLimit, bottomLimit);
+
     studentDragGhost.style.left = (baseX + limitedMoveX) + 'px';
-    studentDragGhost.style.top = currentY + 'px';
+    studentDragGhost.style.top = limitedY + 'px';
   }
 
   function removeStudentDragGhost() {
