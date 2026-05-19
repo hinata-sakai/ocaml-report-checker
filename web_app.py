@@ -1448,24 +1448,24 @@ document.addEventListener('DOMContentLoaded', function () {
         リストを集合と見なして，以下の集合計算をする関数を定義する。
         ただし，各集合では同じ要素の重複は許されない。
       </p>
+
+      <div class="guide-subitems">
+        <div class="guide-subitem">
+          <p class="guide-card-title">18. inter</p>
+          <p class="guide-card-text">二つの集合の積，共通要素を返す関数。</p>
+        </div>
+
+        <div class="guide-subitem">
+          <p class="guide-card-title">19. union</p>
+          <p class="guide-card-text">二つの集合の和を返す関数。</p>
+        </div>
+
+        <div class="guide-subitem">
+          <p class="guide-card-title">20. diff</p>
+          <p class="guide-card-text">二つの集合の差を返す関数。</p>
+        </div>
+      </div>
     </div>
-
-    <ul class="guide-list">
-      <li class="guide-card">
-        <p class="guide-card-title">18. inter</p>
-        <p class="guide-card-text">二つの集合の積，共通要素を返す関数。</p>
-      </li>
-
-      <li class="guide-card">
-        <p class="guide-card-title">19. union</p>
-        <p class="guide-card-text">二つの集合の和を返す関数。</p>
-      </li>
-
-      <li class="guide-card">
-        <p class="guide-card-title">20. diff</p>
-        <p class="guide-card-text">二つの集合の差を返す関数。</p>
-      </li>
-    </ul>
 
     <h3 class="guide-section-title">課題提出</h3>
 
@@ -2982,6 +2982,19 @@ body {
   line-height: 1.7;
   font-size: 14px;
   font-weight: 700;
+}
+
+.guide-subitems {
+  margin-top: 14px;
+}
+
+.guide-subitem {
+  padding-top: 14px;
+}
+
+.guide-subitem + .guide-subitem {
+  margin-top: 14px;
+  border-top: 1px solid rgba(37, 138, 89, 0.16);
 }
 
 .guide-intro {
@@ -4518,24 +4531,24 @@ document.addEventListener('DOMContentLoaded', function () {
         リストを集合と見なして，以下の集合計算をする関数を定義する。
         ただし，各集合では同じ要素の重複は許されない。
       </p>
+
+      <div class="guide-subitems">
+        <div class="guide-subitem">
+          <p class="guide-card-title">18. inter</p>
+          <p class="guide-card-text">二つの集合の積，共通要素を返す関数。</p>
+        </div>
+
+        <div class="guide-subitem">
+          <p class="guide-card-title">19. union</p>
+          <p class="guide-card-text">二つの集合の和を返す関数。</p>
+        </div>
+
+        <div class="guide-subitem">
+          <p class="guide-card-title">20. diff</p>
+          <p class="guide-card-text">二つの集合の差を返す関数。</p>
+        </div>
+      </div>
     </div>
-
-    <ul class="guide-list">
-      <li class="guide-card">
-        <p class="guide-card-title">18. inter</p>
-        <p class="guide-card-text">二つの集合の積，共通要素を返す関数。</p>
-      </li>
-
-      <li class="guide-card">
-        <p class="guide-card-title">19. union</p>
-        <p class="guide-card-text">二つの集合の和を返す関数。</p>
-      </li>
-
-      <li class="guide-card">
-        <p class="guide-card-title">20. diff</p>
-        <p class="guide-card-text">二つの集合の差を返す関数。</p>
-      </li>
-    </ul>
 
     <h3 class="guide-section-title">課題提出</h3>
 
