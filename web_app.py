@@ -2817,6 +2817,33 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.student-upload-row.is-drop-landed {
+  animation: studentRowLanded 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes studentRowLanded {
+  0% {
+    opacity: 0.72;
+    transform: translate3d(0, 8px, 0) scale(0.992);
+    box-shadow:
+      0 10px 24px rgba(11, 11, 13, 0.08),
+      0 0 0 2px rgba(134, 221, 177, 0.10);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translate3d(0, -2px, 0) scale(1.006);
+    box-shadow:
+      0 16px 34px rgba(11, 11, 13, 0.13),
+      0 0 0 4px rgba(134, 221, 177, 0.16);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
 .student-drag-ghost {
   position: fixed;
   left: 0;
@@ -3433,6 +3460,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  function playStudentRowLanding(row) {
+    if (!row) {
+      return;
+    }
+
+    row.classList.remove('is-drop-landed');
+    void row.offsetWidth;
+    row.classList.add('is-drop-landed');
+
+    setTimeout(function () {
+      row.classList.remove('is-drop-landed');
+    }, 260);
+  }
+
   function startStudentSorting(row, pointerId) {
     isStudentSorting = true;
     isStudentSortDropping = false;
@@ -3483,6 +3524,8 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
           studentUploadRows.appendChild(rowToRestore);
         }
+
+        playStudentRowLanding(rowToRestore);
       }
 
       removeStudentSortPlaceholder();
