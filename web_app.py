@@ -756,7 +756,7 @@ pre {
   border-radius: 0;
   background: transparent;
   color: var(--poster-ink);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 900;
   line-height: 1;
   cursor: pointer;
@@ -2515,7 +2515,7 @@ body {
   border-radius: 0;
   background: transparent;
   color: var(--poster-ink);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 900;
   line-height: 1;
   cursor: pointer;
