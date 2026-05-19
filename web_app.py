@@ -1081,7 +1081,7 @@ pre {
     html.append("<div class='guide-menu-wrap' id='guide-menu-wrap'>")
     html.append("<button class='guide-menu-button' id='guide-menu-button' type='button' aria-label='課題一覧と採点基準を開く'>☰</button>")
     html.append("<div class='guide-menu-panel' id='guide-menu-panel'>")
-    html.append("<button class='guide-menu-item' type='button' data-guide='tasks'>課題一覧</button>")
+    html.append("<button class='guide-menu-item' type='button' data-guide='tasks'>課題内容</button>")
     html.append("<button class='guide-menu-item' type='button' data-guide='criteria'>採点基準</button>")
     html.append("</div>")
     html.append("</div>")
@@ -1499,22 +1499,35 @@ document.addEventListener('DOMContentLoaded', function () {
   `;
 
   const criteriaGuideHtml = `
-    <div class="guide-status-grid">
-      <div class="guide-status-card">
-        <span class="guide-status-label ok">OK</span>
-        <p class="guide-card-text">実行結果が期待値と一致している状態です。</p>
-      </div>
-      <div class="guide-status-card">
-        <span class="guide-status-label ng">NG</span>
-        <p class="guide-card-text">実行はできましたが、実行結果が期待値と異なる状態です。</p>
-      </div>
-      <div class="guide-status-card">
-        <span class="guide-status-label warning">WARNING</span>
-        <p class="guide-card-text">実行結果は期待値と一致していますが、実行時に警告が出ている状態です。</p>
-      </div>
-      <div class="guide-status-card">
-        <span class="guide-status-label error">ERROR</span>
-        <p class="guide-card-text">文法エラー、型エラー、未定義関数などにより、採点処理まで進めなかった状態です。</p>
+    <div class="guide-card">
+      <p class="guide-card-title">採点の基本方針</p>
+      <p class="guide-card-text">
+        基本的には，プログラムだけで点数をつけてください。
+        課題ページと同じ動作をすれば満点です。
+      </p>
+
+      <div class="guide-subitems">
+        <div class="guide-subitem">
+          <p class="guide-card-title">点数配分</p>
+          <ul class="guide-submit-list">
+            <li>各問題10点</li>
+            <li>合計200点満点</li>
+          </ul>
+        </div>
+
+        <div class="guide-subitem">
+          <p class="guide-card-title">採点基準</p>
+          <ul class="guide-submit-list">
+            <li>課題ページに書かれている動作をするプログラムの場合：10点</li>
+            <li>警告が出る：9点</li>
+            <li>
+              プログラムが課題どおり動かない場合：
+              <ul class="guide-submit-list">
+                <li>動作の説明が適切な場合：5点</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   `;
@@ -4582,22 +4595,35 @@ document.addEventListener('DOMContentLoaded', function () {
   `;
 
   const criteriaGuideHtml = `
-    <div class="guide-status-grid">
-      <div class="guide-status-card">
-        <span class="guide-status-label ok">OK</span>
-        <p class="guide-card-text">実行結果が期待値と一致している状態です。</p>
-      </div>
-      <div class="guide-status-card">
-        <span class="guide-status-label ng">NG</span>
-        <p class="guide-card-text">実行はできましたが、実行結果が期待値と異なる状態です。</p>
-      </div>
-      <div class="guide-status-card">
-        <span class="guide-status-label warning">WARNING</span>
-        <p class="guide-card-text">実行結果は期待値と一致していますが、実行時に警告が出ている状態です。</p>
-      </div>
-      <div class="guide-status-card">
-        <span class="guide-status-label error">ERROR</span>
-        <p class="guide-card-text">文法エラー、型エラー、未定義関数などにより、採点処理まで進めなかった状態です。</p>
+    <div class="guide-card">
+      <p class="guide-card-title">採点の基本方針</p>
+      <p class="guide-card-text">
+        基本的には，プログラムだけで点数をつけてください。
+        課題ページと同じ動作をすれば満点です。
+      </p>
+
+      <div class="guide-subitems">
+        <div class="guide-subitem">
+          <p class="guide-card-title">点数配分</p>
+          <ul class="guide-submit-list">
+            <li>各問題10点</li>
+            <li>合計200点満点</li>
+          </ul>
+        </div>
+
+        <div class="guide-subitem">
+          <p class="guide-card-title">採点基準</p>
+          <ul class="guide-submit-list">
+            <li>課題ページに書かれている動作をするプログラムの場合：10点</li>
+            <li>警告が出る：9点</li>
+            <li>
+              プログラムが課題どおり動かない場合：
+              <ul class="guide-submit-list">
+                <li>動作の説明が適切な場合：5点</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   `;
