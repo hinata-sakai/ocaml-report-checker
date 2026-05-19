@@ -2852,14 +2852,11 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   color: rgba(198, 40, 40, calc(0.48 + 0.38 * var(--delete-progress)));
   font-size: 13px;
   font-weight: 950;
-  letter-spacing: calc(0.04em + 0.04em * var(--delete-progress));
-  transform: translateX(calc(8px - 8px * var(--delete-progress)));
+  letter-spacing: 0.08em;
   opacity: calc(0.42 + 0.58 * var(--delete-progress));
   transition:
     opacity 0.08s linear,
-    transform 0.08s linear,
-    color 0.08s linear,
-    letter-spacing 0.08s linear;
+    color 0.08s linear;
 }
 
 .student-sort-placeholder.has-delete-slide-area {
