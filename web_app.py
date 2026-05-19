@@ -2949,13 +2949,6 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   }
 }
 
-.student-file-input {
-  width: 100%;
-  color: rgba(11, 11, 13, 0.72);
-  font-size: 13px;
-  font-weight: 700;
-}
-
 @keyframes studentCardShake {
   0%, 100% {
     transform: translateX(0);
@@ -2983,11 +2976,47 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
 }
 
 .student-file-input {
-  width: 100%;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.student-file-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
+  width: 100%;
+}
+
+.student-file-button {
+  flex: 0 0 auto;
+  border: 1px solid rgba(11, 11, 13, 0.28);
+  border-radius: 4px;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.86);
+  color: rgba(11, 11, 13, 0.86);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.student-file-button:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+.student-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: rgba(11, 11, 13, 0.72);
   font-size: 13px;
   font-weight: 800;
+  cursor: grab;
 }
 
 .add-student-row-button {
@@ -3912,6 +3941,35 @@ document.addEventListener('DOMContentLoaded', function () {
     fileInput.type = 'file';
     fileInput.name = 'student_files';
     fileInput.accept = '.ml';
+    fileInput.tabIndex = -1;
+
+    const fileControl = document.createElement('div');
+    fileControl.className = 'student-file-control';
+
+    const fileButton = document.createElement('button');
+    fileButton.className = 'student-file-button';
+    fileButton.type = 'button';
+    fileButton.textContent = 'ファイルの選択';
+
+    const fileNameText = document.createElement('span');
+    fileNameText.className = 'student-file-name';
+    fileNameText.textContent = 'ファイルが選択されていません';
+
+    function updateStudentFileNameText() {
+      if (fileInput.files && fileInput.files[0]) {
+        fileNameText.textContent = fileInput.files[0].name;
+      } else {
+        fileNameText.textContent = 'ファイルが選択されていません';
+      }
+    }
+
+    fileButton.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', updateStudentFileNameText);
 
     function setStudentRowFile(file) {
       const dataTransfer = new DataTransfer();
@@ -4025,8 +4083,12 @@ document.addEventListener('DOMContentLoaded', function () {
       }, 520);
     });
 
+    fileControl.appendChild(fileButton);
+    fileControl.appendChild(fileNameText);
+    fileControl.appendChild(fileInput);
+
     row.appendChild(studentInput);
-    row.appendChild(fileInput);
+    row.appendChild(fileControl);
 
     studentUploadRows.appendChild(row);
   }
