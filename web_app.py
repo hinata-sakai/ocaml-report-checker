@@ -2976,11 +2976,16 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
 }
 
 .student-file-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
+  position: static;
+  flex: 0 0 104px;
+  width: 104px;
+  min-width: 104px;
+  max-width: 104px;
+  height: auto;
+  opacity: 1;
+  pointer-events: auto;
+  color: transparent;
+  font-size: 13px;
 }
 
 .student-file-control {
@@ -2989,29 +2994,6 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   gap: 8px;
   min-width: 0;
   width: 100%;
-}
-
-.student-file-button {
-  flex: 0 0 auto;
-  padding: 1px 6px;
-  border: 1px solid #8f8f9d;
-  border-radius: 2px;
-  background: #f0f0f0;
-  color: #000;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.4;
-  cursor: pointer;
-  box-shadow: none;
-}
-
-.student-file-button:hover {
-  background: #e9e9e9;
-}
-
-.student-file-button:hover {
-  background: rgba(255, 255, 255, 1);
 }
 
 .student-file-name {
@@ -3947,15 +3929,9 @@ document.addEventListener('DOMContentLoaded', function () {
     fileInput.type = 'file';
     fileInput.name = 'student_files';
     fileInput.accept = '.ml';
-    fileInput.tabIndex = -1;
 
     const fileControl = document.createElement('div');
     fileControl.className = 'student-file-control';
-
-    const fileButton = document.createElement('button');
-    fileButton.className = 'student-file-button';
-    fileButton.type = 'button';
-    fileButton.textContent = 'ファイルの選択';
 
     const fileNameText = document.createElement('span');
     fileNameText.className = 'student-file-name';
@@ -3968,12 +3944,6 @@ document.addEventListener('DOMContentLoaded', function () {
         fileNameText.textContent = 'ファイルが選択されていません';
       }
     }
-
-    fileButton.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      fileInput.click();
-    });
 
     fileInput.addEventListener('change', updateStudentFileNameText);
 
@@ -4089,9 +4059,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }, 520);
     });
 
-    fileControl.appendChild(fileButton);
-    fileControl.appendChild(fileNameText);
     fileControl.appendChild(fileInput);
+    fileControl.appendChild(fileNameText);
 
     row.appendChild(studentInput);
     row.appendChild(fileControl);
