@@ -2692,7 +2692,7 @@ h1 {
 .student-upload-head,
 .student-upload-row {
   display: grid;
-  grid-template-columns: minmax(120px, 0.8fr) minmax(180px, 1.2fr) 36px;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(220px, 1.6fr);
   gap: 12px;
   align-items: center;
 }
@@ -2983,6 +2983,7 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
 
 .student-file-input {
   width: 100%;
+  min-width: 0;
   color: rgba(11, 11, 13, 0.72);
   font-size: 13px;
   font-weight: 800;
