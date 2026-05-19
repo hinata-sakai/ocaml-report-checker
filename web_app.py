@@ -1520,12 +1520,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <ul class="guide-submit-list">
             <li>課題ページに書かれている動作をするプログラムの場合：10点</li>
             <li>警告が出る：9点</li>
-            <li>
-              プログラムが課題どおり動かない場合：
-              <ul class="guide-submit-list">
-                <li>動作の説明が適切な場合：5点</li>
-              </ul>
-            </li>
+            <li>プログラムが課題どおり動かない場合：動作の説明が適切な場合：5点</li>
           </ul>
         </div>
       </div>
@@ -4616,12 +4611,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <ul class="guide-submit-list">
             <li>課題ページに書かれている動作をするプログラムの場合：10点</li>
             <li>警告が出る：9点</li>
-            <li>
-              プログラムが課題どおり動かない場合：
-              <ul class="guide-submit-list">
-                <li>動作の説明が適切な場合：5点</li>
-              </ul>
-            </li>
+            <li>プログラムが課題どおり動かない場合：動作の説明が適切な場合：5点</li>
           </ul>
         </div>
       </div>
