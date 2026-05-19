@@ -4087,15 +4087,17 @@ document.addEventListener('DOMContentLoaded', function () {
       deleteModalOverlay.setAttribute('aria-hidden', 'true');
 
       if (placeholderToRemove) {
-        requestAnimationFrame(function () {
-          animateStudentListChange(function () {
-            placeholderToRemove.remove();
-          });
+        setTimeout(function () {
+          requestAnimationFrame(function () {
+            animateStudentListChange(function () {
+              placeholderToRemove.remove();
+            });
 
-          if (studentUploadRows.children.length === 0) {
-            addStudentRow('');
-          }
-        });
+            if (studentUploadRows.children.length === 0) {
+              addStudentRow('');
+            }
+          });
+        }, 180);
       } else if (studentUploadRows.children.length === 0) {
         addStudentRow('');
       }
