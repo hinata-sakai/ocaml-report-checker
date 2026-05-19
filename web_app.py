@@ -2993,15 +2993,21 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
 
 .student-file-button {
   flex: 0 0 auto;
-  border: 1px solid rgba(11, 11, 13, 0.28);
-  border-radius: 4px;
-  padding: 2px 8px;
-  background: rgba(255, 255, 255, 0.86);
-  color: rgba(11, 11, 13, 0.86);
-  font: inherit;
+  padding: 1px 6px;
+  border: 1px solid #8f8f9d;
+  border-radius: 2px;
+  background: #f0f0f0;
+  color: #000;
+  font-family: inherit;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 400;
+  line-height: 1.4;
   cursor: pointer;
+  box-shadow: none;
+}
+
+.student-file-button:hover {
+  background: #e9e9e9;
 }
 
 .student-file-button:hover {
