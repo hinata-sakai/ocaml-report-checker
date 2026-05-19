@@ -2807,6 +2807,16 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
     box-shadow 0.16s ease;
 }
 
+.student-upload-row,
+.student-sort-placeholder {
+  will-change: transform;
+}
+
+.student-upload-row.is-list-moving,
+.student-sort-placeholder.is-list-moving {
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 .student-drag-ghost {
   position: fixed;
   left: 0;
@@ -3457,6 +3467,58 @@ document.addEventListener('DOMContentLoaded', function () {
     document.body.classList.remove('student-sorting-active');
   }
 
+  function getStudentSortItems() {
+    return Array.from(studentUploadRows.children).filter(function (item) {
+      return (
+        item.classList.contains('student-upload-row') ||
+        item.classList.contains('student-sort-placeholder')
+      );
+    });
+  }
+
+  function animateStudentListChange(changeFn) {
+    const firstPositions = new Map();
+
+    getStudentSortItems().forEach(function (item) {
+      firstPositions.set(item, item.getBoundingClientRect());
+    });
+
+    changeFn();
+
+    getStudentSortItems().forEach(function (item) {
+      const firstBox = firstPositions.get(item);
+
+      if (!firstBox) {
+        return;
+      }
+
+      const lastBox = item.getBoundingClientRect();
+      const deltaY = firstBox.top - lastBox.top;
+
+      if (Math.abs(deltaY) < 1) {
+        return;
+      }
+
+      item.classList.remove('is-list-moving');
+      item.style.transition = 'none';
+      item.style.transform = 'translate3d(0, ' + deltaY + 'px, 0)';
+
+      item.getBoundingClientRect();
+
+      requestAnimationFrame(function () {
+        item.classList.add('is-list-moving');
+        item.style.transition = '';
+        item.style.transform = '';
+      });
+
+      setTimeout(function () {
+        item.classList.remove('is-list-moving');
+        item.style.transition = '';
+        item.style.transform = '';
+      }, 240);
+    });
+  }
+
   function moveSortingStudentRow(pointerY) {
     if (!isStudentSorting || !studentSortPlaceholder) {
       return;
@@ -3467,10 +3529,24 @@ document.addEventListener('DOMContentLoaded', function () {
     clearStudentSortTargets();
 
     if (insertPosition.row && insertPosition.position === 'before') {
-      studentUploadRows.insertBefore(studentSortPlaceholder, insertPosition.row);
-    } else {
-      studentUploadRows.appendChild(studentSortPlaceholder);
+      if (studentSortPlaceholder.nextSibling === insertPosition.row) {
+        return;
+      }
+
+      animateStudentListChange(function () {
+        studentUploadRows.insertBefore(studentSortPlaceholder, insertPosition.row);
+      });
+
+      return;
     }
+
+    if (studentUploadRows.lastElementChild === studentSortPlaceholder) {
+      return;
+    }
+
+    animateStudentListChange(function () {
+      studentUploadRows.appendChild(studentSortPlaceholder);
+    });
   }
 
   document.addEventListener('pointermove', function (e) {
