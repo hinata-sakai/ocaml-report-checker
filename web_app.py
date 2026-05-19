@@ -851,16 +851,6 @@ pre {
   border-radius: 30px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 28px 70px rgba(11, 11, 13, 0.28);
-  opacity: 0;
-  transform: translateY(8px) scale(0.985);
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease;
-}
-
-.guide-modal-overlay.show .guide-modal {
-  opacity: 1;
-  transform: translateY(0) scale(1);
 }
 
 .guide-modal-title {
@@ -1239,8 +1229,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     guideModalOverlay.classList.remove('show');
     guideModalOverlay.setAttribute('aria-hidden', 'true');
-    guideModalTitle.textContent = '';
-    guideModalContent.innerHTML = '';
+
+    setTimeout(function () {
+      if (!guideModalOverlay.classList.contains('show')) {
+        guideModalTitle.textContent = '';
+        guideModalContent.innerHTML = '';
+      }
+    }, 220);
   }
 
   if (guideMenuButton) {
@@ -2615,16 +2610,6 @@ body {
   border-radius: 30px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 28px 70px rgba(11, 11, 13, 0.28);
-  opacity: 0;
-  transform: translateY(8px) scale(0.985);
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease;
-}
-
-.guide-modal-overlay.show .guide-modal {
-  opacity: 1;
-  transform: translateY(0) scale(1);
 }
 
 .guide-modal-title {
@@ -3987,8 +3972,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     guideModalOverlay.classList.remove('show');
     guideModalOverlay.setAttribute('aria-hidden', 'true');
-    guideModalTitle.textContent = '';
-    guideModalContent.innerHTML = '';
+
+    setTimeout(function () {
+      if (!guideModalOverlay.classList.contains('show')) {
+        guideModalTitle.textContent = '';
+        guideModalContent.innerHTML = '';
+      }
+    }, 220);
   }
 
   if (guideMenuButton) {
