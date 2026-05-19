@@ -2847,15 +2847,10 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
 
 .student-delete-slide-area::after {
   content: "削除";
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 62px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(255, 69, 79, 0.92);
-  color: white;
-  box-shadow: 0 10px 22px rgba(255, 69, 79, 0.20);
+  color: rgba(198, 40, 40, 0.68);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
 }
 
 .student-sort-placeholder.has-delete-slide-area {
@@ -2991,24 +2986,6 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   color: rgba(11, 11, 13, 0.72);
   font-size: 13px;
   font-weight: 800;
-}
-
-.remove-student-row-button {
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(11, 11, 13, 0.18);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.76);
-  color: rgba(11, 11, 13, 0.72);
-  font-size: 18px;
-  font-weight: 950;
-  cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.remove-student-row-button:hover {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.96);
 }
 
 .add-student-row-button {
@@ -3853,12 +3830,6 @@ document.addEventListener('DOMContentLoaded', function () {
     fileInput.name = 'student_files';
     fileInput.accept = '.ml';
 
-    const removeButton = document.createElement('button');
-    removeButton.className = 'remove-student-row-button';
-    removeButton.type = 'button';
-    removeButton.textContent = '×';
-    removeButton.setAttribute('aria-label', 'この行を削除');
-
     function setStudentRowFile(file) {
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(file);
@@ -3971,17 +3942,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }, 520);
     });
 
-    removeButton.addEventListener('click', function () {
-      row.remove();
-
-      if (studentUploadRows.children.length === 0) {
-        addStudentRow('');
-      }
-    });
-
     row.appendChild(studentInput);
     row.appendChild(fileInput);
-    row.appendChild(removeButton);
 
     studentUploadRows.appendChild(row);
   }
