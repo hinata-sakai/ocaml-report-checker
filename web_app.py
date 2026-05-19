@@ -3001,9 +3001,10 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: rgba(11, 11, 13, 0.72);
-  font-size: 13px;
-  font-weight: 800;
+  color: rgba(11, 11, 13, 0.78);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.6;
   cursor: grab;
 }
 
