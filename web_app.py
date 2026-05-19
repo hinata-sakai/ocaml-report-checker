@@ -3459,30 +3459,24 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 180);
   }
 
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+
   function moveStudentDragGhost(clientX, clientY) {
     if (!studentDragGhost) {
       return;
     }
 
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
-    }
+    const baseX = pointerStartX - studentDragGhostOffsetX;
+    const currentX = clientX - studentDragGhostOffsetX;
+    const currentY = clientY - studentDragGhostOffsetY;
 
-    function moveStudentDragGhost(clientX, clientY) {
-      if (!studentDragGhost) {
-        return;
-      }
+    const moveX = currentX - baseX;
+    const limitedMoveX = clamp(moveX, -160, 32);
 
-      const baseX = pointerStartX - studentDragGhostOffsetX;
-      const currentX = clientX - studentDragGhostOffsetX;
-      const currentY = clientY - studentDragGhostOffsetY;
-
-      const moveX = currentX - baseX;
-      const limitedMoveX = clamp(moveX, -160, 32);
-
-      studentDragGhost.style.left = (baseX + limitedMoveX) + 'px';
-      studentDragGhost.style.top = currentY + 'px';
-    }
+    studentDragGhost.style.left = (baseX + limitedMoveX) + 'px';
+    studentDragGhost.style.top = currentY + 'px';
   }
 
   function removeStudentDragGhost() {
