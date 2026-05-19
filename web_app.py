@@ -2817,8 +2817,70 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.student-upload-row.is-drop-landed {
-  animation: studentRowLanded 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+.student-delete-slide-area {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 18px;
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 69, 79, 0.02),
+      rgba(255, 69, 79, 0.18)
+    );
+  color: rgba(198, 40, 40, 0.78);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transform: scale(0.985);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease,
+    background 0.16s ease;
+  pointer-events: none;
+}
+
+.student-delete-slide-area::after {
+  content: "削除";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 69, 79, 0.92);
+  color: white;
+  box-shadow: 0 10px 22px rgba(255, 69, 79, 0.20);
+}
+
+.student-sort-placeholder.has-delete-slide-area {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(255, 69, 79, 0.26);
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.student-sort-placeholder.has-delete-slide-area .student-delete-slide-area {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.student-drag-ghost.is-delete-ready {
+  border-color: rgba(255, 69, 79, 0.54);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(255, 69, 79, 0.08)
+    );
+  box-shadow:
+    0 24px 54px rgba(11, 11, 13, 0.18),
+    0 0 0 4px rgba(255, 69, 79, 0.14);
 }
 
 .student-upload-row.is-drop-landed {
@@ -3344,6 +3406,11 @@ document.addEventListener('DOMContentLoaded', function () {
   let studentDragGhostOffsetY = 0;
   let studentSortPlaceholder = null;
   let isStudentSortDropping = false;
+  let isStudentDeleteReady = false;
+  let studentDeleteThresholdX = 96;
+  let studentDeleteHintX = 32;
+  let pendingDeleteStudentRow = null;
+  let pendingDeleteStudentPlaceholder = null;
 
   function clearStudentSortTargets() {
     document.querySelectorAll('.student-upload-row').forEach(function (row) {
@@ -3453,6 +3520,46 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  function setStudentDeleteSlideArea(isVisible) {
+    if (!studentSortPlaceholder) {
+      return;
+    }
+
+    studentSortPlaceholder.classList.toggle('has-delete-slide-area', isVisible);
+
+    let area = studentSortPlaceholder.querySelector('.student-delete-slide-area');
+
+    if (isVisible && !area) {
+      area = document.createElement('div');
+      area.className = 'student-delete-slide-area';
+      studentSortPlaceholder.appendChild(area);
+    }
+
+    if (!isVisible && area) {
+      area.remove();
+    }
+  }
+
+  function setStudentDeleteReady(isReady) {
+    isStudentDeleteReady = isReady;
+
+    if (studentDragGhost) {
+      studentDragGhost.classList.toggle('is-delete-ready', isReady);
+    }
+  }
+
+  function updateStudentDeleteState(clientX, clientY) {
+    const moveX = clientX - pointerStartX;
+    const moveY = clientY - pointerStartY;
+
+    const isSlidingLeft = moveX < -studentDeleteHintX;
+    const isLeftEnough = moveX < -studentDeleteThresholdX;
+    const isMostlyHorizontal = Math.abs(moveX) > Math.abs(moveY) * 1.15;
+
+    setStudentDeleteSlideArea(isSlidingLeft && isMostlyHorizontal);
+    setStudentDeleteReady(isLeftEnough && isMostlyHorizontal);
+  }
+
   function playStudentRowLanding(row) {
     if (!row) {
       return;
@@ -3470,6 +3577,9 @@ document.addEventListener('DOMContentLoaded', function () {
   function startStudentSorting(row, pointerId) {
     isStudentSorting = true;
     isStudentSortDropping = false;
+    isStudentDeleteReady = false;
+    pendingDeleteStudentRow = null;
+    pendingDeleteStudentPlaceholder = null;
     sortingStudentRow = row;
     sortingPointerId = pointerId;
 
@@ -3487,6 +3597,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function stopStudentSorting() {
     if (isStudentSortDropping) {
+      return;
+    }
+
+    if (isStudentDeleteReady) {
+      const rowToRestore = sortingStudentRow;
+      const placeholder = studentSortPlaceholder;
+
+      removeStudentDragGhost();
+      setStudentDeleteSlideArea(false);
+      setStudentDeleteReady(false);
+
+      if (rowToRestore) {
+        rowToRestore.classList.remove('is-sorting');
+        rowToRestore.classList.remove('is-sort-ready');
+        rowToRestore.classList.remove('is-ghost-source');
+      }
+
+      openStudentRowDeleteModal(rowToRestore, placeholder);
+
+      isStudentSorting = false;
+      isStudentSortDropping = false;
+      sortingStudentRow = null;
+      sortingPointerId = null;
+      pendingSortRow = null;
+
+      document.body.classList.remove('student-sorting-active');
       return;
     }
 
@@ -3520,6 +3656,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         playStudentRowLanding(rowToRestore);
       }
+      setStudentDeleteSlideArea(false);
+      setStudentDeleteReady(false);
 
       removeStudentSortPlaceholder();
       removeStudentDragGhost();
@@ -3673,8 +3811,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     e.preventDefault();
+
     moveStudentDragGhost(e.clientX, e.clientY);
-    moveSortingStudentRow(e.clientY);
+    updateStudentDeleteState(e.clientX, e.clientY);
+
+    if (!isStudentDeleteReady) {
+      moveSortingStudentRow(e.clientY);
+    }
   });
 
   document.addEventListener('pointerup', function (e) {
@@ -3880,6 +4023,40 @@ document.addEventListener('DOMContentLoaded', function () {
     deleteModalOverlay.setAttribute('aria-hidden', 'false');
   }
 
+  function getStudentRowDeleteLabel(row) {
+    if (!row) {
+      return 'この行';
+    }
+
+    const studentInput = row.querySelector('.student-id-input');
+    const fileInput = row.querySelector('.student-file-input');
+
+    const studentId = studentInput ? studentInput.value.trim() : '';
+    const fileName = fileInput && fileInput.files && fileInput.files[0]
+      ? fileInput.files[0].name
+      : 'ファイル未選択';
+
+    if (studentId) {
+      return studentId + ' / ' + fileName;
+    }
+
+    return fileName;
+  }
+
+  function openStudentRowDeleteModal(row, placeholder) {
+    deleteMode = 'student-row';
+    deleteTargetKey = null;
+    pendingDeleteStudentRow = row;
+    pendingDeleteStudentPlaceholder = placeholder;
+
+    deleteModalTitle.textContent = 'このファイルを削除しますか？';
+    deleteModalText.textContent = getStudentRowDeleteLabel(row);
+    deleteConfirmButton.textContent = '削除';
+
+    deleteModalOverlay.classList.add('show');
+    deleteModalOverlay.setAttribute('aria-hidden', 'false');
+  }
+
   function openClearAllModal() {
     if (selectedFileStore.length === 0) {
       return;
@@ -3896,7 +4073,35 @@ document.addEventListener('DOMContentLoaded', function () {
     deleteModalOverlay.setAttribute('aria-hidden', 'false');
   }
 
+  function restorePendingStudentRowDelete() {
+    if (pendingDeleteStudentRow) {
+      if (pendingDeleteStudentPlaceholder && pendingDeleteStudentPlaceholder.parentNode === studentUploadRows) {
+        studentUploadRows.insertBefore(pendingDeleteStudentRow, pendingDeleteStudentPlaceholder);
+      } else {
+        studentUploadRows.appendChild(pendingDeleteStudentRow);
+      }
+
+      pendingDeleteStudentRow.classList.remove('is-sorting');
+      pendingDeleteStudentRow.classList.remove('is-sort-ready');
+      pendingDeleteStudentRow.classList.remove('is-ghost-source');
+
+      playStudentRowLanding(pendingDeleteStudentRow);
+    }
+
+    if (pendingDeleteStudentPlaceholder) {
+      pendingDeleteStudentPlaceholder.remove();
+    }
+
+    pendingDeleteStudentRow = null;
+    pendingDeleteStudentPlaceholder = null;
+    isStudentDeleteReady = false;
+  }
+
   function closeDeleteModal() {
+    if (deleteMode === 'student-row') {
+      restorePendingStudentRowDelete();
+    }
+
     deleteTargetKey = null;
     deleteMode = null;
 
@@ -3905,6 +4110,28 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function deleteSelectedFile() {
+    if (deleteMode === 'student-row') {
+      if (pendingDeleteStudentPlaceholder) {
+        pendingDeleteStudentPlaceholder.remove();
+      }
+
+      pendingDeleteStudentRow = null;
+      pendingDeleteStudentPlaceholder = null;
+      isStudentDeleteReady = false;
+
+      deleteTargetKey = null;
+      deleteMode = null;
+
+      deleteModalOverlay.classList.remove('show');
+      deleteModalOverlay.setAttribute('aria-hidden', 'true');
+
+      if (studentUploadRows.children.length === 0) {
+        addStudentRow('');
+      }
+
+      return;
+    }
+
     if (deleteMode === 'all') {
       selectedFileStore = [];
       syncFileInput();
