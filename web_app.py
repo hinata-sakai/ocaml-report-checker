@@ -3464,6 +3464,25 @@ document.addEventListener('DOMContentLoaded', function () {
     return Math.min(Math.max(value, min), max);
   }
 
+  function rubberRightMove(moveX) {
+    if (moveX <= 0) {
+      return clamp(moveX, -160, 0);
+    }
+
+    const softLimit = 24;
+    const hardLimit = 52;
+    const resistance = 34;
+
+    if (moveX <= softLimit) {
+      return moveX;
+    }
+
+    const extra = moveX - softLimit;
+    const rubberExtra = (1 - Math.exp(-extra / resistance)) * (hardLimit - softLimit);
+
+    return Math.min(softLimit + rubberExtra, hardLimit);
+  }
+
   function moveStudentDragGhost(clientX, clientY) {
     if (!studentDragGhost) {
       return;
@@ -3474,7 +3493,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const currentY = clientY - studentDragGhostOffsetY;
 
     const moveX = currentX - baseX;
-    const limitedMoveX = clamp(moveX, -160, 32);
+    const limitedMoveX = rubberRightMove(moveX);
 
     const listBox = studentUploadRows.getBoundingClientRect();
     const ghostBox = studentDragGhost.getBoundingClientRect();
