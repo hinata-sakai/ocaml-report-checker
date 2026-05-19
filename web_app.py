@@ -742,6 +742,231 @@ pre {
   box-shadow: 0 14px 28px rgba(11, 11, 13, 0.14);
 }
 
+.guide-menu-wrap {
+  position: absolute;
+  top: 42px;
+  right: 24px;
+  z-index: 20;
+}
+
+.guide-menu-button {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--poster-ink);
+  font-size: 22px;
+  font-weight: 950;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(11, 11, 13, 0.10);
+  backdrop-filter: blur(12px);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.guide-menu-button:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.16);
+}
+
+.guide-menu-panel {
+  position: absolute;
+  top: 54px;
+  right: 0;
+  width: 190px;
+  padding: 8px;
+  border: 1px solid rgba(11, 11, 13, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 42px rgba(11, 11, 13, 0.16);
+  backdrop-filter: blur(16px);
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.guide-menu-wrap.open .guide-menu-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.guide-menu-item {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: transparent;
+  color: rgba(11, 11, 13, 0.82);
+  text-align: left;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.guide-menu-item:hover {
+  background: rgba(134, 221, 177, 0.22);
+  transform: translateX(2px);
+}
+
+.guide-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(11, 11, 13, 0.38);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.guide-modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.guide-modal {
+  width: min(760px, 100%);
+  max-height: min(82vh, 760px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 28px 70px rgba(11, 11, 13, 0.28);
+}
+
+.guide-modal-title {
+  margin: 0 0 16px;
+  color: var(--poster-ink);
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.guide-modal-content {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+  color: rgba(11, 11, 13, 0.76);
+}
+
+.guide-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guide-card {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(134, 221, 177, 0.16);
+  border: 1px solid rgba(37, 138, 89, 0.14);
+}
+
+.guide-card-title {
+  margin: 0 0 6px;
+  color: var(--poster-ink);
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.guide-card-text {
+  margin: 0;
+  line-height: 1.7;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.guide-status-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.guide-status-card {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(11, 11, 13, 0.10);
+}
+
+.guide-status-label {
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.guide-status-label.ok {
+  background: rgba(37, 138, 89, 0.12);
+  color: var(--poster-mint-dark);
+}
+
+.guide-status-label.ng {
+  background: rgba(255, 107, 72, 0.14);
+  color: #c63c1c;
+}
+
+.guide-status-label.warning {
+  background: rgba(255, 184, 77, 0.20);
+  color: #9a6200;
+}
+
+.guide-status-label.error {
+  background: rgba(198, 40, 40, 0.12);
+  color: var(--poster-error);
+}
+
+.guide-modal-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.guide-modal-close {
+  min-width: 120px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  padding: 11px 18px;
+  background: var(--poster-ink);
+  color: white;
+  font-size: 14px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(11, 11, 13, 0.22);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.guide-modal-close:hover {
+  transform: translateY(-2px);
+  background: #1f1f22;
+  box-shadow: 0 16px 30px rgba(11, 11, 13, 0.26);
+}
+
 @media (max-width: 780px) {
   .result-page {
     padding: 28px 18px 44px;
@@ -782,6 +1007,13 @@ pre {
     html.append("<body>")
     html.append("<main class='result-page'>")
     html.append("<a class='back-link' href='/upload' id='back-to-upload-link'>ファイル選択へ戻る</a>")
+    html.append("<div class='guide-menu-wrap' id='guide-menu-wrap'>")
+    html.append("<button class='guide-menu-button' id='guide-menu-button' type='button' aria-label='課題一覧と採点基準を開く'>☰</button>")
+    html.append("<div class='guide-menu-panel' id='guide-menu-panel'>")
+    html.append("<button class='guide-menu-item' type='button' data-guide='tasks'>課題一覧</button>")
+    html.append("<button class='guide-menu-item' type='button' data-guide='criteria'>採点基準</button>")
+    html.append("</div>")
+    html.append("</div>")
     html.append("<div class='result-shell'>")
     html.append("<section class='result-hero'>")
     html.append("<div>")
@@ -866,6 +1098,16 @@ pre {
     html.append("</div>")
     html.append("</main>")
 
+    html.append("<div class='guide-modal-overlay' id='guide-modal-overlay' aria-hidden='true'>")
+    html.append("<div class='guide-modal' role='dialog' aria-modal='true' aria-labelledby='guide-modal-title'>")
+    html.append("<h2 class='guide-modal-title' id='guide-modal-title'></h2>")
+    html.append("<div class='guide-modal-content' id='guide-modal-content'></div>")
+    html.append("<div class='guide-modal-actions'>")
+    html.append("<button class='guide-modal-close' type='button' id='guide-modal-close'>閉じる</button>")
+    html.append("</div>")
+    html.append("</div>")
+    html.append("</div>")
+
     html.append("<div class='issue-modal-overlay' id='issue-modal-overlay' aria-hidden='true'>")
     html.append("<div class='issue-modal' role='dialog' aria-modal='true' aria-labelledby='issue-modal-question'>")
     html.append("<div class='issue-modal-header'>")
@@ -900,6 +1142,127 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+
+  const guideMenuWrap = document.getElementById('guide-menu-wrap');
+  const guideMenuButton = document.getElementById('guide-menu-button');
+  const guideModalOverlay = document.getElementById('guide-modal-overlay');
+  const guideModalTitle = document.getElementById('guide-modal-title');
+  const guideModalContent = document.getElementById('guide-modal-content');
+  const guideModalClose = document.getElementById('guide-modal-close');
+
+  const taskGuideHtml = `
+    <ul class="guide-list">
+      <li class="guide-card">
+        <p class="guide-card-title">Q1 checkl</p>
+        <p class="guide-card-text">指定した値がリスト内に存在するかを判定する関数です。</p>
+      </li>
+      <li class="guide-card">
+        <p class="guide-card-title">Q2 dellt</p>
+        <p class="guide-card-text">指定した位置の要素をリストから削除する関数です。</p>
+      </li>
+      <li class="guide-card">
+        <p class="guide-card-title">Q3</p>
+        <p class="guide-card-text">課題内容に合わせて説明を追加してください。</p>
+      </li>
+    </ul>
+  `;
+
+  const criteriaGuideHtml = `
+    <div class="guide-status-grid">
+      <div class="guide-status-card">
+        <span class="guide-status-label ok">OK</span>
+        <p class="guide-card-text">実行結果が期待値と一致している状態です。</p>
+      </div>
+      <div class="guide-status-card">
+        <span class="guide-status-label ng">NG</span>
+        <p class="guide-card-text">実行はできましたが、実行結果が期待値と異なる状態です。</p>
+      </div>
+      <div class="guide-status-card">
+        <span class="guide-status-label warning">WARNING</span>
+        <p class="guide-card-text">実行結果は期待値と一致していますが、実行時に警告が出ている状態です。</p>
+      </div>
+      <div class="guide-status-card">
+        <span class="guide-status-label error">ERROR</span>
+        <p class="guide-card-text">文法エラー、型エラー、未定義関数などにより、採点処理まで進めなかった状態です。</p>
+      </div>
+    </div>
+  `;
+
+  function openGuideMenu() {
+    if (!guideMenuWrap) {
+      return;
+    }
+
+    guideMenuWrap.classList.toggle('open');
+  }
+
+  function closeGuideMenu() {
+    if (!guideMenuWrap) {
+      return;
+    }
+
+    guideMenuWrap.classList.remove('open');
+  }
+
+  function openGuideModal(type) {
+    if (!guideModalOverlay || !guideModalTitle || !guideModalContent) {
+      return;
+    }
+
+    if (type === 'tasks') {
+      guideModalTitle.textContent = '課題内容';
+      guideModalContent.innerHTML = taskGuideHtml;
+    } else {
+      guideModalTitle.textContent = '採点基準';
+      guideModalContent.innerHTML = criteriaGuideHtml;
+    }
+
+    closeGuideMenu();
+    guideModalOverlay.classList.add('show');
+    guideModalOverlay.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeGuideModal() {
+    if (!guideModalOverlay || !guideModalTitle || !guideModalContent) {
+      return;
+    }
+
+    guideModalOverlay.classList.remove('show');
+    guideModalOverlay.setAttribute('aria-hidden', 'true');
+    guideModalTitle.textContent = '';
+    guideModalContent.innerHTML = '';
+  }
+
+  if (guideMenuButton) {
+    guideMenuButton.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openGuideMenu();
+    });
+  }
+
+  document.querySelectorAll('.guide-menu-item').forEach(function (button) {
+    button.addEventListener('click', function () {
+      openGuideModal(button.getAttribute('data-guide'));
+    });
+  });
+
+  if (guideModalClose) {
+    guideModalClose.addEventListener('click', closeGuideModal);
+  }
+
+  if (guideModalOverlay) {
+    guideModalOverlay.addEventListener('click', function (e) {
+      if (e.target === guideModalOverlay) {
+        closeGuideModal();
+      }
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (guideMenuWrap && !guideMenuWrap.contains(e.target)) {
+      closeGuideMenu();
+    }
+  });
 
   const issueModalOverlay = document.getElementById('issue-modal-overlay');
   const issueModalStatus = document.getElementById('issue-modal-status');
@@ -942,7 +1305,17 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && issueModalOverlay.classList.contains('show')) {
+    if (e.key !== 'Escape') {
+      return;
+    }
+
+    closeGuideMenu();
+
+    if (guideModalOverlay && guideModalOverlay.classList.contains('show')) {
+      closeGuideModal();
+    }
+
+    if (issueModalOverlay.classList.contains('show')) {
       closeIssueModal();
     }
   });
@@ -2123,6 +2496,231 @@ body {
   box-shadow: 0 14px 28px rgba(11, 11, 13, 0.14);
 }
 
+.guide-menu-wrap {
+  position: absolute;
+  top: 42px;
+  right: 24px;
+  z-index: 20;
+}
+
+.guide-menu-button {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--poster-ink);
+  font-size: 22px;
+  font-weight: 950;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(11, 11, 13, 0.10);
+  backdrop-filter: blur(12px);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.guide-menu-button:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 14px 28px rgba(11, 11, 13, 0.16);
+}
+
+.guide-menu-panel {
+  position: absolute;
+  top: 54px;
+  right: 0;
+  width: 190px;
+  padding: 8px;
+  border: 1px solid rgba(11, 11, 13, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 42px rgba(11, 11, 13, 0.16);
+  backdrop-filter: blur(16px);
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.guide-menu-wrap.open .guide-menu-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.guide-menu-item {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: transparent;
+  color: rgba(11, 11, 13, 0.82);
+  text-align: left;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.guide-menu-item:hover {
+  background: rgba(134, 221, 177, 0.22);
+  transform: translateX(2px);
+}
+
+.guide-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(11, 11, 13, 0.38);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.guide-modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.guide-modal {
+  width: min(760px, 100%);
+  max-height: min(82vh, 760px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 28px 70px rgba(11, 11, 13, 0.28);
+}
+
+.guide-modal-title {
+  margin: 0 0 16px;
+  color: var(--poster-ink);
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.guide-modal-content {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+  color: rgba(11, 11, 13, 0.76);
+}
+
+.guide-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guide-card {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(134, 221, 177, 0.16);
+  border: 1px solid rgba(37, 138, 89, 0.14);
+}
+
+.guide-card-title {
+  margin: 0 0 6px;
+  color: var(--poster-ink);
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.guide-card-text {
+  margin: 0;
+  line-height: 1.7;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.guide-status-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.guide-status-card {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(11, 11, 13, 0.10);
+}
+
+.guide-status-label {
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.guide-status-label.ok {
+  background: rgba(37, 138, 89, 0.12);
+  color: var(--poster-mint-dark);
+}
+
+.guide-status-label.ng {
+  background: rgba(255, 107, 72, 0.14);
+  color: #c63c1c;
+}
+
+.guide-status-label.warning {
+  background: rgba(255, 184, 77, 0.20);
+  color: #9a6200;
+}
+
+.guide-status-label.error {
+  background: rgba(198, 40, 40, 0.12);
+  color: var(--poster-error);
+}
+
+.guide-modal-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.guide-modal-close {
+  min-width: 120px;
+  border: 2px solid var(--poster-ink);
+  border-radius: 999px;
+  padding: 11px 18px;
+  background: var(--poster-ink);
+  color: white;
+  font-size: 14px;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(11, 11, 13, 0.22);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.guide-modal-close:hover {
+  transform: translateY(-2px);
+  background: #1f1f22;
+  box-shadow: 0 16px 30px rgba(11, 11, 13, 0.26);
+}
+
 .upload-page::before {
   content: "";
   position: absolute;
@@ -3159,6 +3757,13 @@ body.result-frame-open {
     html.append("<body>")
     html.append("<main class='upload-page'>")
     html.append("<a class='upload-back-link' href='/period'>選択画面へ戻る</a>")
+    html.append("<div class='guide-menu-wrap' id='guide-menu-wrap'>")
+    html.append("<button class='guide-menu-button' id='guide-menu-button' type='button' aria-label='課題一覧と採点基準を開く'>☰</button>")
+    html.append("<div class='guide-menu-panel' id='guide-menu-panel'>")
+    html.append("<button class='guide-menu-item' type='button' data-guide='tasks'>課題一覧</button>")
+    html.append("<button class='guide-menu-item' type='button' data-guide='criteria'>採点基準</button>")
+    html.append("</div>")
+    html.append("</div>")
     html.append("<section class='hero'>")
     html.append("<div class='hero-top'>")
     html.append("<div>")
@@ -3242,6 +3847,17 @@ body.result-frame-open {
     html.append("</div>")
     html.append("</section>")
     html.append("</main>")
+
+    html.append("<div class='guide-modal-overlay' id='guide-modal-overlay' aria-hidden='true'>")
+    html.append("<div class='guide-modal' role='dialog' aria-modal='true' aria-labelledby='guide-modal-title'>")
+    html.append("<h2 class='guide-modal-title' id='guide-modal-title'></h2>")
+    html.append("<div class='guide-modal-content' id='guide-modal-content'></div>")
+    html.append("<div class='guide-modal-actions'>")
+    html.append("<button class='guide-modal-close' type='button' id='guide-modal-close'>閉じる</button>")
+    html.append("</div>")
+    html.append("</div>")
+    html.append("</div>")
+
     html.append("<div class='delete-modal-overlay' id='delete-modal-overlay' aria-hidden='true'>")
     html.append("<div class='delete-modal' role='dialog' aria-modal='true' aria-labelledby='delete-modal-title'>")
     html.append("<p class='delete-modal-title' id='delete-modal-title'>このファイルを削除しますか？</p>")
@@ -3265,6 +3881,127 @@ body.result-frame-open {
     html.append("""
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  const guideMenuWrap = document.getElementById('guide-menu-wrap');
+  const guideMenuButton = document.getElementById('guide-menu-button');
+  const guideModalOverlay = document.getElementById('guide-modal-overlay');
+  const guideModalTitle = document.getElementById('guide-modal-title');
+  const guideModalContent = document.getElementById('guide-modal-content');
+  const guideModalClose = document.getElementById('guide-modal-close');
+
+  const taskGuideHtml = `
+    <ul class="guide-list">
+      <li class="guide-card">
+        <p class="guide-card-title">Q1 checkl</p>
+        <p class="guide-card-text">指定した値がリスト内に存在するかを判定する関数です。</p>
+      </li>
+      <li class="guide-card">
+        <p class="guide-card-title">Q2 dellt</p>
+        <p class="guide-card-text">指定した位置の要素をリストから削除する関数です。</p>
+      </li>
+      <li class="guide-card">
+        <p class="guide-card-title">Q3</p>
+        <p class="guide-card-text">課題内容に合わせて説明を追加してください。</p>
+      </li>
+    </ul>
+  `;
+
+  const criteriaGuideHtml = `
+    <div class="guide-status-grid">
+      <div class="guide-status-card">
+        <span class="guide-status-label ok">OK</span>
+        <p class="guide-card-text">実行結果が期待値と一致している状態です。</p>
+      </div>
+      <div class="guide-status-card">
+        <span class="guide-status-label ng">NG</span>
+        <p class="guide-card-text">実行はできましたが、実行結果が期待値と異なる状態です。</p>
+      </div>
+      <div class="guide-status-card">
+        <span class="guide-status-label warning">WARNING</span>
+        <p class="guide-card-text">実行結果は期待値と一致していますが、実行時に警告が出ている状態です。</p>
+      </div>
+      <div class="guide-status-card">
+        <span class="guide-status-label error">ERROR</span>
+        <p class="guide-card-text">文法エラー、型エラー、未定義関数などにより、採点処理まで進めなかった状態です。</p>
+      </div>
+    </div>
+  `;
+
+  function openGuideMenu() {
+    if (!guideMenuWrap) {
+      return;
+    }
+
+    guideMenuWrap.classList.toggle('open');
+  }
+
+  function closeGuideMenu() {
+    if (!guideMenuWrap) {
+      return;
+    }
+
+    guideMenuWrap.classList.remove('open');
+  }
+
+  function openGuideModal(type) {
+    if (!guideModalOverlay || !guideModalTitle || !guideModalContent) {
+      return;
+    }
+
+    if (type === 'tasks') {
+      guideModalTitle.textContent = '課題一覧';
+      guideModalContent.innerHTML = taskGuideHtml;
+    } else {
+      guideModalTitle.textContent = '採点基準';
+      guideModalContent.innerHTML = criteriaGuideHtml;
+    }
+
+    closeGuideMenu();
+    guideModalOverlay.classList.add('show');
+    guideModalOverlay.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeGuideModal() {
+    if (!guideModalOverlay || !guideModalTitle || !guideModalContent) {
+      return;
+    }
+
+    guideModalOverlay.classList.remove('show');
+    guideModalOverlay.setAttribute('aria-hidden', 'true');
+    guideModalTitle.textContent = '';
+    guideModalContent.innerHTML = '';
+  }
+
+  if (guideMenuButton) {
+    guideMenuButton.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openGuideMenu();
+    });
+  }
+
+  document.querySelectorAll('.guide-menu-item').forEach(function (button) {
+    button.addEventListener('click', function () {
+      openGuideModal(button.getAttribute('data-guide'));
+    });
+  });
+
+  if (guideModalClose) {
+    guideModalClose.addEventListener('click', closeGuideModal);
+  }
+
+  if (guideModalOverlay) {
+    guideModalOverlay.addEventListener('click', function (e) {
+      if (e.target === guideModalOverlay) {
+        closeGuideModal();
+      }
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (guideMenuWrap && !guideMenuWrap.contains(e.target)) {
+      closeGuideMenu();
+    }
+  });
+  
   const uploadForm = document.getElementById('upload-form');
   const loadingOverlay = document.getElementById('loading-overlay');
   const fileInput = document.getElementById('file-input');
@@ -4321,7 +5058,17 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && deleteModalOverlay.classList.contains('show')) {
+    if (e.key !== 'Escape') {
+      return;
+    }
+
+    closeGuideMenu();
+
+    if (guideModalOverlay && guideModalOverlay.classList.contains('show')) {
+      closeGuideModal();
+    }
+
+    if (deleteModalOverlay.classList.contains('show')) {
       closeDeleteModal();
     }
   });
