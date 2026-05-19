@@ -2843,6 +2843,22 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   animation: studentGhostPickup 0.16s ease;
 }
 
+.student-drag-ghost.is-dropping {
+  opacity: 0.92;
+  transform: translate3d(0, 0, 0) scale(1);
+  box-shadow:
+    0 10px 26px rgba(11, 11, 13, 0.12),
+    0 0 0 2px rgba(134, 221, 177, 0.12);
+  transition:
+    left 0.20s cubic-bezier(0.2, 0.8, 0.2, 1),
+    top 0.20s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.20s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.20s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.20s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.20s ease,
+    box-shadow 0.20s ease;
+}
+
 @keyframes studentGhostPickup {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
@@ -3307,6 +3323,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let studentDragGhostOffsetX = 0;
   let studentDragGhostOffsetY = 0;
   let studentSortPlaceholder = null;
+  let isStudentSortDropping = false;
 
   function clearStudentSortTargets() {
     document.querySelectorAll('.student-upload-row').forEach(function (row) {
@@ -3418,6 +3435,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function startStudentSorting(row, pointerId) {
     isStudentSorting = true;
+    isStudentSortDropping = false;
     sortingStudentRow = row;
     sortingPointerId = pointerId;
 
@@ -3434,6 +3452,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function stopStudentSorting() {
+    if (isStudentSortDropping) {
+      return;
+    }
+
+    isStudentSortDropping = true;
     clearStudentSortTargets();
 
     if (pendingLongPressTimer) {
@@ -3445,26 +3468,63 @@ document.addEventListener('DOMContentLoaded', function () {
       pendingSortRow.classList.remove('is-sort-ready');
     }
 
-    removeStudentDragGhost();
+    const rowToRestore = sortingStudentRow;
+    const placeholder = studentSortPlaceholder;
+    const ghost = studentDragGhost;
 
-    if (sortingStudentRow) {
-      sortingStudentRow.classList.remove('is-sorting');
-      sortingStudentRow.classList.remove('is-sort-ready');
-      sortingStudentRow.classList.remove('is-ghost-source');
+    function finishStudentSorting() {
+      if (rowToRestore) {
+        rowToRestore.classList.remove('is-sorting');
+        rowToRestore.classList.remove('is-sort-ready');
+        rowToRestore.classList.remove('is-ghost-source');
 
-      if (studentSortPlaceholder) {
-        studentUploadRows.insertBefore(sortingStudentRow, studentSortPlaceholder);
+        if (placeholder && placeholder.parentNode === studentUploadRows) {
+          studentUploadRows.insertBefore(rowToRestore, placeholder);
+        } else {
+          studentUploadRows.appendChild(rowToRestore);
+        }
       }
+
+      removeStudentSortPlaceholder();
+      removeStudentDragGhost();
+
+      isStudentSorting = false;
+      isStudentSortDropping = false;
+      sortingStudentRow = null;
+      sortingPointerId = null;
+      pendingSortRow = null;
+
+      document.body.classList.remove('student-sorting-active');
     }
 
-    removeStudentSortPlaceholder();
+    if (!rowToRestore || !placeholder || !ghost) {
+      finishStudentSorting();
+      return;
+    }
 
-    isStudentSorting = false;
-    sortingStudentRow = null;
-    sortingPointerId = null;
-    pendingSortRow = null;
+    const targetBox = placeholder.getBoundingClientRect();
 
-    document.body.classList.remove('student-sorting-active');
+    ghost.classList.add('is-dropping');
+    ghost.style.left = targetBox.left + 'px';
+    ghost.style.top = targetBox.top + 'px';
+    ghost.style.width = targetBox.width + 'px';
+    ghost.style.height = targetBox.height + 'px';
+
+    let finished = false;
+
+    function handleDropAnimationEnd() {
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+      ghost.removeEventListener('transitionend', handleDropAnimationEnd);
+      finishStudentSorting();
+    }
+
+    ghost.addEventListener('transitionend', handleDropAnimationEnd);
+
+    setTimeout(handleDropAnimationEnd, 260);
   }
 
   function getStudentSortItems() {
@@ -3572,7 +3632,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    if (!isStudentSorting) {
+    if (!isStudentSorting || isStudentSortDropping) {
       return;
     }
 
