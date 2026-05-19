@@ -10,6 +10,8 @@ import traceback
 
 import run_checker
 import second_period_pages
+import second_period_week1_app
+import second_period_week1_checker
 
 import os
 
@@ -5839,7 +5841,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     return "\n".join(html)
 
-def check_uploaded_files(upload_dir, file_metadata=None):
+def check_uploaded_files(upload_dir, file_metadata=None, checker_module=run_checker):
     all_results = []
     file_summaries = []
     file_metadata = file_metadata or {}
@@ -5850,13 +5852,13 @@ def check_uploaded_files(upload_dir, file_metadata=None):
         file_results = []
 
         # まずは54個の小テストをすべて実行する
-        for test in run_checker.TESTS:
-            result = run_checker.run_one_test(ml_file, test)
+        for test in checker_module.TESTS:
+            result = checker_module.run_one_test(ml_file, test)
             all_results.append(result)
             file_results.append(result)
 
         # 小テスト結果を1〜20の大問単位にまとめる
-        question_summaries = run_checker.summarize_by_question(file_results)
+        question_summaries = checker_module.summarize_by_question(file_results)
 
         question_ok_count = 0
         question_warning_count = 0
@@ -5928,6 +5930,8 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_html(build_period_select_html())
         elif self.path == "/period/2" or self.path.startswith("/period/2?"):
             self.send_html(second_period_pages.build_week_select_html(build_carousel_select_html))
+        elif self.path == "/period/2/week1" or self.path.startswith("/period/2/week1?"):
+            self.send_html(second_period_week1_app.build_index_html())
         elif self.path == "/upload" or self.path.startswith("/upload?"):
             self.send_html(build_index_html())
         elif self.path == "/background.png":
@@ -5938,17 +5942,26 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_html(build_index_html("ページが見つかりません。"), status=404)
 
     def do_POST(self):
-        if self.path != "/check":
+        if self.path not in ("/check", "/period/2/week1/check"):
             self.send_html(build_index_html("不正なURLです。"), status=404)
             return
 
         temp_dir = None
 
+        if self.path == "/period/2/week1/check":
+            index_html_builder = second_period_week1_app.build_index_html
+            result_html_builder = second_period_week1_app.build_result_html
+            checker_module = second_period_week1_checker
+        else:
+            index_html_builder = build_index_html
+            result_html_builder = build_result_html
+            checker_module = run_checker
+
         try:
             content_type = self.headers.get("Content-Type")
 
             if not content_type:
-                self.send_html(build_index_html("ファイルが送信されていません。"), status=400)
+                self.send_html(index_html_builder("ファイルが送信されていません。"), status=400)
                 return
 
             temp_dir = Path(tempfile.mkdtemp(prefix="ocaml_upload_"))
@@ -5956,7 +5969,7 @@ class CheckerHandler(BaseHTTPRequestHandler):
             content_length = int(self.headers.get("Content-Length", "0"))
 
             if content_length <= 0:
-                self.send_html(build_index_html("ファイルが送信されていません。"), status=400)
+                self.send_html(index_html_builder("ファイルが送信されていません。"), status=400)
                 return
 
             body = self.rfile.read(content_length)
@@ -5970,7 +5983,7 @@ class CheckerHandler(BaseHTTPRequestHandler):
             message = BytesParser(policy=policy.default).parsebytes(raw_message)
 
             if not message.is_multipart():
-                self.send_html(build_index_html(".ml ファイルを選択してください。"), status=400)
+                self.send_html(index_html_builder(".ml ファイルを選択してください。"), status=400)
                 return
 
             upload_mode = "bulk"
@@ -6047,7 +6060,7 @@ class CheckerHandler(BaseHTTPRequestHandler):
 
                 if saved_count == 0:
                     self.send_html(
-                        build_index_html("学籍番号と .ml ファイルの組み合わせを入力してください。"),
+                        index_html_builder("学籍番号と .ml ファイルの組み合わせを入力してください。"),
                         status=400
                     )
                     return
@@ -6075,17 +6088,17 @@ class CheckerHandler(BaseHTTPRequestHandler):
                     saved_count += 1
 
                 if saved_count == 0:
-                    self.send_html(build_index_html(".ml ファイルがアップロードされていません。"), status=400)
+                    self.send_html(index_html_builder(".ml ファイルがアップロードされていません。"), status=400)
                     return
 
-            all_results, file_summaries = check_uploaded_files(temp_dir, file_metadata)
+            all_results, file_summaries = check_uploaded_files(temp_dir, file_metadata, checker_module=checker_module)
 
-            html = build_result_html(all_results, file_summaries)
+            html = result_html_builder(all_results, file_summaries)
             self.send_html(html)
 
         except Exception:
             err = traceback.format_exc()
-            html = build_index_html("実行中にエラーが発生しました。")
+            html = index_html_builder("実行中にエラーが発生しました。")
             html += "<pre>{}</pre>".format(html_escape(err))
             self.send_html(html, status=500)
 
