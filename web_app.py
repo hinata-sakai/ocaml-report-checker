@@ -3390,6 +3390,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let studentDeleteHintX = 32;
   let pendingDeleteStudentRow = null;
   let pendingDeleteStudentPlaceholder = null;
+  let studentDragMode = null;
 
   function clearStudentSortTargets() {
     document.querySelectorAll('.student-upload-row').forEach(function (row) {
@@ -3465,32 +3466,26 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function rubberHorizontalMove(moveX, moveY) {
-    const absX = Math.abs(moveX);
-    const absY = Math.abs(moveY);
+    if (studentDragMode !== 'delete') {
+      if (moveX > 0) {
+        const softLimit = 24;
+        const hardLimit = 52;
+        const resistance = 34;
 
-    const isMostlyHorizontal = absX > absY * 1.15;
-    const isNearOriginalY = absY < 48;
+        if (moveX <= softLimit) {
+          return moveX;
+        }
 
-    if (moveX < 0) {
-      if (!isMostlyHorizontal || !isNearOriginalY) {
-        return 0;
+        const extra = moveX - softLimit;
+        const rubberExtra = (1 - Math.exp(-extra / resistance)) * (hardLimit - softLimit);
+
+        return Math.min(softLimit + rubberExtra, hardLimit);
       }
 
-      return clamp(moveX, -160, 0);
+      return 0;
     }
 
-    const softLimit = 24;
-    const hardLimit = 52;
-    const resistance = 34;
-
-    if (moveX <= softLimit) {
-      return moveX;
-    }
-
-    const extra = moveX - softLimit;
-    const rubberExtra = (1 - Math.exp(-extra / resistance)) * (hardLimit - softLimit);
-
-    return Math.min(softLimit + rubberExtra, hardLimit);
+    return clamp(moveX, -160, 0);
   }
 
   function moveStudentDragGhost(clientX, clientY) {
@@ -3585,19 +3580,50 @@ document.addEventListener('DOMContentLoaded', function () {
     const moveX = clientX - pointerStartX;
     const moveY = clientY - pointerStartY;
 
+    const absX = Math.abs(moveX);
+    const absY = Math.abs(moveY);
     const leftDistance = Math.max(0, -moveX);
-    const isSlidingLeft = leftDistance > studentDeleteHintX;
-    const isLeftEnough = leftDistance > studentDeleteThresholdX;
-    const isMostlyHorizontal = Math.abs(moveX) > Math.abs(moveY) * 1.15;
 
-    const deleteProgress = clamp(
-      (leftDistance - studentDeleteHintX) / (studentDeleteThresholdX - studentDeleteHintX),
-      0,
-      1
-    );
+    const isMostlyHorizontal = absX > absY * 1.15;
+    const isMostlyVertical = absY > absX * 1.15;
 
-    setStudentDeleteSlideArea(isSlidingLeft && isMostlyHorizontal, deleteProgress);
-    setStudentDeleteReady(isLeftEnough && isMostlyHorizontal);
+    if (studentDragMode === null) {
+      if (leftDistance > studentDeleteHintX && isMostlyHorizontal) {
+        studentDragMode = 'delete';
+      } else if (absY > 18 && isMostlyVertical) {
+        studentDragMode = 'sort';
+      }
+    }
+
+    if (studentDragMode === 'sort') {
+      setStudentDeleteSlideArea(false);
+      setStudentDeleteReady(false);
+      return;
+    }
+
+    if (studentDragMode === 'delete') {
+      const deleteProgress = clamp(
+        (leftDistance - studentDeleteHintX) / (studentDeleteThresholdX - studentDeleteHintX),
+        0,
+        1
+      );
+
+      const isBackToOriginal = moveX > -studentDeleteHintX;
+
+      if (isBackToOriginal) {
+        studentDragMode = null;
+        setStudentDeleteSlideArea(false);
+        setStudentDeleteReady(false);
+        return;
+      }
+
+      setStudentDeleteSlideArea(true, deleteProgress);
+      setStudentDeleteReady(leftDistance > studentDeleteThresholdX);
+      return;
+    }
+
+    setStudentDeleteSlideArea(false);
+    setStudentDeleteReady(false);
   }
 
   function playStudentRowLanding(row) {
@@ -3618,6 +3644,7 @@ document.addEventListener('DOMContentLoaded', function () {
     isStudentSorting = true;
     isStudentSortDropping = false;
     isStudentDeleteReady = false;
+    studentDragMode = null;
     pendingDeleteStudentRow = null;
     pendingDeleteStudentPlaceholder = null;
     sortingStudentRow = row;
@@ -3658,6 +3685,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
       isStudentSorting = false;
       isStudentSortDropping = false;
+      isStudentDeleteReady = false;
+      studentDragMode = null;
       sortingStudentRow = null;
       sortingPointerId = null;
       pendingSortRow = null;
@@ -3855,7 +3884,7 @@ document.addEventListener('DOMContentLoaded', function () {
     moveStudentDragGhost(e.clientX, e.clientY);
     updateStudentDeleteState(e.clientX, e.clientY);
 
-    if (!isStudentDeleteReady) {
+    if (studentDragMode !== 'delete') {
       moveSortingStudentRow(e.clientY);
     }
   });
@@ -4120,6 +4149,7 @@ document.addEventListener('DOMContentLoaded', function () {
     pendingDeleteStudentRow = null;
     pendingDeleteStudentPlaceholder = null;
     isStudentDeleteReady = false;
+    studentDragMode = null;
   }
 
   function closeDeleteModal() {
