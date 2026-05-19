@@ -2821,26 +2821,19 @@ body.student-sorting-active .student-upload-row.is-dragging-file {
   animation: studentRowLanded 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.student-upload-row.is-drop-landed {
+  animation: studentRowLanded 0.18s ease-out;
+}
+
 @keyframes studentRowLanded {
   0% {
-    opacity: 0.72;
-    transform: translate3d(0, 4px, 0) scale(0.992);
-    box-shadow:
-      0 10px 24px rgba(11, 11, 13, 0.08),
-      0 0 0 2px rgba(134, 221, 177, 0.10);
-  }
-
-  65% {
-    opacity: 1;
-    transform: translate3d(0, -2px, 0) scale(1.006);
-    box-shadow:
-      0 16px 34px rgba(11, 11, 13, 0.13),
-      0 0 0 4px rgba(134, 221, 177, 0.16);
+    opacity: 0.82;
+    transform: translate3d(0, 4px, 0);
   }
 
   100% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
