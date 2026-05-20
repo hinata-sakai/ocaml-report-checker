@@ -6,7 +6,7 @@ Start as a clone/proxy of run_checker and customize TESTS/logic for:
 count_ones / power_val / power_steps / collatz_steps / collatz_path.
 """
 
-import run_checker
+from first_period import run_checker
 
 TESTS = run_checker.TESTS
 
