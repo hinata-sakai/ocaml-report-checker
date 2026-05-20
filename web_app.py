@@ -8,17 +8,17 @@ from email.parser import BytesParser
 from email import policy
 import traceback
 
-import run_checker
+from first_period import run_checker
 import second_period_pages
-import second_period_week1_app
-import second_period_week1_checker
+from second_period.week1 import app as second_period_week1_app
+from second_period.week1 import checker as second_period_week1_checker
 
 import os
 
 HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8000"))
 BACKGROUND_IMAGE = Path("webhaikei.png")
-TASK17_IMAGE = Path("task17_routes.png")
+TASK17_IMAGE = Path("first_period/task17_routes.png")
 
 VERSION_FILE = Path("VERSION")
 
