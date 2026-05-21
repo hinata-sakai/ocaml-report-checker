@@ -12,7 +12,8 @@ def add_week1_title_style(html):
 .period-with-week {
   display: inline-flex;
   align-items: flex-end;
-  gap: 18px;
+  gap: 0;
+  letter-spacing: -0.08em;
 }
 
 .period-main {
@@ -21,11 +22,12 @@ def add_week1_title_style(html):
 
 .period-week {
   display: inline-block;
-  font-size: 0.36em;
+  font-size: 0.42em;
   font-weight: 950;
   line-height: 1;
   margin-bottom: 0.10em;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.06em;
+  transform: translateX(-0.04em);
 }
 """
 
