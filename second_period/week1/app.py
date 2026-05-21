@@ -43,7 +43,6 @@ WEEK1_TASK_GUIDE_HTML = """
   <h3 class="guide-section-title">課題 2：べき乗 n<sup>n</sup> の計算</h3>
 
   <div class="guide-card">
-
     <div class="guide-subitems">
       <div class="guide-subitem">
         <p class="guide-card-title">1. n<sup>n</sup> の値を求める</p>
@@ -98,7 +97,6 @@ WEEK1_TASK_GUIDE_HTML = """
   <h3 class="guide-section-title">課題 4：べき乗とコラッツ予想に関する考察</h3>
 
   <div class="guide-card">
-
     <div class="guide-subitems">
       <div class="guide-subitem">
         <p class="guide-card-title">1. 「入力値の大きさ」と「ステップ数」の関係：べき乗 vs コラッツ予想</p>
@@ -163,6 +161,10 @@ def add_week1_title_style(html):
   margin-bottom: 0.10em;
   letter-spacing: -0.06em;
   transform: translateX(-0.04em);
+}
+
+.guide-card > .guide-subitems:first-child {
+  margin-top: 0;
 }
 
 .week1-guide-caution {
