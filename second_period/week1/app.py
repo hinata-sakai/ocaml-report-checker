@@ -16,7 +16,6 @@ WEEK1_TASK_GUIDE_HTML = """
   <h3 class="guide-section-title">課題 1：2進数の1の個数</h3>
 
   <div class="guide-card">
-    <p class="guide-card-title">count_ones : int -&gt; int</p>
     <p class="guide-card-text">
       与えられた正の整数 n を二進数で表記したとき，その中に現れる「1」の個数を求める
       関数 count_ones : int -&gt; int を作成しなさい。
@@ -44,7 +43,6 @@ WEEK1_TASK_GUIDE_HTML = """
   <h3 class="guide-section-title">課題 2：べき乗 n<sup>n</sup> の計算</h3>
 
   <div class="guide-card">
-    <p class="guide-card-title">power_val / power_steps</p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
@@ -67,7 +65,6 @@ WEEK1_TASK_GUIDE_HTML = """
   <h3 class="guide-section-title">課題 3：コラッツ予想</h3>
 
   <div class="guide-card">
-    <p class="guide-card-title">collatz_steps / collatz_path</p>
     <p class="guide-card-text">
       任意の正の整数 n に対して，以下の操作を繰り返すと最終的に必ず 1 に到達するという
       「コラッツ予想」を題材に，2つの関数を作成しなさい。
@@ -101,7 +98,6 @@ WEEK1_TASK_GUIDE_HTML = """
   <h3 class="guide-section-title">課題 4：べき乗とコラッツ予想に関する考察</h3>
 
   <div class="guide-card">
-    <p class="guide-card-title">考察</p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
@@ -125,7 +121,6 @@ WEEK1_TASK_GUIDE_HTML = """
   <h3 class="guide-section-title">提出方法</h3>
 
   <div class="guide-card">
-    <p class="guide-card-title">提出情報</p>
     <ul class="guide-submit-list">
       <li>提出方法：LETUS</li>
       <li>提出物：各課題のレポート（LaTeXで作成したPDF）と，作成したプログラムソース（拡張子mlのファイル）</li>
