@@ -139,6 +139,87 @@ WEEK1_TASK_GUIDE_HTML = """
   </div>
 """
 
+WEEK1_ANSWER_GUIDE_HTML = """
+  <p class="guide-intro">
+    第2期 第1週の解答例です。実装方法は一例であり，同じ動作をする別の実装でも正解になります。
+  </p>
+
+  <h3 class="guide-section-title">課題 1：2進数の1の個数</h3>
+
+  <div class="guide-card">
+    <pre class="guide-card-code">let rec count_ones n =
+  if n = 0 then
+    0
+  else
+    (n mod 2) + count_ones (n / 2)
+;;</pre>
+  </div>
+
+  <h3 class="guide-section-title">課題 2：べき乗 n<sup>n</sup> の計算</h3>
+
+  <div class="guide-card">
+    <p class="guide-card-title">power_val</p>
+    <pre class="guide-card-code">let power_val n =
+  let rec aux k =
+    if k = 0 then
+      1
+    else
+      n * aux (k - 1)
+  in
+  aux n
+;;</pre>
+
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">power_steps</p>
+        <pre class="guide-card-code">let power_steps n =
+  n
+;;</pre>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="guide-section-title">課題 3：コラッツ予想</h3>
+
+  <div class="guide-card">
+    <p class="guide-card-title">collatz_steps</p>
+    <pre class="guide-card-code">let rec collatz_steps n =
+  if n = 1 then
+    0
+  else
+    let next_n =
+      if n mod 2 = 0 then n / 2
+      else 3 * n + 1
+    in
+    1 + collatz_steps next_n
+;;</pre>
+
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">collatz_path</p>
+        <pre class="guide-card-code">let rec collatz_path n =
+  if n = 1 then
+    [1]
+  else
+    let next_n =
+      if n mod 2 = 0 then n / 2
+      else 3 * n + 1
+    in
+    n :: collatz_path next_n
+;;</pre>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="guide-section-title">課題 4：考察</h3>
+
+  <div class="guide-card">
+    <p class="guide-card-text">
+      課題4の考察は，提出PDFを確認してください。
+      自動採点では，べき乗とコラッツ予想の考察内容までは判定していません。
+    </p>
+  </div>
+"""
 
 def add_week1_title_style(html):
     extra_css = """
@@ -202,6 +283,41 @@ def replace_task_guide_html(html):
 
     return html[:content_start] + WEEK1_TASK_GUIDE_HTML + html[end:]
 
+def add_answer_guide_menu(html):
+    html = html.replace(
+        "<button class='guide-menu-item' type='button' data-guide='criteria'>採点基準</button>",
+        "<button class='guide-menu-item' type='button' data-guide='criteria'>採点基準</button>"
+        "<button class='guide-menu-item' type='button' data-guide='answers'>解答</button>"
+    )
+
+    html = html.replace(
+        "if (type === 'tasks') {\n"
+        "      guideModalTitle.textContent = '課題内容';\n"
+        "      guideModalContent.innerHTML = taskGuideHtml;\n"
+        "    } else {\n"
+        "      guideModalTitle.textContent = '採点基準';\n"
+        "      guideModalContent.innerHTML = criteriaGuideHtml;\n"
+        "    }",
+        "if (type === 'tasks') {\n"
+        "      guideModalTitle.textContent = '課題内容';\n"
+        "      guideModalContent.innerHTML = taskGuideHtml;\n"
+        "    } else if (type === 'answers') {\n"
+        "      guideModalTitle.textContent = '解答';\n"
+        "      guideModalContent.innerHTML = answerGuideHtml;\n"
+        "    } else {\n"
+        "      guideModalTitle.textContent = '採点基準';\n"
+        "      guideModalContent.innerHTML = criteriaGuideHtml;\n"
+        "    }"
+    )
+
+    html = html.replace(
+        "const criteriaGuideHtml = `",
+        "const answerGuideHtml = `"
+        + WEEK1_ANSWER_GUIDE_HTML
+        + "`;\n\n  const criteriaGuideHtml = `"
+    )
+
+    return html
 
 def build_index_html(message=""):
     import web_app
@@ -218,7 +334,8 @@ def build_index_html(message=""):
     )
 
     html = replace_task_guide_html(html)
-    html = add_week1_title_style(html)
+    html = add_answer_guide_menu(html)
+    html = add_week1_title_style(html) 
 
     return html
 
@@ -242,6 +359,7 @@ def build_result_html(all_results, file_summaries):
     )
 
     html = replace_task_guide_html(html)
+    html = add_answer_guide_menu(html)
     html = add_week1_title_style(html)
 
     return html
