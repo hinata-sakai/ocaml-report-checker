@@ -174,11 +174,11 @@ def add_week1_title_style(html):
 
 .week1-manual-check-note {
   display: block;
-  margin-top: 10px;
-  color: rgba(11, 11, 13, 0.68);
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.8;
+  margin-top: 14px;
+  color: rgba(11, 11, 13, 0.76);
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
 }
 """
 
