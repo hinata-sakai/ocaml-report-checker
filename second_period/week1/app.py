@@ -171,6 +171,15 @@ def add_week1_title_style(html):
   background: rgba(255, 184, 77, 0.18);
   border-color: rgba(217, 139, 0, 0.24);
 }
+
+.week1-manual-check-note {
+  display: block;
+  margin-top: 10px;
+  color: rgba(11, 11, 13, 0.68);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.8;
+}
 """
 
     return html.replace("</style>", extra_css + "\n</style>")
@@ -222,6 +231,15 @@ def build_result_html(all_results, file_summaries):
     html = html.replace("Ocaml 1期", "Ocaml 2期 第1週")
     html = html.replace("OCaml 1期", "OCaml 2期 第1週")
     html = html.replace("1期", "2期 第1週")
+
+    html = html.replace(
+        "採点結果と確認が必要な問を、ファイルごとにまとめて表示しています。",
+        "採点結果と確認が必要な問を、ファイルごとにまとめて表示しています。"
+        "<span class='week1-manual-check-note'>"
+        "課題1-2「アルゴリズムの動作説明」と課題4-1,4-2「べき乗とコラッツ予想に関する考察」は"
+        "自動採点できないため、提出PDFで確認してください。"
+        "</span>"
+    )
 
     html = replace_task_guide_html(html)
     html = add_week1_title_style(html)
