@@ -5126,28 +5126,39 @@ document.addEventListener('DOMContentLoaded', function () {
       const rowToRestore = sortingStudentRow;
       const placeholder = studentSortPlaceholder;
 
-      removeStudentDragGhost();
-      setStudentDeleteSlideArea(false);
-      setStudentDeleteReady(false);
+      if (shouldRestoreOnlyEmptyStudentRow(rowToRestore)) {
+        setStudentDeleteSlideArea(false);
+        setStudentDeleteReady(false);
+        studentDragMode = null;
+        /*
+          return しない。
+          このまま下の通常のドロップ処理へ進ませることで、
+          ゴーストカードがプレースホルダー位置へスッと戻る。
+        */
+      } else {
+        removeStudentDragGhost();
+        setStudentDeleteSlideArea(false);
+        setStudentDeleteReady(false);
 
-      if (rowToRestore) {
-        rowToRestore.classList.remove('is-sorting');
-        rowToRestore.classList.remove('is-sort-ready');
-        rowToRestore.classList.remove('is-ghost-source');
+        if (rowToRestore) {
+          rowToRestore.classList.remove('is-sorting');
+          rowToRestore.classList.remove('is-sort-ready');
+          rowToRestore.classList.remove('is-ghost-source');
+        }
+
+        openStudentRowDeleteModal(rowToRestore, placeholder);
+
+        isStudentSorting = false;
+        isStudentSortDropping = false;
+        isStudentDeleteReady = false;
+        studentDragMode = null;
+        sortingStudentRow = null;
+        sortingPointerId = null;
+        pendingSortRow = null;
+
+        document.body.classList.remove('student-sorting-active');
+        return;
       }
-
-      openStudentRowDeleteModal(rowToRestore, placeholder);
-
-      isStudentSorting = false;
-      isStudentSortDropping = false;
-      isStudentDeleteReady = false;
-      studentDragMode = null;
-      sortingStudentRow = null;
-      sortingPointerId = null;
-      pendingSortRow = null;
-
-      document.body.classList.remove('student-sorting-active');
-      return;
     }
 
     isStudentSortDropping = true;
@@ -5188,6 +5199,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
       isStudentSorting = false;
       isStudentSortDropping = false;
+      isStudentDeleteReady = false;
+      studentDragMode = null;
       sortingStudentRow = null;
       sortingPointerId = null;
       pendingSortRow = null;
@@ -5572,6 +5585,37 @@ document.addEventListener('DOMContentLoaded', function () {
     return fileName;
   }
 
+  function isEmptyStudentRow(row) {
+    if (!row) {
+      return false;
+    }
+
+    const studentInput = row.querySelector('.student-id-input');
+    const fileInput = row.querySelector('.student-file-input');
+
+    const studentId = studentInput ? studentInput.value.trim() : '';
+    const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+
+    return studentId === '' && !hasFile;
+  }
+
+  function shouldRestoreOnlyEmptyStudentRow(row) {
+    if (!row || !studentUploadRows) {
+      return false;
+    }
+
+    const rows = Array.from(studentUploadRows.querySelectorAll('.student-upload-row'));
+    const rowIsAlreadyInList = rows.indexOf(row) !== -1;
+
+    /*
+      並び替え中は startStudentSorting() で対象 row が一度 DOM から remove される。
+      そのため、DOM上の行数だけを見ると 0 になってしまう。
+      row が DOM から外れている場合は、その1枚を足して数える。
+    */
+    const totalRows = rows.length + (rowIsAlreadyInList ? 0 : 1);
+
+    return totalRows === 1 && isEmptyStudentRow(row);
+  }
   function openStudentRowDeleteModal(row, placeholder) {
     deleteMode = 'student-row';
     deleteTargetKey = null;
