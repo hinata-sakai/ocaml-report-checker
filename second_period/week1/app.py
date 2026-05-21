@@ -22,7 +22,7 @@ def add_week1_title_style(html):
 
 .period-week {
   display: inline-block;
-  font-size: 0.64em;
+  font-size: 0.63em;
   font-weight: 950;
   line-height: 1;
   margin-bottom: 0.10em;
