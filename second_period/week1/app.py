@@ -7,6 +7,31 @@ current 1期 page as an initial clone.
 """
 
 
+def add_week1_title_style(html):
+    extra_css = """
+.period-with-week {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 18px;
+}
+
+.period-main {
+  display: inline-block;
+}
+
+.period-week {
+  display: inline-block;
+  font-size: 0.36em;
+  font-weight: 950;
+  line-height: 1;
+  margin-bottom: 0.10em;
+  letter-spacing: 0.02em;
+}
+"""
+
+    return html.replace("</style>", extra_css + "\n</style>")
+
+
 def build_index_html(message=""):
     import web_app
 
@@ -15,6 +40,14 @@ def build_index_html(message=""):
     html = html.replace("Ocaml 1期", "Ocaml 2期")
     html = html.replace("OCaml 1期", "OCaml 2期")
     html = html.replace("1期", "2期")
+
+    html = html.replace(
+        "OCaml<br>2期",
+        'OCaml<br><span class="period-with-week"><span class="period-main">2期</span><span class="period-week">第1週</span></span>'
+    )
+
+    html = add_week1_title_style(html)
+
     return html
 
 
@@ -23,7 +56,8 @@ def build_result_html(all_results, file_summaries):
 
     html = web_app.build_result_html(all_results, file_summaries)
     html = html.replace("採点結果 - Ocaml 1期", "採点結果 - Ocaml 2期 第1週")
-    html = html.replace("Ocaml 1期", "Ocaml 2期")
-    html = html.replace("OCaml 1期", "OCaml 2期")
-    html = html.replace("1期", "2期")
+    html = html.replace("Ocaml 1期", "Ocaml 2期 第1週")
+    html = html.replace("OCaml 1期", "OCaml 2期 第1週")
+    html = html.replace("1期", "2期 第1週")
+
     return html
