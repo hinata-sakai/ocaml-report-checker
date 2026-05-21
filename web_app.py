@@ -5368,7 +5368,7 @@ document.addEventListener('DOMContentLoaded', function () {
     studentInput.className = 'student-id-input';
     studentInput.type = 'text';
     studentInput.name = 'student_ids';
-    studentInput.placeholder = '例：6322031';
+    studentInput.placeholder = '例：6325000';
     studentInput.value = studentIdValue || '';
 
     const fileInput = document.createElement('input');
