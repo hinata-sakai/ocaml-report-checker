@@ -13,6 +13,7 @@ Notes:
 - power_val is graded as one-argument function based on the assignment text.
 - power_steps is graded as one-argument function.
 - power_steps accepts both n and n + 1 because recursion-count interpretation may differ.
+- collatz_steps accepts both operation count and operation count + 1 for the same reason.
 - Explanation and discussion sections should be checked manually from the PDF.
 """
 
@@ -96,23 +97,23 @@ assert_steps "power_steps 10" 10 (power_steps 10);;
         "3-1",
         "collatz_steps",
         r'''
-let assert_eq label actual expected =
-  if actual = expected then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %d but got %d\n" label expected actual
-;;
+    let assert_steps label expected actual =
+    if actual = expected || actual = expected + 1 then
+        print_endline ("OK " ^ label)
+    else
+        Printf.printf "NG %s: expected %d or %d but got %d\n" label expected (expected + 1) actual
+    ;;
 
-assert_eq "collatz_steps 1" (collatz_steps 1) 0;;
-assert_eq "collatz_steps 2" (collatz_steps 2) 1;;
-assert_eq "collatz_steps 3" (collatz_steps 3) 7;;
-assert_eq "collatz_steps 4" (collatz_steps 4) 2;;
-assert_eq "collatz_steps 5" (collatz_steps 5) 5;;
-assert_eq "collatz_steps 7" (collatz_steps 7) 16;;
-assert_eq "collatz_steps 8" (collatz_steps 8) 3;;
-assert_eq "collatz_steps 9" (collatz_steps 9) 19;;
-assert_eq "collatz_steps 10" (collatz_steps 10) 6;;
-''',
+    assert_steps "collatz_steps 1" 0 (collatz_steps 1);;
+    assert_steps "collatz_steps 2" 1 (collatz_steps 2);;
+    assert_steps "collatz_steps 3" 7 (collatz_steps 3);;
+    assert_steps "collatz_steps 4" 2 (collatz_steps 4);;
+    assert_steps "collatz_steps 5" 5 (collatz_steps 5);;
+    assert_steps "collatz_steps 7" 16 (collatz_steps 7);;
+    assert_steps "collatz_steps 8" 3 (collatz_steps 8);;
+    assert_steps "collatz_steps 9" 19 (collatz_steps 9);;
+    assert_steps "collatz_steps 10" 6 (collatz_steps 10);;
+    ''',
     ),
     make_test(
         "3-2",
