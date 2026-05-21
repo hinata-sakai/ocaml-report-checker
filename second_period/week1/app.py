@@ -302,6 +302,7 @@ collatz_path 9 :
 collatz_path 7 :
 [7; 22; 11; 34; 17; 52; 26; 13; 40; 20; 10; 5; 16;
  8; 4; 2; 1]</pre>
+ 
         <p class="guide-card-title">【考察のポイント】</p>
         <p class="guide-card-text">
           各リストを比較すると，collatz_path 6 の2番目の要素以降は collatz_path 3 と完全に一致し，
