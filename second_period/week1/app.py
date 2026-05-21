@@ -141,39 +141,88 @@ WEEK1_TASK_GUIDE_HTML = """
 
 WEEK1_ANSWER_GUIDE_HTML = """
   <p class="guide-intro">
-    第2期 第1週の解答例です。実装方法は一例であり，同じ動作をする別の実装でも正解になります。
+    第2期 第1週の解答例です。PDFの解答例の内容を，実際の課題番号に合わせて整理しています。
+    実装方法は一例であり，同じ動作をする別の実装でも正解になります。
   </p>
 
   <h3 class="guide-section-title">課題 1：2進数の1の個数</h3>
 
   <div class="guide-card">
+    <p class="guide-card-title">【問1：プログラムの作成】</p>
     <pre class="guide-card-code">let rec count_ones n =
   if n = 0 then
     0
   else
     (n mod 2) + count_ones (n / 2)
 ;;</pre>
+
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">【問2：アルゴリズムの動作説明】</p>
+        <p class="guide-card-text">
+          私の学籍番号の下二桁は「00」であるため，数値 100 を用いて count_ones 100 の動作を説明する。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">1. 計算の過程（再帰呼び出しの展開）</p>
+        <p class="guide-card-text">
+          count_ones 100 は，以下のように順次展開され計算される。
+        </p>
+        <ul class="guide-submit-list">
+          <li>count_ones 100 = (100 mod 2) + count_ones 50 = 0 + count_ones 50</li>
+          <li>count_ones 50 = (50 mod 2) + count_ones 25 = 0 + count_ones 25</li>
+          <li>count_ones 25 = (25 mod 2) + count_ones 12 = 1 + count_ones 12</li>
+          <li>count_ones 12 = (12 mod 2) + count_ones 6 = 0 + count_ones 6</li>
+          <li>count_ones 6 = (6 mod 2) + count_ones 3 = 0 + count_ones 3</li>
+          <li>count_ones 3 = (3 mod 2) + count_ones 1 = 1 + count_ones 1</li>
+          <li>count_ones 1 = (1 mod 2) + count_ones 0 = 1 + count_ones 0</li>
+          <li>count_ones 0 = 0（ベースケース：再帰の終了）</li>
+        </ul>
+        <p class="guide-card-text">
+          これらを合計すると，0 + 0 + 1 + 0 + 0 + 1 + 1 + 0 = 3 となり，
+          最終的な結果として 3 が得られる。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">2. 操作の意味</p>
+        <p class="guide-card-text">
+          n mod 2 の操作は，各ステップにおいて，その時点の数値が奇数（最下位桁が1）か，
+          偶数（最下位桁が0）かを判定している。
+          100の二進数表記は 1100100 であるが，計算過程の n mod 2 の結果を逆順
+          （最後に出たものから順）に並べると 1, 1, 0, 0, 1, 0, 0 となり，
+          正しく各桁の値を抽出して「1」である場合のみをカウントに加えていることがわかる。
+        </p>
+        <p class="guide-card-text">
+          n / 2 の操作は，二進数表記における「右シフト」に相当する。
+          一の位を n mod 2 で確認した後，n / 2 を行うことでその桁を切り捨て，
+          それまで「二の位」だったものを新たな「一の位」として次の再帰に渡している。
+          この操作を繰り返すことで，全ての桁を順番に一の位に持ってきて調べることが可能となっている。
+        </p>
+      </div>
+    </div>
   </div>
 
   <h3 class="guide-section-title">課題 2：べき乗 n<sup>n</sup> の計算</h3>
 
   <div class="guide-card">
-    <p class="guide-card-title">power_val</p>
-    <pre class="guide-card-code">let power_val n =
-  let rec aux k =
-    if k = 0 then
-      1
-    else
-      n * aux (k - 1)
-  in
-  aux n
-;;</pre>
+    <p class="guide-card-title">べき乗の2つの関数</p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">power_steps</p>
-        <pre class="guide-card-code">let power_steps n =
-  n
+        <p class="guide-card-title">値を求める</p>
+        <pre class="guide-card-code">let rec power_val n k =
+  if k = 0 then 1
+  else n * power_val n (k - 1)
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">回数を数える</p>
+        <pre class="guide-card-code">let rec power_steps n k =
+  if k = 0 then 0
+  else 1 + power_steps n (k - 1)
 ;;</pre>
       </div>
     </div>
@@ -182,42 +231,91 @@ WEEK1_ANSWER_GUIDE_HTML = """
   <h3 class="guide-section-title">課題 3：コラッツ予想</h3>
 
   <div class="guide-card">
-    <p class="guide-card-title">collatz_steps</p>
-    <pre class="guide-card-code">let rec collatz_steps n =
-  if n = 1 then
-    0
-  else
-    let next_n =
-      if n mod 2 = 0 then n / 2
-      else 3 * n + 1
-    in
-    1 + collatz_steps next_n
-;;</pre>
+    <p class="guide-card-title">コラッツの2つの関数</p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">collatz_path</p>
+        <p class="guide-card-title">回数を求める</p>
+        <pre class="guide-card-code">let rec collatz_steps n =
+  if n = 1 then 0
+  else 1 + collatz_steps (if n mod 2 = 0 then n / 2 else 3 * n + 1)
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">推移のリストを求める</p>
         <pre class="guide-card-code">let rec collatz_path n =
   if n = 1 then
     [1]
   else
-    let next_n =
-      if n mod 2 = 0 then n / 2
-      else 3 * n + 1
-    in
-    n :: collatz_path next_n
+    let next_n = if n mod 2 = 0 then n / 2 else 3 * n + 1 in
+    n :: (collatz_path next_n)
 ;;</pre>
       </div>
     </div>
   </div>
 
-  <h3 class="guide-section-title">課題 4：考察</h3>
+  <h3 class="guide-section-title">課題 4：べき乗とコラッツ予想に関する考察</h3>
 
   <div class="guide-card">
-    <p class="guide-card-text">
-      課題4の考察は，提出PDFを確認してください。
-      自動採点では，べき乗とコラッツ予想の考察内容までは判定していません。
-    </p>
+    <p class="guide-card-title">1. 「入力値の大きさ」と「ステップ数」の関係</p>
+    <p class="guide-card-text">【調査結果の例】</p>
+
+    <pre class="guide-card-code">n   power_steps   collatz_steps
+7   7             16
+8   8             3
+9   9             19
+10  10            6</pre>
+
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">【考察のポイント】</p>
+        <p class="guide-card-text">
+          べき乗のステップ数は，n の増加に伴って 7, 8, 9, 10 と完全に規則的に増加している。
+          これは，再帰の構造が「引数を1ずつ減らす」という単純な形であるため，
+          入力値がそのまま計算の手間に比例しているからである。
+        </p>
+        <p class="guide-card-text">
+          一方でコラッツ予想では，n=8 のステップ数が 3 であるのに対し，
+          より小さい n=7 が 16 ステップかかるという「逆転現象」が見られた。
+          これは，コラッツ予想の再帰構造には偶奇による条件分岐が含まれており，
+          値が減少（n/2）したり増大（3n+1）したりするためである。
+          この分岐によって，入力値の大小と計算コストが非線形な関係になり，
+          実行するまで手間を予測できないという特徴があることがわかった。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">2. 数値の「合流」と収束の仕組み</p>
+        <p class="guide-card-text">【調査結果の例】</p>
+
+        <pre class="guide-card-code">collatz_path 6 :
+[6; 3; 10; 5; 16; 8; 4; 2; 1]
+
+collatz_path 3 :
+[3; 10; 5; 16; 8; 4; 2; 1]
+
+collatz_path 9 :
+[9; 28; 14; 7; 22; 11; 34; 17; 52; 26; 13; 40; 20;
+ 10; 5; 16; 8; 4; 2; 1]
+
+collatz_path 7 :
+[7; 22; 11; 34; 17; 52; 26; 13; 40; 20; 10; 5; 16;
+ 8; 4; 2; 1]</pre>
+
+        <p class="guide-card-text">
+          各リストを比較すると，collatz_path 6 の2番目の要素以降は collatz_path 3 と完全に一致し，
+          collatz_path 9 の4番目以降は collatz_path 7 と完全に一致していることが確認できた。
+        </p>
+        <p class="guide-card-text">
+          これは，コラッツ予想が「現在の値のみによって次の値が決まる」という決定論的なルールであるため，
+          一度過去に計算したことがある数値に到達すれば，それ以降は全く同じルート（軌跡）を辿るためである。
+          この「合流」という性質があることで，いかに巨大な初期値であっても，
+          計算の過程で自分より小さな「既に1へ収束することがわかっている数値」に一度でもぶつかれば，
+          連鎖的に1へと吸い込まれていく仕組みになっていると考えられる。
+        </p>
+      </div>
+    </div>
   </div>
 """
 
