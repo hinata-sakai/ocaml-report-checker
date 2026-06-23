@@ -493,24 +493,27 @@ def add_week2_title_style(html):
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 14px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
+.week2-status-row .status-pill,
 .week2-point-score {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 0 22px;
+  padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(11, 11, 13, 0.06);
-  color: rgba(11, 11, 13, 0.78);
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 950;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.04em;
   line-height: 1;
   white-space: nowrap;
+}
+
+.week2-point-score {
+  background: rgba(11, 11, 13, 0.06);
+  color: rgba(11, 11, 13, 0.78);
 }
 """
 
