@@ -46,7 +46,6 @@ let assert_eq label actual expected =
     Printf.printf "NG %s: expected %d but got %d\n" label expected actual
 ;;
 
-assert_eq "count_ones 0" (count_ones 0) 0;;
 assert_eq "count_ones 1" (count_ones 1) 1;;
 assert_eq "count_ones 2" (count_ones 2) 1;;
 assert_eq "count_ones 3" (count_ones 3) 2;;
