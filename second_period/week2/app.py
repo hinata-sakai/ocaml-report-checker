@@ -197,74 +197,128 @@ area_trapezoid : (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
 
 WEEK2_ANSWER_GUIDE_HTML = """
   <p class="guide-intro">
-    第2期 第2週の解答例です。PDFの解答例の内容を，実際の課題番号に合わせて整理しています。
+    第2期 第2週の解答例です。
+    数値微分・数値積分の実装例と，配布された解答例PDFのレポート・考察内容を課題番号に合わせて掲載しています。
     実装方法は一例であり，同じ動作をする別の実装でも正解になります。
   </p>
 
-  <h3 class="guide-section-title">課題 1：微分</h3>
+  <h3 class="guide-section-title">課題 1：数値微分</h3>
 
   <div class="guide-card">
     <p class="guide-card-title">共通で用いる値</p>
-    <pre class="guide-card-code">let h = 0.0001;;
-let c = 0.0001;;</pre>
+    <pre class="guide-card-code">let h = 1e-5;;
+let c = 1e-6;;</pre>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">1-1：導関数の定義からの微分係数の計算</p>
+        <p class="guide-card-title">1-1：前方差分による微分係数の計算</p>
         <pre class="guide-card-code">let diff_forward f x =
   (f (x +. h) -. f x) /. h
 ;;</pre>
+        <p class="guide-card-text">
+          diff_forward は，x から少しだけ進めた x + h における関数値と f(x) の差を h で割ることで，
+          x における微分係数を近似的に求める関数です。
+        </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">1-2：中心差分による高精度化</p>
+        <p class="guide-card-title">1-2：中心差分による微分係数の計算</p>
         <pre class="guide-card-code">let diff_central f x =
   (f (x +. h) -. f (x -. h)) /. (2.0 *. h)
 ;;</pre>
+        <p class="guide-card-text">
+          diff_central は，x + h と x - h の両側の関数値を用いて微分係数を近似します。
+          前方差分よりも左右対称に近似するため，より高い精度が期待できます。
+        </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">1-3：ニュートン法の仕組みの調査</p>
+        <p class="guide-card-title">1-3：ニュートン法の仕組み</p>
         <p class="guide-card-text">
-          1-3はレポート課題のため，自動採点では確認しません。
-          ニュートン法の更新式や，f'(x) = 0 を解くために近似値をどのように更新するかを
-          提出PDFで確認してください。
+          ニュートン法は，方程式 g(x) = 0 の解を近似的に求めるための反復計算アルゴリズムです。
+          現在地 x_n における接線が x 軸と交わる点を次の近似値 x_{n+1} として更新します。
+        </p>
+        <div class="guide-formula">
+          <span class="guide-formula-text">x_{n+1} = x_n - g(x_n) / g'(x_n)</span>
+        </div>
+        <p class="guide-card-text">
+          本課題の目的は，関数 f(x) の極値，すなわち f'(x) = 0 となる点を求めることです。
+          そのため，g(x) = f'(x) と置き換えることで，極値探索のための更新式は次のようになります。
+        </p>
+        <div class="guide-formula">
+          <span class="guide-formula-text">x_{n+1} = x_n - f'(x_n) / f''(x_n)</span>
+        </div>
+        <p class="guide-card-text">
+          実際のプログラムでは，1階微分 f'(x) を diff_central f x で近似し，
+          2階微分 f''(x) を diff_central をさらに適用することで近似します。
         </p>
       </div>
 
       <div class="guide-subitem">
         <p class="guide-card-title">1-4：再帰による極値の探索</p>
-        <pre class="guide-card-code">let rec ext f x =
-  let d1 = diff_central f x in
-  if abs_float d1 < c then
-    (x, f x)
+        <pre class="guide-card-code">let rec ext f x0 =
+  let f' = diff_central f in
+  let f'' = diff_central f' in
+
+  let df = f' x0 in
+  if abs_float df &lt; c then
+    (x0, f x0)
   else
-    let d2 = diff_central (diff_central f) x in
-    let next_x = x -. d1 /. d2 in
-    ext f next_x
+    let d2f = f'' x0 in
+    if abs_float d2f &lt; c then
+      failwith "ext failed"
+    else
+      let next_x = x0 -. df /. d2f in
+      ext f next_x
 ;;</pre>
         <p class="guide-card-text">
-          この例では，f'(x) = 0 となる点をニュートン法で探索しています。
-          diff_central f x で一階微分を近似し，diff_central (diff_central f) x で二階微分を近似しています。
+          ext は，現在の x0 における傾き f'(x0) が十分に 0 に近くなるまで，
+          ニュートン法の更新式に従って再帰的に x を更新します。
+          最終的に，極値を与える x とそのときの f(x) をペアで返します。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">1-4：実行例</p>
+        <pre class="guide-card-code">let test_func x =
+  x *. x -. 4.0 *. x +. 4.0
+;;
+
+ext test_func 0.0;;</pre>
+        <p class="guide-card-text">
+          この例では，f(x) = x^2 - 4x + 4 を対象にしています。
+          この関数は x = 2 で極小値 0 をとるため，初期値 0.0 から探索すると，
+          x が 2.0 に近づくことが期待されます。
         </p>
       </div>
 
       <div class="guide-subitem">
         <p class="guide-card-title">1-5：精度と速度に関する考察</p>
         <p class="guide-card-text">
-          1-5はレポート課題のため，自動採点では確認しません。
-          前方差分と中心差分の精度差，h の大きさによる影響，ニュートン法の収束性，
-          初期値 x0 の選び方による違いを提出PDFで確認してください。
+          テイラー展開を用いた理論上の誤差を比較すると，前方差分の誤差は O(h) であるのに対し，
+          中心差分の誤差は O(h^2) となります。
+          そのため，中心差分を用いた方がより高い精度で微分係数を近似できます。
+        </p>
+        <p class="guide-card-text">
+          また，数学的には h を 0 に近づけるほど正確になりますが，
+          計算機上では h を小さくしすぎると，極めて近い値同士の引き算によって桁落ちが発生し，
+          精度が著しく悪化する場合があります。
+          そのため，実験的にバランスのよい 1e-5 などの値が選ばれます。
+        </p>
+        <p class="guide-card-text">
+          ニュートン法は，解の近傍では2次収束するため，非常に高速に極値へ近づく特徴があります。
+          一方で，初期値 x0 の選び方に強く依存し，極値から遠すぎる初期値を与えた場合や，
+          途中で f''(x) が 0 に近くなる場合には，収束しない，または意図しない別の極値へ収束する可能性があります。
         </p>
       </div>
     </div>
   </div>
 
-  <h3 class="guide-section-title">課題 2：積分</h3>
+  <h3 class="guide-section-title">課題 2：数値積分</h3>
 
   <div class="guide-card">
     <p class="guide-card-title">共通で用いる値</p>
-    <pre class="guide-card-code">let dx = 0.0001;;</pre>
+    <pre class="guide-card-code">let dx = 1e-3;;</pre>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
@@ -272,65 +326,128 @@ let c = 0.0001;;</pre>
         <pre class="guide-card-code">let area_rectangle f x dx =
   f x *. dx
 ;;</pre>
+        <p class="guide-card-text">
+          長方形近似では，微小区間 [x, x + dx] において，左端 x の関数値 f(x) を高さとみなし，
+          幅 dx の長方形の面積として近似します。
+        </p>
       </div>
 
       <div class="guide-subitem">
         <p class="guide-card-title">2-1-2：台形の面積</p>
         <pre class="guide-card-code">let area_trapezoid f x dx =
-  ((f x +. f (x +. dx)) *. dx) /. 2.0
+  (f x +. f (x +. dx)) *. 0.5 *. dx
 ;;</pre>
+        <p class="guide-card-text">
+          台形公式では，左端 x と右端 x + dx の関数値を用いて，
+          微小区間を台形として近似します。
+        </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">2-2：シンプソンの公式の仕組みの調査</p>
+        <p class="guide-card-title">2-2：シンプソンの公式の仕組み</p>
         <p class="guide-card-text">
-          2-2はレポート課題のため，自動採点では確認しません。
-          シンプソンの公式がどのように区間内の関数値を用いて面積を近似するかを
-          提出PDFで確認してください。
+          長方形近似が関数を定数，台形公式が関数を直線で近似するのに対し，
+          シンプソンの公式は関数を放物線，つまり2次式で近似して面積を求める手法です。
+        </p>
+        <p class="guide-card-text">
+          微小区間 [x, x + dx] において，左端 x，中点 x + dx / 2，右端 x + dx の3点を通る
+          2次関数を構築し，それを積分することで，1区間あたりの面積を求めます。
+        </p>
+        <div class="guide-formula">
+          <span class="guide-formula-text">I ≈ dx / 6 [ f(x) + 4f(x + dx / 2) + f(x + dx) ]</span>
+        </div>
+        <p class="guide-card-text">
+          区間内を放物線で滑らかに近似するため，長方形近似や台形公式に比べて，
+          元の関数のカーブに高い精度で追従できるという特徴があります。
         </p>
       </div>
 
       <div class="guide-subitem">
         <p class="guide-card-title">2-3：シンプソンの面積</p>
         <pre class="guide-card-code">let area_simpson f x dx =
-  (f x +. 4.0 *. f (x +. dx /. 2.0) +. f (x +. dx)) *. dx /. 6.0
+  let mid = x +. dx *. 0.5 in
+  (dx /. 6.0) *. (f x +. 4.0 *. f mid +. f (x +. dx))
 ;;</pre>
         <p class="guide-card-text">
-          シンプソンの公式では，区間の左端 x，右端 x + dx に加えて，
-          中点 x + dx / 2 における関数値も用います。
+          area_simpson は，区間の左端，中央，右端における関数値を用いて，
+          シンプソンの公式に基づく1区間分の面積を返します。
         </p>
       </div>
 
       <div class="guide-subitem">
         <p class="guide-card-title">2-4：共通の積分関数</p>
-        <pre class="guide-card-code">let rec integral area f a b =
-  if a >= b then
-    0.0
-  else
-    area f a dx +. integral area f (a +. dx) b
+        <pre class="guide-card-code">let integral area_method f a b =
+  let rec iter x acc =
+    if x &gt;= b then
+      acc
+    else
+      let current_area = area_method f x dx in
+      iter (x +. dx) (acc +. current_area)
+  in
+  iter a 0.0
 ;;</pre>
         <p class="guide-card-text">
-          area に area_rectangle，area_trapezoid，area_simpson のいずれかを渡すことで，
-          同じ integral 関数を用いて複数の積分方法を切り替えることができます。
+          integral は，1区間分の面積を求める関数 area_method を引数として受け取ります。
+          そのため，area_rectangle，area_trapezoid，area_simpson を渡し替えるだけで，
+          同じ再帰処理を使って異なる数値積分手法を実行できます。
         </p>
       </div>
 
       <div class="guide-subitem">
         <p class="guide-card-title">2-4：実行例</p>
-        <pre class="guide-card-code">let f1 x = x;;
-let f2 x = x *. x;;
+        <pre class="guide-card-code">let test_func x =
+  x *. x
+;;
 
-integral area_rectangle f1 0.0 1.0;;
-integral area_trapezoid f1 0.0 1.0;;
-integral area_simpson f2 0.0 1.0;;</pre>
+let res_rect =
+  integral area_rectangle test_func 0.0 1.0
+;;
+
+let res_trap =
+  integral area_trapezoid test_func 0.0 1.0
+;;
+
+let res_simp =
+  integral area_simpson test_func 0.0 1.0
+;;</pre>
+        <p class="guide-card-text">
+          f(x) = x^2 を区間 [0, 1] で積分した場合，理論値は 1 / 3 ≒ 0.333333 です。
+          この値と各近似手法の結果を比較することで，精度の違いを確認できます。
+        </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">2-5：精度に関する考察</p>
+        <p class="guide-card-title">2-5：高階関数を用いた設計の利点</p>
         <p class="guide-card-text">
-          2-5はレポート課題のため，自動採点では確認しません。
-          高階関数を用いた設計の利点や，長方形・台形・シンプソンの公式による
-          計算結果の精度差を提出PDFで確認してください。
+          今回の設計では，「積分を行うための共通の枠組み」と，
+          「具体的な面積の計算手法」を分離しています。
+          前者を integral として抽象化し，後者を area_rectangle，area_trapezoid，area_simpson として定義しています。
+        </p>
+        <p class="guide-card-text">
+          この設計の最大のメリットは，コードの再利用性と拡張性が高いことです。
+          新しい数値積分アルゴリズムを追加する場合でも，再帰の部分を書き直す必要はありません。
+          1区間分の面積を求める関数を新しく定義し，それを integral に渡すだけで対応できます。
+          そのため，バグが混入しにくく，保守しやすいプログラムになります。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">2-5：3つの近似手法による精度差</p>
+        <p class="guide-card-text">
+          関数 f(x) = x^2 を区間 [0, 1] で定積分した場合，手計算による理論値は 1 / 3 ≒ 0.333333 です。
+          dx = 1e-3 で実験すると，長方形近似では誤差が最も大きく，
+          台形公式では理論値にかなり近い値が得られます。
+          シンプソンの公式では，理論値とほぼ一致する，あるいは計算機誤差レベルの非常に小さな差に収まります。
+        </p>
+        <p class="guide-card-text">
+          理論上の誤差は，長方形近似が O(dx)，台形公式が O(dx^2)，
+          シンプソンの公式が O(dx^4) となります。
+          そのため，シンプソンの公式は dx が比較的大きくても高精度な値を得やすい手法です。
+        </p>
+        <p class="guide-card-text">
+          ただし，dx を小さくしすぎると，再帰回数が増えて処理時間が伸びます。
+          また，非常に小さな実数を大量に足し合わせることで丸め誤差が蓄積し，
+          逆に全体の精度を損なう恐れもあります。
         </p>
       </div>
     </div>
