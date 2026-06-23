@@ -14,6 +14,8 @@ from second_period.week1 import app as second_period_week1_app
 from second_period.week1 import checker as second_period_week1_checker
 from second_period.week2 import app as second_period_week2_app
 from second_period.week2 import checker as second_period_week2_checker
+from second_period.week3 import app as second_period_week3_app
+from second_period.week3 import checker as second_period_week3_checker
 
 import os
 
@@ -5982,6 +5984,8 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_html(second_period_week1_app.build_index_html())
         elif self.path == "/period/2/week2" or self.path.startswith("/period/2/week2?"):
             self.send_html(second_period_week2_app.build_index_html())
+        elif self.path == "/period/2/week3" or self.path.startswith("/period/2/week3?"):
+            self.send_html(second_period_week3_app.build_index_html())
         elif self.path == "/upload" or self.path.startswith("/upload?"):
             self.send_html(build_index_html())
         elif self.path == "/background.png":
@@ -5996,7 +6000,7 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_html(build_index_html("ページが見つかりません。"), status=404)
 
     def do_POST(self):
-        if self.path not in ("/check", "/period/2/week1/check", "/period/2/week2/check"):
+        if self.path not in ("/check", "/period/2/week1/check", "/period/2/week2/check", "/period/2/week3/check"):
             self.send_html(build_index_html("不正なURLです。"), status=404)
             return
 
@@ -6010,6 +6014,10 @@ class CheckerHandler(BaseHTTPRequestHandler):
             index_html_builder = second_period_week2_app.build_index_html
             result_html_builder = second_period_week2_app.build_result_html
             checker_module = second_period_week2_checker
+        elif self.path == "/period/2/week3/check":
+            index_html_builder = second_period_week3_app.build_index_html
+            result_html_builder = second_period_week3_app.build_result_html
+            checker_module = second_period_week3_checker
         else:
             index_html_builder = build_index_html
             result_html_builder = build_result_html
