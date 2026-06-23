@@ -313,6 +313,8 @@ quick_sort_c : int list -&gt; int * int list</pre>
 WEEK3_ANSWER_GUIDE_HTML = """
   <p class="guide-intro">
     第2期 第3週の解答例です。配布された解答をもとに掲載しています。
+    表の比較回数は標準的な計測値のサンプルであり，学生が選んだ乱数の内容や，
+    リストの分割方法などの実装の違いによって，実際の数値は多少前後します。
   </p>
 
   <h3 class="guide-section-title">課題1</h3>
