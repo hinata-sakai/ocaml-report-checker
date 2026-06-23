@@ -9,109 +9,153 @@ current 1期 page as an initial clone.
 
 WEEK2_TASK_GUIDE_HTML = """
   <p class="guide-intro">
-    第2期 レポート課題 第2週では，2進数の1の個数，べき乗，コラッツ予想に関する
-    OCamlプログラムを作成し，アルゴリズムの説明や考察をレポートにまとめる。
+    第2期 レポート課題 第2週では，数値微分と数値積分を題材に，
+    高階関数と再帰を用いたOCamlプログラムを作成し，
+    アルゴリズムの説明や考察をレポートにまとめる。
   </p>
 
-  <h3 class="guide-section-title">課題 1：2進数の1の個数</h3>
+  <h3 class="guide-section-title">課題 1：微分</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      与えられた正の整数 n を二進数で表記したとき，その中に現れる「1」の個数を求める
-      関数 count_ones : int -&gt; int を作成しなさい。
+      関数の微分（微分係数）を，極限をとる代わりに微小な変化量（差分）を用いた
+      数値の計算によって近似的に求める手法を「数値微分」といいます。
+      本課題では，関数の数値微分を行い，それを利用して関数の極値を再帰的に探索する
+      プログラムを実装します。
+    </p>
+
+    <p class="guide-card-text">
+      プログラムの実装にあたり，微小値 h（数値微分用）および収束の閾値 c（探索の終了判定用）は，
+      プログラムの最初でグローバル変数として定義し，各関数の中からそれを参照する形にしなさい。
     </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">1. 実装</p>
+        <p class="guide-card-title">1-1：導関数の定義からの微分係数の計算</p>
         <p class="guide-card-text">
-          2で割った商 n / 2 とあまり n mod 2 を用いた再帰関数で実装しなさい。
+          関数 f と実数 x を受け取り，値 x における f の微分係数 f'(x) を，
+          導関数の定義式を用いて計算する関数 diff_forward を定義しなさい。
+        </p>
+        <pre class="guide-card-code">diff_forward : (float -&gt; float) -&gt; float -&gt; float</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">1-2：中心差分による高精度化</p>
+        <p class="guide-card-text">
+          1-1の式は h の大きさによって誤差が生じやすい。
+          より正確に微分係数を求めるために，中心差分の式に変形した関数 diff_central を定義しなさい。
+        </p>
+        <pre class="guide-card-code">diff_central : (float -&gt; float) -&gt; float -&gt; float</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">1-3：ニュートン法の仕組みの調査（レポート課題）</p>
+        <p class="guide-card-text">
+          極値を自動で探索するためのアルゴリズムとして「ニュートン法」があります。
+          ニュートン法，特に f'(x) = 0 を解くための更新式の仕組みについて調べ，
+          どのような原理で近似値を更新していくのか，数式を用いて分かりやすく説明しなさい。
         </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">2. アルゴリズムの動作説明</p>
+        <p class="guide-card-title">1-4：再帰による極値の探索</p>
         <p class="guide-card-text">
-          自身の学籍番号の下二桁の数値（ただし，00の場合は100とする）を n としたとき，
-          作成した count_ones 関数がどのように実行され，最終的な結果を導き出すのか，
-          その過程を詳しく説明しなさい。また，商とあまりの役割についても考察しなさい。
+          1-3で調べたニュートン法のアルゴリズムに基づき，関数 f と探索の初期値 x0 を受け取り，
+          再帰を用いて f の極値を与える x の値と，その時の極値 f(x) をタプルで返す関数 ext を定義しなさい。
         </p>
+        <pre class="guide-card-code">ext : (float -&gt; float) -&gt; float -&gt; (float * float)</pre>
+        <ul class="guide-submit-list">
+          <li>実数の絶対値を求める関数 abs_float を使ってもかまいません。</li>
+          <li>終了条件は，極値に十分到達したと判断できる適切な条件を設定し，探索を終了させなさい。</li>
+          <li>極値が存在しない関数や，初期値から極値が離れている場合などの例外的なケースは，本課題では考慮しなくて構いません。</li>
+        </ul>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">1-5：精度と速度に関する考察（レポート課題）</p>
+        <p class="guide-card-text">
+          実装したプログラムや実行結果について，以下の2点について考察しなさい。
+        </p>
+        <ul class="guide-submit-list">
+          <li>精度：前方差分と中心差分の精度差，およびグローバル変数として定義した h の大小が計算結果に与える影響について考察せよ。</li>
+          <li>速度と収束性：ニュートン法の収束の速さ，初期値 x0 の選び方が探索結果や速度に与える影響について考察せよ。</li>
+        </ul>
       </div>
     </div>
   </div>
 
-  <h3 class="guide-section-title">課題 2：べき乗 n<sup>n</sup> の計算</h3>
-
-  <div class="guide-card">
-    <div class="guide-subitems">
-      <div class="guide-subitem">
-        <p class="guide-card-title">1. n<sup>n</sup> の値を求める</p>
-        <p class="guide-card-text">
-          正の整数 n を引数に取り，n の n 乗（n<sup>n</sup>）を計算して返す関数
-          power_val : int -&gt; int を作成しなさい。
-        </p>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">2. 呼び出し回数を数える</p>
-        <p class="guide-card-text">
-          再帰関数の呼び出し回数を返す関数 power_steps : int -&gt; int を作成しなさい。
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <h3 class="guide-section-title">課題 3：コラッツ予想</h3>
+  <h3 class="guide-section-title">課題 2：積分</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      任意の正の整数 n に対して，以下の操作を繰り返すと最終的に必ず 1 に到達するという
-      「コラッツ予想」を題材に，2つの関数を作成しなさい。
+      関数の積分を，細かく分割した数値の足し合わせによって近似的に計算する手法を
+      「数値積分」といいます。
+      本課題では，関数の定積分の値を近似計算するプログラムを実装します。
     </p>
 
-    <ul class="guide-submit-list">
-      <li>n が偶数の場合：n を 2 で割る</li>
-      <li>n が奇数の場合：n に 3 を掛けて 1 を足す</li>
-    </ul>
+    <p class="guide-card-text">
+      プログラムの実装にあたり，微小区間の幅を表す実数 dx は，
+      プログラムの最初でグローバル変数として定義し，各関数の中からそれを参照する形にしなさい。
+    </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">1. ステップ数を求める</p>
+        <p class="guide-card-title">2-1：長方形および台形の面積を求める関数の定義</p>
         <p class="guide-card-text">
-          整数 n を引数に取り，コラッツ予想のルールに従って 1 になるまでの操作回数
-          （再帰関数が呼び出される回数）を返す関数 collatz_steps : int -&gt; int を作成しなさい。
+          関数 f，現在の微小区間の左端の座標 x，および微小幅 dx を受け取り，
+          その1区間分の面積を計算する以下の2つの関数を定義しなさい。
+        </p>
+        <ul class="guide-submit-list">
+          <li>長方形として面積を計算する関数 area_rectangle</li>
+          <li>台形として面積を計算する関数 area_trapezoid</li>
+        </ul>
+        <pre class="guide-card-code">area_rectangle : (float -&gt; float) -&gt; float -&gt; float -&gt; float
+area_trapezoid : (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">2-2：シンプソンの公式の仕組みの調査（レポート課題）</p>
+        <p class="guide-card-text">
+          数値積分の代表的な高精度近似手法として「シンプソンの公式」があります。
+          シンプソンの公式，特に1区間分の面積を求める公式の仕組みについて調べ，
+          どのような原理で面積を計算するのか，数式を用いて分かりやすく説明しなさい。
         </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">2. 推移のリストを求める</p>
+        <p class="guide-card-title">2-3：シンプソンの面積を求める関数の定義</p>
         <p class="guide-card-text">
-          整数 n を引数に取り，1 に到達するまでの初期値を含む全ての値の推移を順に並べた
-          リストを返す関数 collatz_path : int -&gt; int list を作成しなさい。
+          2-2で調査したアルゴリズムに基づき，関数 f，現在の微小区間の左端の座標 x，
+          および微小幅 dx を受け取り，その1区間分の面積をシンプソンの公式によって計算する
+          関数 area_simpson を定義しなさい。
         </p>
-        <pre class="guide-card-code">collatz_path 3 -&gt; [3; 10; 5; 16; 8; 4; 2; 1]</pre>
-      </div>
-    </div>
-  </div>
-
-  <h3 class="guide-section-title">課題 4：べき乗とコラッツ予想に関する考察</h3>
-
-  <div class="guide-card">
-    <div class="guide-subitems">
-      <div class="guide-subitem">
-        <p class="guide-card-title">1. 「入力値の大きさ」と「ステップ数」の関係：べき乗 vs コラッツ予想</p>
-        <p class="guide-card-text">
-          作成したプログラムを用いて，n = 7, 8, 9, 10 の範囲における「入力値 n」と
-          「ステップ数」をそれぞれ調査し，その関係を比較し，気づいた点について考察しなさい。
-        </p>
+        <pre class="guide-card-code">area_simpson : (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">2. 数値の「合流」と収束の仕組み</p>
+        <p class="guide-card-title">2-4：共通の積分関数（高階関数）の定義と実行</p>
         <p class="guide-card-text">
-          n = 1〜10 の範囲で collatz_path を実行し，得られたリストを比較し，
-          気づいた点について考察しなさい。
+          1区間分の面積を求める関数，積分したい関数 f，積分の開始位置 a，終了位置 b を引数に取り，
+          開始位置 a から座標を dx ずつ進めながら全体の面積の合計を再帰によって計算する
+          共通の関数 integral を定義しなさい。
         </p>
+        <pre class="guide-card-code">integral : ((float -&gt; float) -&gt; float -&gt; float -&gt; float) -&gt; (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
+        <p class="guide-card-text">
+          また，作成した integral 関数に，これまで定義した3つの面積計算関数
+          （長方形・台形・シンプソン）をそれぞれ組み合わせて適切なテスト関数を定義し，
+          それぞれの計算結果を求めなさい。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">2-5：精度に関する考察（レポート課題）</p>
+        <p class="guide-card-text">
+          実装したプログラムや実行結果について，以下の2点について考察しなさい。
+        </p>
+        <ul class="guide-submit-list">
+          <li>高階関数を用いた設計の利点：面積の計算ロジックと，区間を分割して合計するループ処理を分離して高階関数化したことによる，プログラムの構造上・開発上のメリットについて述べよ。</li>
+          <li>3つの近似手法による精度差：長方形近似，台形公式，シンプソンの公式の計算結果を，数学的な理論値と比較し，それぞれの手法の精度にどのような違いがあるか，dx の大小が与える影響も交えて考察せよ。</li>
+        </ul>
       </div>
     </div>
   </div>
@@ -123,7 +167,7 @@ WEEK2_TASK_GUIDE_HTML = """
       <li>提出方法：LETUS</li>
       <li>提出物：各課題のレポート（LaTeXで作成したPDF）と，作成したプログラムソース（拡張子mlのファイル）</li>
       <li>プログラムを実装する問題においては，「アルゴリズムの説明」と「プログラムの説明」をレポートに記載すること</li>
-      <li>提出期限：第2週 2026/5/20（水）13:00</li>
+      <li>提出期限：第2週 2026/5/27（水）13:00</li>
     </ul>
   </div>
 
@@ -456,7 +500,8 @@ def build_result_html(all_results, file_summaries):
         "採点結果と確認が必要な問を、ファイルごとにまとめて表示しています。",
         "採点結果と確認が必要な問を、ファイルごとにまとめて表示しています。"
         "<span class='week2-manual-check-note'>"
-        "課題1-2「アルゴリズムの動作説明」と課題4-1,4-2「べき乗とコラッツ予想に関する考察」は"
+        "課題1-3「ニュートン法の仕組みの調査」、課題1-5「精度と速度に関する考察」、"
+        "課題2-2「シンプソンの公式の仕組みの調査」、課題2-5「精度に関する考察」は"
         "自動採点できないため、提出PDFで確認してください。"
         "</span>"
     )
