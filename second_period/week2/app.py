@@ -365,6 +365,8 @@ def calculate_week2_auto_score(summary):
     return score
 
 def add_week2_score_badges(html, file_summaries):
+    search_start = 0
+
     for summary in file_summaries:
         score = calculate_week2_auto_score(summary)
 
@@ -384,16 +386,33 @@ def add_week2_score_badges(html, file_summaries):
         has_issues = bool(warning_questions or wrong_questions or error_questions)
         status_label = "確認が必要" if has_issues else "全問正解"
 
+        card_top_start = html.find("<div class='card-top'>", search_start)
+        if card_top_start == -1:
+            break
+
+        card_top_end = html.find("</div>", card_top_start)
+        if card_top_end == -1:
+            break
+
         marker = "<span class='status-pill'>{}</span>".format(status_label)
 
         replacement = (
-            "<div class='week2-status-stack'>"
+            "<div class='week2-status-row'>"
             "{}"
             "<span class='week2-point-score'>{}点/{}点</span>"
             "</div>"
         ).format(marker, score, WEEK2_AUTO_TOTAL_POINTS)
 
-        html = html.replace(marker, replacement, 1)
+        card_top_html = html[card_top_start:card_top_end]
+        new_card_top_html = card_top_html.replace(marker, replacement, 1)
+
+        html = (
+            html[:card_top_start]
+            + new_card_top_html
+            + html[card_top_end:]
+        )
+
+        search_start = card_top_start + len(new_card_top_html)
 
     return html
 
@@ -470,11 +489,12 @@ def add_week2_title_style(html):
   height: auto;
 }
 
-.week2-status-stack {
+.week2-status-row {
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: flex-end;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .week2-point-score {
@@ -488,6 +508,8 @@ def add_week2_title_style(html):
   font-size: 13px;
   font-weight: 950;
   letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
 }
 """
 
