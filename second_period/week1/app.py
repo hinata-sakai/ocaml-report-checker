@@ -320,6 +320,85 @@ collatz_path 7 :
   </div>
 """
 
+WEEK1_AUTO_POINTS = {
+    "1-1": 8,
+    "2-1": 8,
+    "2-2": 8,
+    "3-1": 8,
+    "3-2": 8,
+}
+
+WEEK1_AUTO_TOTAL_POINTS = sum(WEEK1_AUTO_POINTS.values())
+
+
+def calculate_week1_auto_score(summary):
+    score = 0
+
+    for question in summary.get("questions", []):
+        question_id = str(question.get("question", ""))
+        status = question.get("status")
+
+        if question_id not in WEEK1_AUTO_POINTS:
+            continue
+
+        if status == "OK":
+            score += WEEK1_AUTO_POINTS[question_id]
+
+    return score
+
+
+def add_week1_score_badges(html, file_summaries):
+    search_start = 0
+
+    for summary in file_summaries:
+        score = calculate_week1_auto_score(summary)
+
+        warning_questions = [
+            q for q in summary.get("questions", [])
+            if q.get("status") == "WARNING"
+        ]
+        wrong_questions = [
+            q for q in summary.get("questions", [])
+            if q.get("status") == "NG"
+        ]
+        error_questions = [
+            q for q in summary.get("questions", [])
+            if q.get("status") == "ERROR"
+        ]
+
+        has_issues = bool(warning_questions or wrong_questions or error_questions)
+        status_label = "確認が必要" if has_issues else "全問正解"
+
+        card_top_start = html.find("<div class='card-top'>", search_start)
+        if card_top_start == -1:
+            break
+
+        card_top_end = html.find("</div>", card_top_start)
+        if card_top_end == -1:
+            break
+
+        marker = "<span class='status-pill'>{}</span>".format(status_label)
+
+        replacement = (
+            "<div class='week1-status-row'>"
+            "{}"
+            "<span class='week1-point-score'>{}点/{}点</span>"
+            "</div>"
+        ).format(marker, score, WEEK1_AUTO_TOTAL_POINTS)
+
+        card_top_html = html[card_top_start:card_top_end]
+        new_card_top_html = card_top_html.replace(marker, replacement, 1)
+
+        html = (
+            html[:card_top_start]
+            + new_card_top_html
+            + html[card_top_end:]
+        )
+
+        search_start = card_top_start + len(new_card_top_html)
+
+    return html
+
 def add_week1_title_style(html):
     extra_css = """
 .period-with-week {
@@ -363,6 +442,33 @@ def add_week1_title_style(html):
   font-size: inherit;
   font-weight: inherit;
   line-height: inherit;
+}
+
+.week1-status-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.week1-status-row .status-pill,
+.week1-point-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.week1-point-score {
+  background: rgba(11, 11, 13, 0.06);
+  color: rgba(11, 11, 13, 0.78);
 }
 """
 
@@ -464,6 +570,7 @@ def build_result_html(all_results, file_summaries):
 
     html = replace_task_guide_html(html)
     html = add_answer_guide_menu(html)
+    html = add_week1_score_badges(html, file_summaries)
     html = add_week1_title_style(html)
 
     return html
