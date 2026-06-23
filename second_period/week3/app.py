@@ -312,22 +312,22 @@ quick_sort_c : int list -&gt; int * int list</pre>
 
 WEEK3_ANSWER_GUIDE_HTML = """
   <p class="guide-intro">
-    第2期 第3週の解答例です。単純ソート，分割統治法ソート，比較回数カウント版，
-    実行実験，考察の書き方を課題番号に合わせて整理しています。
+    第2期 第3週の解答例です。
+    このサイトで自動採点する課題1，課題2，課題3-1，課題3-2の実装例のみを掲載しています。
     実装方法は一例であり，同じ動作をする別の実装でも正解になります。
   </p>
 
-  <h3 class="guide-section-title">1. 単純ソートアルゴリズムの実装</h3>
+  <h3 class="guide-section-title">課題1：単純ソートアルゴリズムの実装</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      以下は，交換ソート，選択ソート，挿入ソートの実装例です。
-      課題では1つ以上を選択して実装すればよいですが，ここでは参考として3つすべてを示します。
+      課題1では，交換ソート，選択ソート，挿入ソートのうち1つ以上を実装します。
+      ここでは参考として3つすべての実装例を示します。
     </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">交換ソート：exchange_pass / exchange_sort</p>
+        <p class="guide-card-title">交換ソート</p>
         <pre class="guide-card-code">let rec exchange_pass lst =
   match lst with
   | [] -&gt; ([], false)
@@ -348,14 +348,10 @@ let rec exchange_sort lst =
   else
     lst2
 ;;</pre>
-        <p class="guide-card-text">
-          exchange_pass は，隣り合う要素を前から順に比較し，順序が逆なら入れ替えます。
-          1回でも交換が起きた場合は true を返し，交換が起きなくなるまで exchange_sort が繰り返します。
-        </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">選択ソート：select_min / selection_sort</p>
+        <p class="guide-card-title">選択ソート</p>
         <pre class="guide-card-code">let rec select_min lst =
   match lst with
   | [] -&gt; failwith "empty"
@@ -375,14 +371,10 @@ let rec selection_sort lst =
       let (m, rest) = select_min lst in
       m :: selection_sort rest
 ;;</pre>
-        <p class="guide-card-text">
-          select_min は，リスト内の最小値と，その最小値を取り除いた残りのリストを返します。
-          selection_sort は，最小値を1つずつ取り出して前から並べることでソートします。
-        </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">挿入ソート：insert / insertion_sort</p>
+        <p class="guide-card-title">挿入ソート</p>
         <pre class="guide-card-code">let rec insert x lst =
   match lst with
   | [] -&gt; [x]
@@ -399,24 +391,21 @@ let rec insertion_sort lst =
   | x :: xs -&gt;
       insert x (insertion_sort xs)
 ;;</pre>
-        <p class="guide-card-text">
-          insert は，すでに整列済みのリストに対して，新しい要素 x を正しい位置に挿入します。
-          insertion_sort は，残りのリストを先に整列し，そこへ先頭要素を挿入します。
-        </p>
       </div>
     </div>
   </div>
 
-  <h3 class="guide-section-title">2. 分割統治法ソートアルゴリズムの実装</h3>
+  <h3 class="guide-section-title">課題2：分割統治法ソートアルゴリズムの実装</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      以下は，マージソートとクイックソートの実装例です。
+      課題2では，マージソート，クイックソートのうち1つ以上を実装します。
+      ここでは参考として2つとも示します。
     </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">マージソート：split / merge / merge_sort</p>
+        <p class="guide-card-title">マージソート</p>
         <pre class="guide-card-code">let rec split lst =
   match lst with
   | [] -&gt; ([], [])
@@ -445,14 +434,10 @@ let rec merge_sort lst =
       let (left, right) = split lst in
       merge (merge_sort left) (merge_sort right)
 ;;</pre>
-        <p class="guide-card-text">
-          マージソートは，リストを2つに分割し，それぞれを再帰的にソートした後，
-          merge によって2つの整列済みリストを1つに統合します。
-        </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">クイックソート：partition / quick_sort</p>
+        <p class="guide-card-title">クイックソート</p>
         <pre class="guide-card-code">let rec partition pivot lst =
   match lst with
   | [] -&gt; ([], [])
@@ -471,21 +456,15 @@ let rec quick_sort lst =
       let (small, large) = partition pivot rest in
       quick_sort small @ [pivot] @ quick_sort large
 ;;</pre>
-        <p class="guide-card-text">
-          クイックソートは，先頭要素をピボットとして選び，
-          ピボットより小さい要素とそれ以外に分割してから，再帰的に整列します。
-        </p>
       </div>
     </div>
   </div>
 
-  <h3 class="guide-section-title">3. 比較回数カウント版</h3>
+  <h3 class="guide-section-title">課題3-1：単純ソートの比較回数カウント版</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      比較回数カウント版では，ソート結果だけでなく，
-      要素同士を比較した回数も返します。
-      戻り値はすべて int * int list の形にします。
+      課題3-1では，課題1で実装した単純ソートを，比較回数とソート済みリストのペアを返す形にします。
     </p>
 
     <div class="guide-subitems">
@@ -562,7 +541,17 @@ let rec insertion_sort_c lst =
       (c1 + c2, result)
 ;;</pre>
       </div>
+    </div>
+  </div>
 
+  <h3 class="guide-section-title">課題3-2：分割統治法ソートの比較回数カウント版</h3>
+
+  <div class="guide-card">
+    <p class="guide-card-text">
+      課題3-2では，課題2で実装した分割統治法ソートを，比較回数とソート済みリストのペアを返す形にします。
+    </p>
+
+    <div class="guide-subitems">
       <div class="guide-subitem">
         <p class="guide-card-title">マージソートのカウント版</p>
         <pre class="guide-card-code">let rec merge_c xs ys =
@@ -613,113 +602,6 @@ let rec quick_sort_c lst =
       let (c3, sorted_large) = quick_sort_c large in
       (c1 + c2 + c3, sorted_small @ [pivot] @ sorted_large)
 ;;</pre>
-      </div>
-    </div>
-  </div>
-
-  <h3 class="guide-section-title">4. 実行実験</h3>
-
-  <div class="guide-card">
-    <p class="guide-card-text">
-      実験では，3で作成した比較回数カウント版の関数を使います。
-      ランダムデータを比較する場合は，各ソート関数に同じリストを渡すことが重要です。
-    </p>
-
-    <div class="guide-subitems">
-      <div class="guide-subitem">
-        <p class="guide-card-title">実験1：要素数による比較回数の変化</p>
-        <pre class="guide-card-code">let data10 = [7; 2; 9; 1; 5; 3; 8; 4; 10; 6];;
-
-let data50 =
-  [32; 7; 45; 12; 3; 28; 50; 19; 41; 6;
-   24; 36; 1; 48; 14; 9; 30; 22; 44; 17;
-   5; 39; 26; 11; 47; 34; 2; 20; 42; 15;
-   8; 29; 37; 4; 49; 18; 31; 23; 46; 13;
-   10; 35; 27; 16; 40; 21; 43; 25; 38; 33];;
-
-let data100 =
-  [53; 12; 87; 4; 66; 29; 95; 41; 8; 72;
-   18; 99; 35; 60; 1; 76; 24; 83; 47; 10;
-   91; 31; 68; 55; 14; 100; 37; 6; 80; 22;
-   63; 49; 3; 74; 26; 89; 44; 16; 97; 33;
-   58; 11; 70; 39; 2; 85; 51; 20; 93; 28;
-   64; 7; 78; 45; 17; 96; 34; 59; 13; 82;
-   30; 67; 5; 90; 42; 73; 25; 98; 36; 61;
-   9; 84; 48; 15; 92; 32; 69; 54; 21; 79;
-   40; 65; 19; 88; 46; 71; 27; 94; 38; 57;
-   23; 81; 50; 75; 43; 62; 52; 77; 56; 86];;
-
-exchange_sort_c data10;;
-merge_sort_c data10;;
-quick_sort_c data10;;</pre>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">実験2：データの初期状態による変化</p>
-        <pre class="guide-card-code">let sorted20 =
-  [1; 2; 3; 4; 5; 6; 7; 8; 9; 10;
-   11; 12; 13; 14; 15; 16; 17; 18; 19; 20];;
-
-let reverse20 =
-  [20; 19; 18; 17; 16; 15; 14; 13; 12; 11;
-   10; 9; 8; 7; 6; 5; 4; 3; 2; 1];;
-
-let random20 =
-  [7; 19; 3; 12; 1; 16; 9; 20; 5; 14;
-   2; 18; 11; 6; 15; 4; 17; 8; 13; 10];;
-
-exchange_sort_c sorted20;;
-exchange_sort_c reverse20;;
-exchange_sort_c random20;;
-
-merge_sort_c sorted20;;
-merge_sort_c reverse20;;
-merge_sort_c random20;;</pre>
-      </div>
-    </div>
-  </div>
-
-  <h3 class="guide-section-title">5. 考察（レポート）</h3>
-
-  <div class="guide-card">
-    <div class="guide-subitems">
-      <div class="guide-subitem">
-        <p class="guide-card-title">問1：実験結果のまとめ</p>
-        <p class="guide-card-text">
-          実験1では，要素数10，50，100のそれぞれについて，各ソート関数の比較回数を表にまとめます。
-          実験2では，要素数20の整列済み，逆順，ランダムの3種類について比較回数を表にまとめます。
-        </p>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">問2：初期状態による比較回数の違い</p>
-        <p class="guide-card-text">
-          交換ソートでは，整列済みデータの場合，1回の走査で交換が発生しないため処理がすぐ終了します。
-          そのため，比較回数は比較的少なくなります。
-          一方，逆順データでは，隣り合う要素のほとんどが逆順であり，
-          何度も交換と走査を繰り返すため，比較回数が多くなります。
-        </p>
-        <p class="guide-card-text">
-          選択ソートでは，各段階で残りのリスト全体から最小値を探すため，
-          整列済み・逆順・ランダムの違いによって比較回数が大きく変化しにくいです。
-          挿入ソートでは，整列済みの場合は早い段階で挿入位置が見つかる一方，
-          逆順の場合は奥まで比較が必要になり，比較回数が増えやすくなります。
-        </p>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">問3：分割統治法が大量データに有利な理由</p>
-        <p class="guide-card-text">
-          単純ソートは，要素数が増えると比較回数が急激に増えやすいです。
-          特に交換ソートや選択ソートでは，要素数 n に対しておおよそ n² に近い回数の比較が必要になります。
-        </p>
-        <p class="guide-card-text">
-          一方，マージソートや平均的なクイックソートは，リストを小さく分割してから処理するため，
-          比較回数の増え方はおおよそ n log n に近くなります。
-          そのため，要素数が10倍になった場合，単純ソートでは比較回数が約100倍に近く増える可能性があるのに対し，
-          分割統治法ではそれより緩やかに増加します。
-          この違いにより，大量のデータを扱う場合には分割統治法の方が有利であると考えられます。
-        </p>
       </div>
     </div>
   </div>
