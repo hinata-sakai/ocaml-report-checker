@@ -330,6 +330,99 @@ WEEK3_ANSWER_GUIDE_HTML = """
   <div class="guide-card">
     <div class="guide-subitems">
       <div class="guide-subitem">
+        <p class="guide-card-title">交換ソート</p>
+        <pre class="guide-card-code">let rec exchange_pass = function
+  | [] -&gt; ([], false)
+  | [x] -&gt; ([x], false)
+  | x :: y :: ys -&gt;
+      if x &gt; y then
+        let (rest, _) = exchange_pass (x :: ys) in
+        (y :: rest, true)
+      else
+        let (rest, changed) = exchange_pass (y :: ys) in
+        (x :: rest, changed)
+;;
+
+let rec exchange_sort xs =
+  let (ys, changed) = exchange_pass xs in
+  if changed then
+    exchange_sort ys
+  else
+    ys
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">交換ソートのカウント版</p>
+        <pre class="guide-card-code">let rec exchange_pass_c_aux c = function
+  | [] -&gt; (c, [], false)
+  | [x] -&gt; (c, [x], false)
+  | x :: y :: ys -&gt;
+      if x &gt; y then
+        let (c', rest, _) = exchange_pass_c_aux (c + 1) (x :: ys) in
+        (c', y :: rest, true)
+      else
+        let (c', rest, changed) = exchange_pass_c_aux (c + 1) (y :: ys) in
+        (c', x :: rest, changed)
+;;
+
+let exchange_sort_c xs =
+  let rec loop c xs =
+    let (c', ys, changed) = exchange_pass_c_aux c xs in
+    if changed then
+      loop c' ys
+    else
+      (c', ys)
+  in
+  loop 0 xs
+;;</pre>
+      </div>
+      <div class="guide-subitem">
+        <p class="guide-card-title">選択ソート</p>
+        <pre class="guide-card-code">let rec select_min = function
+  | [] -&gt; failwith "empty list"
+  | [x] -&gt; (x, [])
+  | x :: xs -&gt;
+      let (m, rest) = select_min xs in
+      if x &lt;= m then
+        (x, xs)
+      else
+        (m, x :: rest)
+;;
+
+let rec selection_sort = function
+  | [] -&gt; []
+  | xs -&gt;
+      let (m, rest) = select_min xs in
+      m :: selection_sort rest
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">選択ソートのカウント版</p>
+        <pre class="guide-card-code">let rec select_min_c_aux c = function
+  | [] -&gt; failwith "empty list"
+  | [x] -&gt; (c, x, [])
+  | x :: xs -&gt;
+      let (c', m, rest) = select_min_c_aux c xs in
+      if x &lt;= m then
+        (c' + 1, x, xs)
+      else
+        (c' + 1, m, x :: rest)
+;;
+
+let selection_sort_c xs =
+  let rec loop c = function
+    | [] -&gt; (c, [])
+    | xs -&gt;
+        let (c', m, rest) = select_min_c_aux c xs in
+        let (c'', sorted_rest) = loop c' rest in
+        (c'', m :: sorted_rest)
+  in
+  loop 0 xs
+;;</pre>
+      </div>
+      <div class="guide-subitem">
         <p class="guide-card-title">挿入ソート</p>
         <pre class="guide-card-code">let rec insert x = function
   | [] -&gt; [x]
@@ -497,33 +590,73 @@ let quick_sort_c lst =
   <h3 class="guide-section-title">課題4 実行実験1：要素数による比較回数の変化</h3>
   <div class="guide-card">
     <div class="guide-image-wrap">
-      <img class="guide-image" src="/week3_answer_table1.png" alt="要素数による比較回数の変化の表">
+      <img class="guide-image week3-answer-table-image" src="/week3_answer_table1.png" alt="要素数による比較回数の変化の表">
     </div>
   </div>
 
   <h3 class="guide-section-title">課題4 実行実験2：初期状態による比較回数の変化</h3>
   <div class="guide-card">
     <div class="guide-image-wrap">
-      <img class="guide-image" src="/week3_answer_table2.png" alt="初期状態による比較回数の変化の表">
+      <img class="guide-image week3-answer-table-image" src="/week3_answer_table2.png" alt="初期状態による比較回数の変化の表">
     </div>
   </div>
 
   <h3 class="guide-section-title">課題5 考察</h3>
   <div class="guide-card">
-    <p class="guide-card-text">
-      単純ソートでは，要素数が増えると比較回数が急激に増加する。
-      特に交換ソートと選択ソートは，要素数の2乗に比例して増加する。
-      挿入ソートは比較回数がやや少ないが，同様に2乗オーダーで増加する。
-    </p>
-    <p class="guide-card-text">
-      一方，マージソートやクイックソートなどの分割統治法ソートは，
-      要素数が増えても比較回数の増加が緩やかであり，大量データに対して有利である。
-    </p>
-    <p class="guide-card-text">
-      初期状態の違いに関しては，交換ソートと挿入ソートは整列済みデータに強く，
-      選択ソートとマージソートは初期状態の影響をほとんど受けない。
-      クイックソートはピボットの取り方によって，整列済みや逆順で最悪に近い挙動を示す。
-    </p>
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">問2：データの初期状態とアルゴリズムの特性</p>
+        <p class="guide-card-text">
+          実験2の通り，単純ソート群はデータの初期状態によって挙動が大きく異なります。
+          交換ソートでは，整列済みデータを与えたとき，比較回数は要素数 - 1 となり，
+          20要素なら19回まで減少します。これは，exchange_pass において隣り合う要素の入れ替えが
+          一度も発生しなかった場合，false を返して全体の処理を打ち切る構造になっているためです。
+        </p>
+        <p class="guide-card-text">
+          挿入ソートでも，整列済みデータでは比較回数が少なくなります。
+          insert は，挿入したい要素が正しい位置にあると分かった時点で，
+          リストの奥深くまで走査せずに処理を打ち切るため，比較回数が最小限で済みます。
+        </p>
+        <p class="guide-card-text">
+          一方，選択ソートでは，データの状態に関わらず常に最大回数の比較が行われます。
+          select_min は，データが整列済みであるかどうかに関係なく，
+          リスト全体を最後まで走査して最小値を探すためです。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">問3：分割統治法の効率性</p>
+        <p class="guide-card-text">
+          実験1において，要素数が10から100へと10倍に増えたとき，
+          単純ソートと分割統治法ソートの間には大きな違いが見られます。
+          単純ソートでは，要素数が10倍になると，比較回数はおおよそ100倍近くへ増加します。
+          例えば，交換ソートでは45回から4,950回へ増加しています。
+        </p>
+        <p class="guide-card-text">
+          一方，マージソートやクイックソートでは，要素数が10倍になっても，
+          比較回数は20〜25倍程度に抑えられています。
+          これは，大きな問題をそのまま解くのではなく，
+          データを小さく分割してからそれぞれをソートし，最後に合わせるという
+          分割統治法の構造によるものです。
+        </p>
+        <p class="guide-card-text">
+          単純ソートのように，1つの大きなリストを何度も端から端まで走査する処理では，
+          要素数が増えたときに比較回数が掛け算式に増えてしまいます。
+          しかし，分割統治法では問題を半分ずつに分けることで，
+          1回あたりに扱うリストの長さを小さくできるため，大量データに対して有利になります。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">採点基準のポイント</p>
+        <ul class="guide-submit-list">
+          <li>問1：実験データが正しく計測され，表にまとめられているか。</li>
+          <li>問2：処理の打ち切りや，リストを最後まで走査する仕組みに言及できているか。</li>
+          <li>問3：要素数が10倍になったときの増え方を数値にもとづいて説明できているか。</li>
+          <li>分割することで1回あたりの処理が小さくなるという分割統治の本質を説明できているか。</li>
+        </ul>
+      </div>
+    </div>
   </div>
 """
 
