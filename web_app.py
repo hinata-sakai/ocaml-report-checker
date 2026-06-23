@@ -25,6 +25,8 @@ BACKGROUND_IMAGE = Path("webhaikei.png")
 TASK17_IMAGE = Path("first_period/task17_routes.png")
 WEEK2_DIFF_FORWARD_IMAGE = Path("second_period/week2/diff_forward_formula.png")
 WEEK2_DIFF_CENTRAL_IMAGE = Path("second_period/week2/diff_central_formula.png")
+WEEK3_ANSWER_TABLE1_IMAGE = Path("second_period/week3/answer_table1.png")
+WEEK3_ANSWER_TABLE2_IMAGE = Path("second_period/week3/answer_table2.png")
 
 VERSION_FILE = Path("VERSION")
 
@@ -6098,6 +6100,10 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_png(WEEK2_DIFF_FORWARD_IMAGE)
         elif self.path == "/week2_diff_central_formula.png":
             self.send_png(WEEK2_DIFF_CENTRAL_IMAGE)
+        elif self.path == "/week3_answer_table1.png":
+            self.send_png(WEEK3_ANSWER_TABLE1_IMAGE)
+        elif self.path == "/week3_answer_table2.png":
+            self.send_png(WEEK3_ANSWER_TABLE2_IMAGE)
         else:
             self.send_html(build_index_html("ページが見つかりません。"), status=404)
 
