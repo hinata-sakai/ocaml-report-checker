@@ -34,8 +34,12 @@ WEEK2_TASK_GUIDE_HTML = """
         <p class="guide-card-title">1-1：導関数の定義からの微分係数の計算</p>
         <p class="guide-card-text">
           関数 f と実数 x を受け取り，値 x における f の微分係数 f'(x) を，
-          導関数の定義式を用いて計算する関数 diff_forward を定義しなさい。
+          以下の導関数の定義式を用いて計算する関数 diff_forward を定義しなさい。
         </p>
+        <div class="guide-formula">
+          <img src="/first_period/task17_routes.png" alt="dummy" style="display:none;">
+          <div class="guide-formula-text">f'(x) ≈ (f(x + h) − f(x)) / h</div>
+        </div>
         <pre class="guide-card-code">diff_forward : (float -&gt; float) -&gt; float -&gt; float</pre>
       </div>
 
@@ -43,8 +47,11 @@ WEEK2_TASK_GUIDE_HTML = """
         <p class="guide-card-title">1-2：中心差分による高精度化</p>
         <p class="guide-card-text">
           1-1の式は h の大きさによって誤差が生じやすい。
-          より正確に微分係数を求めるために，中心差分の式に変形した関数 diff_central を定義しなさい。
+          より正確に微分係数を求めるために，以下の中心差分の式に変形した関数 diff_central を定義しなさい。
         </p>
+        <div class="guide-formula">
+          <div class="guide-formula-text">f'(x) ≈ (f(x + h) − f(x − h)) / 2h</div>
+        </div>
         <pre class="guide-card-code">diff_central : (float -&gt; float) -&gt; float -&gt; float</pre>
       </div>
 
@@ -129,6 +136,9 @@ area_trapezoid : (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
           および微小幅 dx を受け取り，その1区間分の面積をシンプソンの公式によって計算する
           関数 area_simpson を定義しなさい。
         </p>
+        <p class="guide-card-text">
+          （※シンプソンの公式では，区間の中点 x + dx / 2 における関数値が必要になる点に注意しなさい）
+        </p>
         <pre class="guide-card-code">area_simpson : (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
       </div>
 
@@ -145,6 +155,10 @@ area_trapezoid : (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
           （長方形・台形・シンプソン）をそれぞれ組み合わせて適切なテスト関数を定義し，
           それぞれの計算結果を求めなさい。
         </p>
+        <ul class="guide-submit-list">
+          <li>注意点：関数が積分区間内で不連続である場合など，数学的に積分不可能である例外的なケースへの対策は本課題では考慮しなくて構いません。</li>
+          <li>正常に積分可能な関数と区間が与えられるものとして実装しなさい。</li>
+        </ul>
       </div>
 
       <div class="guide-subitem">
@@ -407,6 +421,23 @@ def add_week2_title_style(html):
   font-size: inherit;
   font-weight: inherit;
   line-height: inherit;
+}
+
+.guide-formula {
+  margin: 14px 0 16px 0;
+  text-align: center;
+}
+
+.guide-formula-text {
+  display: inline-block;
+  padding: 10px 18px;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  font-family: "Times New Roman", serif;
+  font-style: italic;
+  font-size: 1.6rem;
+  line-height: 1.4;
 }
 """
 
