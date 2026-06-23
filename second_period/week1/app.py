@@ -426,6 +426,7 @@ def build_index_html(message=""):
     import web_app
 
     html = web_app.build_index_html(message)
+        html = html.replace("href='/period'>選択画面へ戻る</a>", "href='/period/2'>選択画面へ戻る</a>")
     html = html.replace("action='/check'", "action='/period/2/week1/check'")
     html = html.replace("Ocaml 1期", "Ocaml 2期")
     html = html.replace("OCaml 1期", "OCaml 2期")
