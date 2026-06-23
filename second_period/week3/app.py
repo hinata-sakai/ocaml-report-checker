@@ -312,140 +312,413 @@ quick_sort_c : int list -&gt; int * int list</pre>
 
 WEEK3_ANSWER_GUIDE_HTML = """
   <p class="guide-intro">
-    第2期 第3週の解答例です。PDFの解答例の内容を，実際の課題番号に合わせて整理しています。
+    第2期 第3週の解答例です。単純ソート，分割統治法ソート，比較回数カウント版，
+    実行実験，考察の書き方を課題番号に合わせて整理しています。
     実装方法は一例であり，同じ動作をする別の実装でも正解になります。
   </p>
 
-  <h3 class="guide-section-title">課題 1：微分</h3>
+  <h3 class="guide-section-title">1. 単純ソートアルゴリズムの実装</h3>
 
   <div class="guide-card">
-    <p class="guide-card-title">共通で用いる値</p>
-    <pre class="guide-card-code">let h = 0.0001;;
-let c = 0.0001;;</pre>
+    <p class="guide-card-text">
+      以下は，交換ソート，選択ソート，挿入ソートの実装例です。
+      課題では1つ以上を選択して実装すればよいですが，ここでは参考として3つすべてを示します。
+    </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">1-1：導関数の定義からの微分係数の計算</p>
-        <pre class="guide-card-code">let diff_forward f x =
-  (f (x +. h) -. f x) /. h
-;;</pre>
-      </div>
+        <p class="guide-card-title">交換ソート：exchange_pass / exchange_sort</p>
+        <pre class="guide-card-code">let rec exchange_pass lst =
+  match lst with
+  | [] -&gt; ([], false)
+  | [x] -&gt; ([x], false)
+  | x :: y :: rest -&gt;
+      if x &gt; y then
+        let (tail, _) = exchange_pass (x :: rest) in
+        (y :: tail, true)
+      else
+        let (tail, swapped) = exchange_pass (y :: rest) in
+        (x :: tail, swapped)
+;;
 
-      <div class="guide-subitem">
-        <p class="guide-card-title">1-2：中心差分による高精度化</p>
-        <pre class="guide-card-code">let diff_central f x =
-  (f (x +. h) -. f (x -. h)) /. (2.0 *. h)
-;;</pre>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">1-3：ニュートン法の仕組みの調査</p>
-        <p class="guide-card-text">
-          1-3はレポート課題のため，自動採点では確認しません。
-          ニュートン法の更新式や，f'(x) = 0 を解くために近似値をどのように更新するかを
-          提出PDFで確認してください。
-        </p>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">1-4：再帰による極値の探索</p>
-        <pre class="guide-card-code">let rec ext f x =
-  let d1 = diff_central f x in
-  if abs_float d1 < c then
-    (x, f x)
+let rec exchange_sort lst =
+  let (lst2, swapped) = exchange_pass lst in
+  if swapped then
+    exchange_sort lst2
   else
-    let d2 = diff_central (diff_central f) x in
-    let next_x = x -. d1 /. d2 in
-    ext f next_x
+    lst2
 ;;</pre>
         <p class="guide-card-text">
-          この例では，f'(x) = 0 となる点をニュートン法で探索しています。
-          diff_central f x で一階微分を近似し，diff_central (diff_central f) x で二階微分を近似しています。
+          exchange_pass は，隣り合う要素を前から順に比較し，順序が逆なら入れ替えます。
+          1回でも交換が起きた場合は true を返し，交換が起きなくなるまで exchange_sort が繰り返します。
         </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">1-5：精度と速度に関する考察</p>
+        <p class="guide-card-title">選択ソート：select_min / selection_sort</p>
+        <pre class="guide-card-code">let rec select_min lst =
+  match lst with
+  | [] -&gt; failwith "empty"
+  | [x] -&gt; (x, [])
+  | x :: xs -&gt;
+      let (m, rest) = select_min xs in
+      if x &lt;= m then
+        (x, xs)
+      else
+        (m, x :: rest)
+;;
+
+let rec selection_sort lst =
+  match lst with
+  | [] -&gt; []
+  | _ -&gt;
+      let (m, rest) = select_min lst in
+      m :: selection_sort rest
+;;</pre>
         <p class="guide-card-text">
-          1-5はレポート課題のため，自動採点では確認しません。
-          前方差分と中心差分の精度差，h の大きさによる影響，ニュートン法の収束性，
-          初期値 x0 の選び方による違いを提出PDFで確認してください。
+          select_min は，リスト内の最小値と，その最小値を取り除いた残りのリストを返します。
+          selection_sort は，最小値を1つずつ取り出して前から並べることでソートします。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">挿入ソート：insert / insertion_sort</p>
+        <pre class="guide-card-code">let rec insert x lst =
+  match lst with
+  | [] -&gt; [x]
+  | y :: ys -&gt;
+      if x &lt;= y then
+        x :: lst
+      else
+        y :: insert x ys
+;;
+
+let rec insertion_sort lst =
+  match lst with
+  | [] -&gt; []
+  | x :: xs -&gt;
+      insert x (insertion_sort xs)
+;;</pre>
+        <p class="guide-card-text">
+          insert は，すでに整列済みのリストに対して，新しい要素 x を正しい位置に挿入します。
+          insertion_sort は，残りのリストを先に整列し，そこへ先頭要素を挿入します。
         </p>
       </div>
     </div>
   </div>
 
-  <h3 class="guide-section-title">課題 2：積分</h3>
+  <h3 class="guide-section-title">2. 分割統治法ソートアルゴリズムの実装</h3>
 
   <div class="guide-card">
-    <p class="guide-card-title">共通で用いる値</p>
-    <pre class="guide-card-code">let dx = 0.0001;;</pre>
+    <p class="guide-card-text">
+      以下は，マージソートとクイックソートの実装例です。
+    </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">2-1-1：長方形の面積</p>
-        <pre class="guide-card-code">let area_rectangle f x dx =
-  f x *. dx
-;;</pre>
-      </div>
+        <p class="guide-card-title">マージソート：split / merge / merge_sort</p>
+        <pre class="guide-card-code">let rec split lst =
+  match lst with
+  | [] -&gt; ([], [])
+  | [x] -&gt; ([x], [])
+  | x :: y :: rest -&gt;
+      let (xs, ys) = split rest in
+      (x :: xs, y :: ys)
+;;
 
-      <div class="guide-subitem">
-        <p class="guide-card-title">2-1-2：台形の面積</p>
-        <pre class="guide-card-code">let area_trapezoid f x dx =
-  ((f x +. f (x +. dx)) *. dx) /. 2.0
-;;</pre>
-      </div>
+let rec merge xs ys =
+  match xs, ys with
+  | [], _ -&gt; ys
+  | _, [] -&gt; xs
+  | x :: xs', y :: ys' -&gt;
+      if x &lt;= y then
+        x :: merge xs' ys
+      else
+        y :: merge xs ys'
+;;
 
-      <div class="guide-subitem">
-        <p class="guide-card-title">2-2：シンプソンの公式の仕組みの調査</p>
+let rec merge_sort lst =
+  match lst with
+  | [] -&gt; []
+  | [x] -&gt; [x]
+  | _ -&gt;
+      let (left, right) = split lst in
+      merge (merge_sort left) (merge_sort right)
+;;</pre>
         <p class="guide-card-text">
-          2-2はレポート課題のため，自動採点では確認しません。
-          シンプソンの公式がどのように区間内の関数値を用いて面積を近似するかを
-          提出PDFで確認してください。
+          マージソートは，リストを2つに分割し，それぞれを再帰的にソートした後，
+          merge によって2つの整列済みリストを1つに統合します。
         </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">2-3：シンプソンの面積</p>
-        <pre class="guide-card-code">let area_simpson f x dx =
-  (f x +. 4.0 *. f (x +. dx /. 2.0) +. f (x +. dx)) *. dx /. 6.0
+        <p class="guide-card-title">クイックソート：partition / quick_sort</p>
+        <pre class="guide-card-code">let rec partition pivot lst =
+  match lst with
+  | [] -&gt; ([], [])
+  | x :: xs -&gt;
+      let (small, large) = partition pivot xs in
+      if x &lt; pivot then
+        (x :: small, large)
+      else
+        (small, x :: large)
+;;
+
+let rec quick_sort lst =
+  match lst with
+  | [] -&gt; []
+  | pivot :: rest -&gt;
+      let (small, large) = partition pivot rest in
+      quick_sort small @ [pivot] @ quick_sort large
 ;;</pre>
         <p class="guide-card-text">
-          シンプソンの公式では，区間の左端 x，右端 x + dx に加えて，
-          中点 x + dx / 2 における関数値も用います。
+          クイックソートは，先頭要素をピボットとして選び，
+          ピボットより小さい要素とそれ以外に分割してから，再帰的に整列します。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="guide-section-title">3. 比較回数カウント版</h3>
+
+  <div class="guide-card">
+    <p class="guide-card-text">
+      比較回数カウント版では，ソート結果だけでなく，
+      要素同士を比較した回数も返します。
+      戻り値はすべて int * int list の形にします。
+    </p>
+
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">交換ソートのカウント版</p>
+        <pre class="guide-card-code">let rec exchange_pass_c lst =
+  match lst with
+  | [] -&gt; (0, [], false)
+  | [x] -&gt; (0, [x], false)
+  | x :: y :: rest -&gt;
+      if x &gt; y then
+        let (c, tail, _) = exchange_pass_c (x :: rest) in
+        (c + 1, y :: tail, true)
+      else
+        let (c, tail, swapped) = exchange_pass_c (y :: rest) in
+        (c + 1, x :: tail, swapped)
+;;
+
+let exchange_sort_c lst =
+  let rec loop total lst =
+    let (c, lst2, swapped) = exchange_pass_c lst in
+    if swapped then
+      loop (total + c) lst2
+    else
+      (total + c, lst2)
+  in
+  loop 0 lst
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">選択ソートのカウント版</p>
+        <pre class="guide-card-code">let rec select_min_c lst =
+  match lst with
+  | [] -&gt; failwith "empty"
+  | [x] -&gt; (0, x, [])
+  | x :: xs -&gt;
+      let (c, m, rest) = select_min_c xs in
+      if x &lt;= m then
+        (c + 1, x, xs)
+      else
+        (c + 1, m, x :: rest)
+;;
+
+let rec selection_sort_c lst =
+  match lst with
+  | [] -&gt; (0, [])
+  | _ -&gt;
+      let (c1, m, rest) = select_min_c lst in
+      let (c2, sorted_rest) = selection_sort_c rest in
+      (c1 + c2, m :: sorted_rest)
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">挿入ソートのカウント版</p>
+        <pre class="guide-card-code">let rec insert_c x lst =
+  match lst with
+  | [] -&gt; (0, [x])
+  | y :: ys -&gt;
+      if x &lt;= y then
+        (1, x :: lst)
+      else
+        let (c, inserted) = insert_c x ys in
+        (c + 1, y :: inserted)
+;;
+
+let rec insertion_sort_c lst =
+  match lst with
+  | [] -&gt; (0, [])
+  | x :: xs -&gt;
+      let (c1, sorted_xs) = insertion_sort_c xs in
+      let (c2, result) = insert_c x sorted_xs in
+      (c1 + c2, result)
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">マージソートのカウント版</p>
+        <pre class="guide-card-code">let rec merge_c xs ys =
+  match xs, ys with
+  | [], _ -&gt; (0, ys)
+  | _, [] -&gt; (0, xs)
+  | x :: xs', y :: ys' -&gt;
+      if x &lt;= y then
+        let (c, merged) = merge_c xs' ys in
+        (c + 1, x :: merged)
+      else
+        let (c, merged) = merge_c xs ys' in
+        (c + 1, y :: merged)
+;;
+
+let rec merge_sort_c lst =
+  match lst with
+  | [] -&gt; (0, [])
+  | [x] -&gt; (0, [x])
+  | _ -&gt;
+      let (left, right) = split lst in
+      let (c1, sorted_left) = merge_sort_c left in
+      let (c2, sorted_right) = merge_sort_c right in
+      let (c3, merged) = merge_c sorted_left sorted_right in
+      (c1 + c2 + c3, merged)
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">クイックソートのカウント版</p>
+        <pre class="guide-card-code">let rec partition_c pivot lst =
+  match lst with
+  | [] -&gt; (0, [], [])
+  | x :: xs -&gt;
+      let (c, small, large) = partition_c pivot xs in
+      if x &lt; pivot then
+        (c + 1, x :: small, large)
+      else
+        (c + 1, small, x :: large)
+;;
+
+let rec quick_sort_c lst =
+  match lst with
+  | [] -&gt; (0, [])
+  | pivot :: rest -&gt;
+      let (c1, small, large) = partition_c pivot rest in
+      let (c2, sorted_small) = quick_sort_c small in
+      let (c3, sorted_large) = quick_sort_c large in
+      (c1 + c2 + c3, sorted_small @ [pivot] @ sorted_large)
+;;</pre>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="guide-section-title">4. 実行実験</h3>
+
+  <div class="guide-card">
+    <p class="guide-card-text">
+      実験では，3で作成した比較回数カウント版の関数を使います。
+      ランダムデータを比較する場合は，各ソート関数に同じリストを渡すことが重要です。
+    </p>
+
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">実験1：要素数による比較回数の変化</p>
+        <pre class="guide-card-code">let data10 = [7; 2; 9; 1; 5; 3; 8; 4; 10; 6];;
+
+let data50 =
+  [32; 7; 45; 12; 3; 28; 50; 19; 41; 6;
+   24; 36; 1; 48; 14; 9; 30; 22; 44; 17;
+   5; 39; 26; 11; 47; 34; 2; 20; 42; 15;
+   8; 29; 37; 4; 49; 18; 31; 23; 46; 13;
+   10; 35; 27; 16; 40; 21; 43; 25; 38; 33];;
+
+let data100 =
+  [53; 12; 87; 4; 66; 29; 95; 41; 8; 72;
+   18; 99; 35; 60; 1; 76; 24; 83; 47; 10;
+   91; 31; 68; 55; 14; 100; 37; 6; 80; 22;
+   63; 49; 3; 74; 26; 89; 44; 16; 97; 33;
+   58; 11; 70; 39; 2; 85; 51; 20; 93; 28;
+   64; 7; 78; 45; 17; 96; 34; 59; 13; 82;
+   30; 67; 5; 90; 42; 73; 25; 98; 36; 61;
+   9; 84; 48; 15; 92; 32; 69; 54; 21; 79;
+   40; 65; 19; 88; 46; 71; 27; 94; 38; 57;
+   23; 81; 50; 75; 43; 62; 52; 77; 56; 86];;
+
+exchange_sort_c data10;;
+merge_sort_c data10;;
+quick_sort_c data10;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">実験2：データの初期状態による変化</p>
+        <pre class="guide-card-code">let sorted20 =
+  [1; 2; 3; 4; 5; 6; 7; 8; 9; 10;
+   11; 12; 13; 14; 15; 16; 17; 18; 19; 20];;
+
+let reverse20 =
+  [20; 19; 18; 17; 16; 15; 14; 13; 12; 11;
+   10; 9; 8; 7; 6; 5; 4; 3; 2; 1];;
+
+let random20 =
+  [7; 19; 3; 12; 1; 16; 9; 20; 5; 14;
+   2; 18; 11; 6; 15; 4; 17; 8; 13; 10];;
+
+exchange_sort_c sorted20;;
+exchange_sort_c reverse20;;
+exchange_sort_c random20;;
+
+merge_sort_c sorted20;;
+merge_sort_c reverse20;;
+merge_sort_c random20;;</pre>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="guide-section-title">5. 考察（レポート）</h3>
+
+  <div class="guide-card">
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">問1：実験結果のまとめ</p>
+        <p class="guide-card-text">
+          実験1では，要素数10，50，100のそれぞれについて，各ソート関数の比較回数を表にまとめます。
+          実験2では，要素数20の整列済み，逆順，ランダムの3種類について比較回数を表にまとめます。
         </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">2-4：共通の積分関数</p>
-        <pre class="guide-card-code">let rec integral area f a b =
-  if a >= b then
-    0.0
-  else
-    area f a dx +. integral area f (a +. dx) b
-;;</pre>
+        <p class="guide-card-title">問2：初期状態による比較回数の違い</p>
         <p class="guide-card-text">
-          area に area_rectangle，area_trapezoid，area_simpson のいずれかを渡すことで，
-          同じ integral 関数を用いて複数の積分方法を切り替えることができます。
+          交換ソートでは，整列済みデータの場合，1回の走査で交換が発生しないため処理がすぐ終了します。
+          そのため，比較回数は比較的少なくなります。
+          一方，逆順データでは，隣り合う要素のほとんどが逆順であり，
+          何度も交換と走査を繰り返すため，比較回数が多くなります。
+        </p>
+        <p class="guide-card-text">
+          選択ソートでは，各段階で残りのリスト全体から最小値を探すため，
+          整列済み・逆順・ランダムの違いによって比較回数が大きく変化しにくいです。
+          挿入ソートでは，整列済みの場合は早い段階で挿入位置が見つかる一方，
+          逆順の場合は奥まで比較が必要になり，比較回数が増えやすくなります。
         </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">2-4：実行例</p>
-        <pre class="guide-card-code">let f1 x = x;;
-let f2 x = x *. x;;
-
-integral area_rectangle f1 0.0 1.0;;
-integral area_trapezoid f1 0.0 1.0;;
-integral area_simpson f2 0.0 1.0;;</pre>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">2-5：精度に関する考察</p>
+        <p class="guide-card-title">問3：分割統治法が大量データに有利な理由</p>
         <p class="guide-card-text">
-          2-5はレポート課題のため，自動採点では確認しません。
-          高階関数を用いた設計の利点や，長方形・台形・シンプソンの公式による
-          計算結果の精度差を提出PDFで確認してください。
+          単純ソートは，要素数が増えると比較回数が急激に増えやすいです。
+          特に交換ソートや選択ソートでは，要素数 n に対しておおよそ n² に近い回数の比較が必要になります。
+        </p>
+        <p class="guide-card-text">
+          一方，マージソートや平均的なクイックソートは，リストを小さく分割してから処理するため，
+          比較回数の増え方はおおよそ n log n に近くなります。
+          そのため，要素数が10倍になった場合，単純ソートでは比較回数が約100倍に近く増える可能性があるのに対し，
+          分割統治法ではそれより緩やかに増加します。
+          この違いにより，大量のデータを扱う場合には分割統治法の方が有利であると考えられます。
         </p>
       </div>
     </div>
