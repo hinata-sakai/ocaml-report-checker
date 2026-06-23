@@ -2,20 +2,19 @@
 
 """Checker for OCaml second period, week 3.
 
-Targets:
-- Q1-1 diff_forward    : (float -> float) -> float -> float
-- Q1-2 diff_central    : (float -> float) -> float -> float
-- Q1-4 ext             : (float -> float) -> float -> (float * float)
-- Q2-1-1 area_rectangle: (float -> float) -> float -> float -> float
-- Q2-1-2 area_trapezoid: (float -> float) -> float -> float -> float
-- Q2-3 area_simpson    : (float -> float) -> float -> float -> float
-- Q2-4 integral        : ((float -> float) -> float -> float -> float) ->
-                         (float -> float) -> float -> float -> float
+Week 3 is the sorting-algorithm assignment.  Each auto-graded question lets
+students choose at least one implementation from a set of candidate functions,
+so this checker runs each candidate independently and then summarizes results by
+question on the Python side.
 
-Notes:
-- Floating-point answers are graded with approximate comparisons.
-- The assignment expects h, c, and dx to be global values in student code.
-- Research and discussion sections should be checked manually from the PDF.
+Auto-graded questions:
+- Q1   Simple sorting algorithm, one of exchange_sort/selection_sort/insertion_sort
+- Q2   Divide-and-conquer sorting algorithm, one of merge_sort/quick_sort
+- Q3-1 Simple sorting algorithm with comparison count, one of *_sort_c
+- Q3-2 Divide-and-conquer sorting algorithm with comparison count, one of *_sort_c
+
+Report/PDF-only questions 4-1, 4-2, 5-1, 5-2, and 5-3 are intentionally not
+auto-graded.
 """
 
 import subprocess
@@ -27,6 +26,73 @@ OCAML_COMMAND = "ocaml"
 TIMEOUT_SECONDS = 8
 
 
+SORT_TEST_CODE_TEMPLATE = r'''
+let show_int_list xs =
+  "[" ^ String.concat "; " (List.map string_of_int xs) ^ "]"
+;;
+
+let test_cases = [
+  [];
+  [1];
+  [3; 1; 2];
+  [5; 4; 3; 2; 1];
+  [1; 2; 3; 4; 5];
+  [3; 1; 3; 2; 1];
+  [-1; 3; 0; -5; 2];
+];;
+
+let assert_sorted label input actual =
+  let expected = List.sort compare input in
+  if actual = expected then
+    print_endline ("OK " ^ label ^ " " ^ show_int_list input)
+  else
+    Printf.printf "NG %s %s: expected %s but got %s\n"
+      label (show_int_list input) (show_int_list expected) (show_int_list actual)
+;;
+
+List.iter (fun input -> assert_sorted "{function_name}" input ({function_name} input)) test_cases;;
+'''
+
+
+COUNT_SORT_TEST_CODE_TEMPLATE = r'''
+let show_int_list xs =
+  "[" ^ String.concat "; " (List.map string_of_int xs) ^ "]"
+;;
+
+let test_cases = [
+  [];
+  [1];
+  [2; 1];
+  [3; 1; 2];
+  [5; 4; 3; 2; 1];
+  [1; 2; 3; 4; 5];
+  [3; 1; 3; 2; 1];
+  [-1; 3; 0; -5; 2];
+];;
+
+let assert_counted_sorted label input (count : int) actual =
+  let expected = List.sort compare input in
+  if actual <> expected then
+    Printf.printf "NG %s %s: expected sorted list %s but got %s\n"
+      label (show_int_list input) (show_int_list expected) (show_int_list actual)
+  else if List.length input <= 1 && count < 0 then
+    Printf.printf "NG %s %s: comparison count must be >= 0 but got %d\n"
+      label (show_int_list input) count
+  else if List.length input >= 2 && count <= 0 then
+    Printf.printf "NG %s %s: comparison count must be > 0 for non-trivial input but got %d\n"
+      label (show_int_list input) count
+  else
+    print_endline ("OK " ^ label ^ " " ^ show_int_list input)
+;;
+
+List.iter
+  (fun input ->
+     let (count, sorted) = {function_name} input in
+     assert_counted_sorted "{function_name}" input count sorted)
+  test_cases;;
+'''
+
+
 def make_test(question, name, ocaml_code):
     return {
         "question": str(question),
@@ -35,156 +101,35 @@ def make_test(question, name, ocaml_code):
     }
 
 
+def make_sort_test(question, function_name):
+    return make_test(
+        question,
+        function_name,
+        SORT_TEST_CODE_TEMPLATE.replace("{function_name}", function_name),
+    )
+
+
+def make_count_sort_test(question, function_name):
+    return make_test(
+        question,
+        function_name,
+        COUNT_SORT_TEST_CODE_TEMPLATE.replace("{function_name}", function_name),
+    )
+
+
 TESTS = [
-    make_test(
-        "1-1",
-        "diff_forward",
-        r'''
-let approx_equal eps actual expected =
-  abs_float (actual -. expected) <= eps
-;;
-
-let assert_approx label actual expected eps =
-  if approx_equal eps actual expected then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
-;;
-
-assert_approx "diff_forward (fun x -> x *. x) 2.0" (diff_forward (fun x -> x *. x) 2.0) 4.0 1e-2;;
-assert_approx "diff_forward (fun x -> x *. x *. x) 2.0" (diff_forward (fun x -> x *. x *. x) 2.0) 12.0 1e-2;;
-assert_approx "diff_forward sin 0.0" (diff_forward sin 0.0) 1.0 1e-2;;
-''',
-    ),
-    make_test(
-        "1-2",
-        "diff_central",
-        r'''
-let approx_equal eps actual expected =
-  abs_float (actual -. expected) <= eps
-;;
-
-let assert_approx label actual expected eps =
-  if approx_equal eps actual expected then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
-;;
-
-assert_approx "diff_central (fun x -> x *. x) 2.0" (diff_central (fun x -> x *. x) 2.0) 4.0 1e-3;;
-assert_approx "diff_central (fun x -> x *. x *. x) 2.0" (diff_central (fun x -> x *. x *. x) 2.0) 12.0 1e-3;;
-assert_approx "diff_central sin 0.0" (diff_central sin 0.0) 1.0 1e-3;;
-''',
-    ),
-    make_test(
-        "1-4",
-        "ext",
-        r'''
-let approx_equal eps actual expected =
-  abs_float (actual -. expected) <= eps
-;;
-
-let assert_approx label actual expected eps =
-  if approx_equal eps actual expected then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
-;;
-
-let check_ext label f start expected_x expected_y =
-  let (actual_x, actual_y) = ext f start in
-  assert_approx (label ^ " x") actual_x expected_x 1e-2;
-  assert_approx (label ^ " f(x)") actual_y expected_y 1e-2
-;;
-
-check_ext "ext (fun x -> (x -. 2.0) *. (x -. 2.0)) 0.0" (fun x -> (x -. 2.0) *. (x -. 2.0)) 0.0 2.0 0.0;;
-check_ext "ext (fun x -> (x +. 1.0) *. (x +. 1.0)) 1.0" (fun x -> (x +. 1.0) *. (x +. 1.0)) 1.0 (-1.0) 0.0;;
-''',
-    ),
-    make_test(
-        "2-1-1",
-        "area_rectangle",
-        r'''
-let approx_equal eps actual expected =
-  abs_float (actual -. expected) <= eps
-;;
-
-let assert_approx label actual expected eps =
-  if approx_equal eps actual expected then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
-;;
-
-assert_approx "area_rectangle (fun x -> x) 0.0 0.1" (area_rectangle (fun x -> x) 0.0 0.1) 0.0 1e-3;;
-assert_approx "area_rectangle (fun x -> x) 2.0 0.5" (area_rectangle (fun x -> x) 2.0 0.5) 1.0 1e-3;;
-assert_approx "area_rectangle (fun x -> x *. x) 2.0 0.5" (area_rectangle (fun x -> x *. x) 2.0 0.5) 2.0 1e-3;;
-''',
-    ),
-    make_test(
-        "2-1-2",
-        "area_trapezoid",
-        r'''
-let approx_equal eps actual expected =
-  abs_float (actual -. expected) <= eps
-;;
-
-let assert_approx label actual expected eps =
-  if approx_equal eps actual expected then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
-;;
-
-assert_approx "area_trapezoid (fun x -> x) 0.0 0.1" (area_trapezoid (fun x -> x) 0.0 0.1) 0.005 1e-3;;
-assert_approx "area_trapezoid (fun x -> x) 2.0 0.5" (area_trapezoid (fun x -> x) 2.0 0.5) 1.125 1e-3;;
-assert_approx "area_trapezoid (fun x -> x *. x) 2.0 0.5" (area_trapezoid (fun x -> x *. x) 2.0 0.5) 2.5625 1e-3;;
-''',
-    ),
-    make_test(
-        "2-3",
-        "area_simpson",
-        r'''
-let approx_equal eps actual expected =
-  abs_float (actual -. expected) <= eps
-;;
-
-let assert_approx label actual expected eps =
-  if approx_equal eps actual expected then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
-;;
-
-assert_approx "area_simpson (fun x -> x) 0.0 0.1" (area_simpson (fun x -> x) 0.0 0.1) 0.005 1e-3;;
-assert_approx "area_simpson (fun x -> x *. x) 0.0 0.1" (area_simpson (fun x -> x *. x) 0.0 0.1) 0.000333333333 1e-3;;
-assert_approx "area_simpson (fun x -> x *. x) 2.0 0.5" (area_simpson (fun x -> x *. x) 2.0 0.5) 2.5416666667 1e-3;;
-''',
-    ),
-    make_test(
-        "2-4",
-        "integral",
-        r'''
-let approx_equal eps actual expected =
-  abs_float (actual -. expected) <= eps
-;;
-
-let assert_approx label actual expected eps =
-  if approx_equal eps actual expected then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
-;;
-
-let pi = 4.0 *. atan 1.0;;
-
-assert_approx "integral area_rectangle (fun x -> x) 0.0 1.0" (integral area_rectangle (fun x -> x) 0.0 1.0) 0.5 1e-2;;
-assert_approx "integral area_trapezoid (fun x -> x) 0.0 1.0" (integral area_trapezoid (fun x -> x) 0.0 1.0) 0.5 1e-2;;
-assert_approx "integral area_simpson (fun x -> x *. x) 0.0 1.0" (integral area_simpson (fun x -> x *. x) 0.0 1.0) (1.0 /. 3.0) 1e-2;;
-assert_approx "integral area_simpson sin 0.0 pi" (integral area_simpson sin 0.0 pi) 2.0 1e-2;;
-''',
-    ),
+    make_sort_test("1", "exchange_sort"),
+    make_sort_test("1", "selection_sort"),
+    make_sort_test("1", "insertion_sort"),
+    make_sort_test("2", "merge_sort"),
+    make_sort_test("2", "quick_sort"),
+    make_count_sort_test("3-1", "exchange_sort_c"),
+    make_count_sort_test("3-1", "selection_sort_c"),
+    make_count_sort_test("3-1", "insertion_sort_c"),
+    make_count_sort_test("3-2", "merge_sort_c"),
+    make_count_sort_test("3-2", "quick_sort_c"),
 ]
+
 
 def read_file_text(path):
     try:
@@ -197,7 +142,7 @@ def build_ocaml_script(student_code, test_code):
     return (
         student_code
         + "\n\n"
-        + "(* ---- second period week3 checker test ---- *)\n"
+        + "(* ---- second period week3 sorting checker test ---- *)\n"
         + test_code
         + "\n"
     )
@@ -281,15 +226,18 @@ def run_one_test(ml_file, test):
 
 
 def question_sort_key(question):
-    parts = str(question).split("-")
+    order = {"1": 1, "2": 2, "3-1": 3, "3-2": 4}
+    question = str(question)
+    if question in order:
+        return [order[question]]
 
+    parts = question.split("-")
     key = []
     for part in parts:
         if part.isdigit():
             key.append(int(part))
         else:
             key.append(part)
-
     return key
 
 
@@ -306,14 +254,16 @@ def summarize_by_question(file_results):
         question_results = grouped[question]
         statuses = [r.get("status") for r in question_results]
 
-        if "ERROR" in statuses:
-            status = "ERROR"
+        # Week 3 questions are choice-based: one correctly implemented candidate
+        # is enough for the whole question, even if other candidates are undefined.
+        if "OK" in statuses:
+            status = "OK"
         elif "NG" in statuses:
             status = "NG"
         elif "WARNING" in statuses:
             status = "WARNING"
         else:
-            status = "OK"
+            status = "ERROR"
 
         summaries.append({
             "question": question,
