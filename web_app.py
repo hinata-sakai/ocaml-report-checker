@@ -70,6 +70,101 @@ def get_form_text(part):
 
     return str(value)
 
+FIRST_PERIOD_TOTAL_POINTS = 200
+
+
+def calculate_first_period_score(summary):
+    ok = summary.get("ok", 0)
+    warning = summary.get("warning", 0)
+
+    return ok * 10 + warning * 9
+
+
+def add_first_period_score_badges(html, file_summaries):
+    search_start = 0
+
+    for summary in file_summaries:
+        score = calculate_first_period_score(summary)
+
+        warning_questions = [
+            q for q in summary.get("questions", [])
+            if q.get("status") == "WARNING"
+        ]
+        wrong_questions = [
+            q for q in summary.get("questions", [])
+            if q.get("status") == "NG"
+        ]
+        error_questions = [
+            q for q in summary.get("questions", [])
+            if q.get("status") == "ERROR"
+        ]
+
+        has_issues = bool(warning_questions or wrong_questions or error_questions)
+        status_label = "確認が必要" if has_issues else "全問正解"
+
+        card_top_start = html.find("<div class='card-top'>", search_start)
+        if card_top_start == -1:
+            break
+
+        card_top_end = html.find("</div>", card_top_start)
+        if card_top_end == -1:
+            break
+
+        marker = "<span class='status-pill'>{}</span>".format(status_label)
+
+        replacement = (
+            "<div class='first-period-status-row'>"
+            "{}"
+            "<span class='first-period-point-score'>{}点/{}点</span>"
+            "</div>"
+        ).format(marker, score, FIRST_PERIOD_TOTAL_POINTS)
+
+        card_top_html = html[card_top_start:card_top_end]
+        new_card_top_html = card_top_html.replace(marker, replacement, 1)
+
+        html = (
+            html[:card_top_start]
+            + new_card_top_html
+            + html[card_top_end:]
+        )
+
+        search_start = card_top_start + len(new_card_top_html)
+
+    return html
+
+
+def add_first_period_score_style(html):
+    extra_css = """
+.first-period-status-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.first-period-status-row .status-pill,
+.first-period-point-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.first-period-point-score {
+  background: rgba(11, 11, 13, 0.06);
+  color: rgba(11, 11, 13, 0.78);
+}
+"""
+
+    return html.replace("</style>", extra_css + "\n</style>")
+
 def build_result_html(all_results, file_summaries):
     total_questions = sum(summary.get("total", 0) for summary in file_summaries)
     total_ok = sum(summary.get("ok", 0) for summary in file_summaries)
@@ -6175,6 +6270,11 @@ class CheckerHandler(BaseHTTPRequestHandler):
             all_results, file_summaries = check_uploaded_files(temp_dir, file_metadata, checker_module=checker_module)
 
             html = result_html_builder(all_results, file_summaries)
+
+            if self.path == "/check":
+                html = add_first_period_score_badges(html, file_summaries)
+                html = add_first_period_score_style(html)
+
             self.send_html(html)
 
         except Exception:
