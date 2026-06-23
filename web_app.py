@@ -5896,7 +5896,14 @@ def check_uploaded_files(upload_dir, file_metadata=None, checker_module=run_chec
     file_summaries = []
     file_metadata = file_metadata or {}
 
-    ml_files = sorted(upload_dir.glob("*.ml"))
+    def file_order(path):
+        metadata = file_metadata.get(path.name, {})
+        return (
+            metadata.get("order", 10**9),
+            path.name
+        )
+
+    ml_files = sorted(upload_dir.glob("*.ml"), key=file_order)
 
     for ml_file in ml_files:
         file_results = []
@@ -6120,6 +6127,7 @@ class CheckerHandler(BaseHTTPRequestHandler):
                     file_metadata[save_name] = {
                         "student_id": student_id,
                         "original_filename": filename,
+                        "order": index,
                     }
 
                     saved_count += 1
@@ -6132,7 +6140,7 @@ class CheckerHandler(BaseHTTPRequestHandler):
                     return
 
             else:
-                for part in bulk_file_parts:
+                for index, part in enumerate(bulk_file_parts):
                     filename = Path(part.get_filename() or "").name
 
                     if not filename:
@@ -6146,10 +6154,17 @@ class CheckerHandler(BaseHTTPRequestHandler):
                     if payload is None:
                         continue
 
-                    save_path = temp_dir / filename
+                    save_name = "{}_{}".format(index + 1, filename)
+                    save_path = temp_dir / save_name
 
                     with save_path.open("wb") as f:
                         f.write(payload)
+
+                    file_metadata[save_name] = {
+                        "student_id": "",
+                        "original_filename": filename,
+                        "order": index,
+                    }
 
                     saved_count += 1
 
