@@ -325,12 +325,165 @@ WEEK3_ANSWER_GUIDE_HTML = """
     </p>
   </div>
 
-  <h3 class="guide-section-title">課題2</h3>
+  <h3 class="guide-section-title">課題1：単純ソートアルゴリズム</h3>
+
   <div class="guide-card">
-    <p class="guide-card-text">
-      単純ソートアルゴリズムとして，交換ソート（バブルソート），選択ソート，挿入ソートを実装する。
-      分割統治法ソートアルゴリズムとして，マージソート，クイックソートを実装する。
-    </p>
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">挿入ソート</p>
+        <pre class="guide-card-code">let rec insert x = function
+  | [] -&gt; [x]
+  | y :: ys -&gt;
+      if x &lt;= y then
+        x :: y :: ys
+      else
+        y :: insert x ys
+;;
+
+let rec insertion_sort = function
+  | [] -&gt; []
+  | x :: xs -&gt; insert x (insertion_sort xs)
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">挿入ソートのカウント版</p>
+        <pre class="guide-card-code">let rec insert_c_aux c x = function
+  | [] -&gt; (c, [x])
+  | y :: ys -&gt;
+      if x &lt;= y then
+        (c + 1, x :: y :: ys)
+      else
+        let (c', rest) = insert_c_aux (c + 1) x ys in
+        (c', y :: rest)
+;;
+
+let rec insertion_sort_c_aux c = function
+  | [] -&gt; (c, [])
+  | x :: xs -&gt;
+      let (c', sorted_xs) = insertion_sort_c_aux c xs in
+      insert_c_aux c' x sorted_xs
+;;
+
+let insertion_sort_c lst =
+  insertion_sort_c_aux 0 lst
+;;</pre>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="guide-section-title">課題2：分割統治法ソートアルゴリズム</h3>
+
+  <div class="guide-card">
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">マージソート</p>
+        <pre class="guide-card-code">let split xs =
+  let rec loop xs ys zs =
+    match xs with
+    | [] -&gt; (ys, zs)
+    | [x] -&gt; (x :: ys, zs)
+    | x :: y :: rest -&gt; loop rest (x :: ys) (y :: zs)
+  in
+  loop xs [] []
+;;
+
+let rec merge xs ys =
+  match (xs, ys) with
+  | ([], _) -&gt; ys
+  | (_, []) -&gt; xs
+  | (x :: xs', y :: ys') -&gt;
+      if x &lt;= y then
+        x :: merge xs' ys
+      else
+        y :: merge xs ys'
+;;
+
+let rec merge_sort = function
+  | [] -&gt; []
+  | [x] -&gt; [x]
+  | xs -&gt;
+      let (left, right) = split xs in
+      merge (merge_sort left) (merge_sort right)
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">マージソートのカウント版</p>
+        <pre class="guide-card-code">let rec merge_c_aux c xs ys =
+  match (xs, ys) with
+  | ([], _) -&gt; (c, ys)
+  | (_, []) -&gt; (c, xs)
+  | (x :: xs', y :: ys') -&gt;
+      if x &lt;= y then
+        let (c', rest) = merge_c_aux (c + 1) xs' ys in
+        (c', x :: rest)
+      else
+        let (c', rest) = merge_c_aux (c + 1) xs ys' in
+        (c', y :: rest)
+;;
+
+let rec merge_sort_c_aux c = function
+  | [] -&gt; (c, [])
+  | [x] -&gt; (c, [x])
+  | xs -&gt;
+      let (left, right) = split xs in
+      let (c', sorted_l) = merge_sort_c_aux c left in
+      let (c'', sorted_r) = merge_sort_c_aux c' right in
+      merge_c_aux c'' sorted_l sorted_r
+;;
+
+let merge_sort_c lst =
+  merge_sort_c_aux 0 lst
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">クイックソート</p>
+        <pre class="guide-card-code">let rec partition pivot = function
+  | [] -&gt; ([], [])
+  | x :: xs -&gt;
+      let (small, big) = partition pivot xs in
+      if x &lt; pivot then
+        (x :: small, big)
+      else
+        (small, x :: big)
+;;
+
+let rec quick_sort = function
+  | [] -&gt; []
+  | x :: xs -&gt;
+      let (small, big) = partition x xs in
+      quick_sort small @ (x :: quick_sort big)
+;;</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">クイックソートのカウント版</p>
+        <pre class="guide-card-code">let rec partition_c_aux c pivot = function
+  | [] -&gt; (c, [], [])
+  | x :: xs -&gt;
+      let (c', small, big) = partition_c_aux (c + 1) pivot xs in
+      if x &lt; pivot then
+        (c', x :: small, big)
+      else
+        (c', small, x :: big)
+;;
+
+let rec quick_sort_c_aux c = function
+  | [] -&gt; (c, [])
+  | x :: xs -&gt;
+      let (c1, small, big) = partition_c_aux c x xs in
+      let (c2, sorted_small) = quick_sort_c_aux c1 small in
+      let (c3, sorted_big) = quick_sort_c_aux c2 big in
+      (c3, sorted_small @ (x :: sorted_big))
+;;
+
+let quick_sort_c lst =
+  quick_sort_c_aux 0 lst
+;;</pre>
+      </div>
+    </div>
   </div>
 
   <h3 class="guide-section-title">課題3</h3>
@@ -548,6 +701,11 @@ def add_week3_title_style(html):
 .week3-point-score {
   background: rgba(11, 11, 13, 0.06);
   color: rgba(11, 11, 13, 0.78);
+}
+
+.week3-answer-table-image {
+  width: min(100%, 900px);
+  max-width: 100%;
 }
 """
 
