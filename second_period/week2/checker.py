@@ -3,18 +3,19 @@
 """Checker for OCaml second period, week 2.
 
 Targets:
-- Q1-1 count_ones      : int -> int
-- Q2-1 power_val       : int -> int
-- Q2-2 power_steps     : int -> int
-- Q3-1 collatz_steps   : int -> int
-- Q3-2 collatz_path    : int -> int list
+- Q1-1 diff_forward    : (float -> float) -> float -> float
+- Q1-2 diff_central    : (float -> float) -> float -> float
+- Q1-4 ext             : (float -> float) -> float -> (float * float)
+- Q2-1-1 area_rectangle: (float -> float) -> float -> float -> float
+- Q2-1-2 area_trapezoid: (float -> float) -> float -> float -> float
+- Q2-3 area_simpson    : (float -> float) -> float -> float -> float
+- Q2-4 integral        : ((float -> float) -> float -> float -> float) ->
+                         (float -> float) -> float -> float -> float
 
 Notes:
-- power_val is graded as one-argument function based on the assignment text.
-- power_steps is graded as one-argument function.
-- power_steps accepts both n and n + 1 because recursion-count interpretation may differ.
-- collatz_steps accepts both operation count and operation count + 1 for the same reason.
-- Explanation and discussion sections should be checked manually from the PDF.
+- Floating-point answers are graded with approximate comparisons.
+- The assignment expects h, c, and dx to be global values in student code.
+- Research and discussion sections should be checked manually from the PDF.
 """
 
 import subprocess
@@ -37,122 +38,153 @@ def make_test(question, name, ocaml_code):
 TESTS = [
     make_test(
         "1-1",
-        "count_ones",
+        "diff_forward",
         r'''
-let assert_eq label actual expected =
-  if actual = expected then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %d but got %d\n" label expected actual
+let approx_equal eps actual expected =
+  abs_float (actual -. expected) <= eps
 ;;
 
-assert_eq "count_ones 1" (count_ones 1) 1;;
-assert_eq "count_ones 2" (count_ones 2) 1;;
-assert_eq "count_ones 3" (count_ones 3) 2;;
-assert_eq "count_ones 7" (count_ones 7) 3;;
-assert_eq "count_ones 8" (count_ones 8) 1;;
-assert_eq "count_ones 10" (count_ones 10) 2;;
-assert_eq "count_ones 100" (count_ones 100) 3;;
+let assert_approx label actual expected eps =
+  if approx_equal eps actual expected then
+    print_endline ("OK " ^ label)
+  else
+    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
+;;
+
+assert_approx "diff_forward (fun x -> x *. x) 2.0" (diff_forward (fun x -> x *. x) 2.0) 4.0 1e-3;;
+assert_approx "diff_forward (fun x -> x *. x *. x) 2.0" (diff_forward (fun x -> x *. x *. x) 2.0) 12.0 1e-3;;
+assert_approx "diff_forward sin 0.0" (diff_forward sin 0.0) 1.0 1e-3;;
 ''',
     ),
     make_test(
-        "2-1",
-        "power_val",
+        "1-2",
+        "diff_central",
         r'''
-let assert_eq label actual expected =
-  if actual = expected then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %d but got %d\n" label expected actual
+let approx_equal eps actual expected =
+  abs_float (actual -. expected) <= eps
 ;;
 
-assert_eq "power_val 1" (power_val 1) 1;;
-assert_eq "power_val 2" (power_val 2) 4;;
-assert_eq "power_val 3" (power_val 3) 27;;
-assert_eq "power_val 4" (power_val 4) 256;;
-assert_eq "power_val 5" (power_val 5) 3125;;
-assert_eq "power_val 7" (power_val 7) 823543;;
+let assert_approx label actual expected eps =
+  if approx_equal eps actual expected then
+    print_endline ("OK " ^ label)
+  else
+    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
+;;
+
+assert_approx "diff_central (fun x -> x *. x) 2.0" (diff_central (fun x -> x *. x) 2.0) 4.0 1e-3;;
+assert_approx "diff_central (fun x -> x *. x *. x) 2.0" (diff_central (fun x -> x *. x *. x) 2.0) 12.0 1e-3;;
+assert_approx "diff_central sin 0.0" (diff_central sin 0.0) 1.0 1e-3;;
 ''',
     ),
     make_test(
-        "2-2",
-        "power_steps",
+        "1-4",
+        "ext",
         r'''
-let assert_steps label n actual =
-  if actual = n || actual = n + 1 then
-    print_endline ("OK " ^ label)
-  else
-    Printf.printf "NG %s: expected %d or %d but got %d\n" label n (n + 1) actual
+let approx_equal eps actual expected =
+  abs_float (actual -. expected) <= eps
 ;;
 
-assert_steps "power_steps 1" 1 (power_steps 1);;
-assert_steps "power_steps 2" 2 (power_steps 2);;
-assert_steps "power_steps 3" 3 (power_steps 3);;
-assert_steps "power_steps 7" 7 (power_steps 7);;
-assert_steps "power_steps 10" 10 (power_steps 10);;
+let assert_approx label actual expected eps =
+  if approx_equal eps actual expected then
+    print_endline ("OK " ^ label)
+  else
+    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
+;;
+
+let check_ext label f start expected_x expected_y =
+  let (actual_x, actual_y) = ext f start in
+  assert_approx (label ^ " x") actual_x expected_x 1e-2;
+  assert_approx (label ^ " f(x)") actual_y expected_y 1e-2
+;;
+
+check_ext "ext (fun x -> (x -. 2.0) *. (x -. 2.0)) 0.0" (fun x -> (x -. 2.0) *. (x -. 2.0)) 0.0 2.0 0.0;;
+check_ext "ext (fun x -> (x +. 1.0) *. (x +. 1.0)) 1.0" (fun x -> (x +. 1.0) *. (x +. 1.0)) 1.0 (-1.0) 0.0;;
 ''',
     ),
     make_test(
-        "3-1",
-        "collatz_steps",
+        "2-1-1",
+        "area_rectangle",
         r'''
-    let assert_steps label expected actual =
-    if actual = expected || actual = expected + 1 then
-        print_endline ("OK " ^ label)
-    else
-        Printf.printf "NG %s: expected %d or %d but got %d\n" label expected (expected + 1) actual
-    ;;
-
-    assert_steps "collatz_steps 1" 0 (collatz_steps 1);;
-    assert_steps "collatz_steps 2" 1 (collatz_steps 2);;
-    assert_steps "collatz_steps 3" 7 (collatz_steps 3);;
-    assert_steps "collatz_steps 4" 2 (collatz_steps 4);;
-    assert_steps "collatz_steps 5" 5 (collatz_steps 5);;
-    assert_steps "collatz_steps 7" 16 (collatz_steps 7);;
-    assert_steps "collatz_steps 8" 3 (collatz_steps 8);;
-    assert_steps "collatz_steps 9" 19 (collatz_steps 9);;
-    assert_steps "collatz_steps 10" 6 (collatz_steps 10);;
-    ''',
-    ),
-    make_test(
-        "3-2",
-        "collatz_path",
-        r'''
-let rec string_of_int_list xs =
-  match xs with
-  | [] -> "[]"
-  | _ ->
-      let rec inner ys =
-        match ys with
-        | [] -> ""
-        | [z] -> string_of_int z
-        | z :: zs -> string_of_int z ^ "; " ^ inner zs
-      in
-      "[" ^ inner xs ^ "]"
+let approx_equal eps actual expected =
+  abs_float (actual -. expected) <= eps
 ;;
 
-let assert_list_eq label actual expected =
-  if actual = expected then
+let assert_approx label actual expected eps =
+  if approx_equal eps actual expected then
     print_endline ("OK " ^ label)
   else
-    Printf.printf
-      "NG %s: expected %s but got %s\n"
-      label
-      (string_of_int_list expected)
-      (string_of_int_list actual)
+    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
 ;;
 
-assert_list_eq "collatz_path 1" (collatz_path 1) [1];;
-assert_list_eq "collatz_path 2" (collatz_path 2) [2; 1];;
-assert_list_eq "collatz_path 3" (collatz_path 3) [3; 10; 5; 16; 8; 4; 2; 1];;
-assert_list_eq "collatz_path 6" (collatz_path 6) [6; 3; 10; 5; 16; 8; 4; 2; 1];;
-assert_list_eq "collatz_path 7" (collatz_path 7) [7; 22; 11; 34; 17; 52; 26; 13; 40; 20; 10; 5; 16; 8; 4; 2; 1];;
-assert_list_eq "collatz_path 9" (collatz_path 9) [9; 28; 14; 7; 22; 11; 34; 17; 52; 26; 13; 40; 20; 10; 5; 16; 8; 4; 2; 1];;
-assert_list_eq "collatz_path 10" (collatz_path 10) [10; 5; 16; 8; 4; 2; 1];;
+assert_approx "area_rectangle (fun x -> x) 0.0 0.1" (area_rectangle (fun x -> x) 0.0 0.1) 0.0 1e-3;;
+assert_approx "area_rectangle (fun x -> x) 2.0 0.5" (area_rectangle (fun x -> x) 2.0 0.5) 1.0 1e-3;;
+assert_approx "area_rectangle (fun x -> x *. x) 2.0 0.5" (area_rectangle (fun x -> x *. x) 2.0 0.5) 2.0 1e-3;;
+''',
+    ),
+    make_test(
+        "2-1-2",
+        "area_trapezoid",
+        r'''
+let approx_equal eps actual expected =
+  abs_float (actual -. expected) <= eps
+;;
+
+let assert_approx label actual expected eps =
+  if approx_equal eps actual expected then
+    print_endline ("OK " ^ label)
+  else
+    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
+;;
+
+assert_approx "area_trapezoid (fun x -> x) 0.0 0.1" (area_trapezoid (fun x -> x) 0.0 0.1) 0.005 1e-3;;
+assert_approx "area_trapezoid (fun x -> x) 2.0 0.5" (area_trapezoid (fun x -> x) 2.0 0.5) 1.125 1e-3;;
+assert_approx "area_trapezoid (fun x -> x *. x) 2.0 0.5" (area_trapezoid (fun x -> x *. x) 2.0 0.5) 2.5625 1e-3;;
+''',
+    ),
+    make_test(
+        "2-3",
+        "area_simpson",
+        r'''
+let approx_equal eps actual expected =
+  abs_float (actual -. expected) <= eps
+;;
+
+let assert_approx label actual expected eps =
+  if approx_equal eps actual expected then
+    print_endline ("OK " ^ label)
+  else
+    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
+;;
+
+assert_approx "area_simpson (fun x -> x) 0.0 0.1" (area_simpson (fun x -> x) 0.0 0.1) 0.005 1e-3;;
+assert_approx "area_simpson (fun x -> x *. x) 0.0 0.1" (area_simpson (fun x -> x *. x) 0.0 0.1) 0.000333333333 1e-3;;
+assert_approx "area_simpson (fun x -> x *. x) 2.0 0.5" (area_simpson (fun x -> x *. x) 2.0 0.5) 2.5416666667 1e-3;;
+''',
+    ),
+    make_test(
+        "2-4",
+        "integral",
+        r'''
+let approx_equal eps actual expected =
+  abs_float (actual -. expected) <= eps
+;;
+
+let assert_approx label actual expected eps =
+  if approx_equal eps actual expected then
+    print_endline ("OK " ^ label)
+  else
+    Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
+;;
+
+let pi = 4.0 *. atan 1.0;;
+
+assert_approx "integral area_rectangle (fun x -> x) 0.0 1.0" (integral area_rectangle (fun x -> x) 0.0 1.0) 0.5 1e-2;;
+assert_approx "integral area_trapezoid (fun x -> x) 0.0 1.0" (integral area_trapezoid (fun x -> x) 0.0 1.0) 0.5 1e-2;;
+assert_approx "integral area_simpson (fun x -> x *. x) 0.0 1.0" (integral area_simpson (fun x -> x *. x) 0.0 1.0) (1.0 /. 3.0) 1e-2;;
+assert_approx "integral area_simpson sin 0.0 pi" (integral area_simpson sin 0.0 pi) 2.0 1e-2;;
 ''',
     ),
 ]
-
 
 def read_file_text(path):
     try:
