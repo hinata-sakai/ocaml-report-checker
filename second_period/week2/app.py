@@ -36,9 +36,8 @@ WEEK2_TASK_GUIDE_HTML = """
           関数 f と実数 x を受け取り，値 x における f の微分係数 f'(x) を，
           以下の導関数の定義式を用いて計算する関数 diff_forward を定義しなさい。
         </p>
-        <div class="guide-formula">
-          <img src="/first_period/task17_routes.png" alt="dummy" style="display:none;">
-          <div class="guide-formula-text">f'(x) ≈ (f(x + h) − f(x)) / h</div>
+        <div class="guide-formula-image-wrap">
+          <img class="guide-formula-image" src="/week2_diff_forward_formula.png" alt="前方差分による微分係数の近似式">
         </div>
         <pre class="guide-card-code">diff_forward : (float -&gt; float) -&gt; float -&gt; float</pre>
       </div>
@@ -49,8 +48,8 @@ WEEK2_TASK_GUIDE_HTML = """
           1-1の式は h の大きさによって誤差が生じやすい。
           より正確に微分係数を求めるために，以下の中心差分の式に変形した関数 diff_central を定義しなさい。
         </p>
-        <div class="guide-formula">
-          <div class="guide-formula-text">f'(x) ≈ (f(x + h) − f(x − h)) / 2h</div>
+        <div class="guide-formula-image-wrap">
+          <img class="guide-formula-image" src="/week2_diff_central_formula.png" alt="中心差分による微分係数の近似式">
         </div>
         <pre class="guide-card-code">diff_central : (float -&gt; float) -&gt; float -&gt; float</pre>
       </div>
@@ -156,8 +155,7 @@ area_trapezoid : (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
           それぞれの計算結果を求めなさい。
         </p>
         <ul class="guide-submit-list">
-          <li>注意点：関数が積分区間内で不連続である場合など，数学的に積分不可能である例外的なケースへの対策は本課題では考慮しなくて構いません。</li>
-          <li>正常に積分可能な関数と区間が与えられるものとして実装しなさい。</li>
+          <li>注意点：関数が積分区間内で不連続である場合など，数学的に積分不可能である例外的なケースへの対策は本課題では考慮しなくて構いません。正常に積分可能な関数と区間が与えられるものとして実装しなさい。</li>
         </ul>
       </div>
 
@@ -438,6 +436,17 @@ def add_week2_title_style(html):
   font-style: italic;
   font-size: 1.6rem;
   line-height: 1.4;
+}
+
+.guide-formula-image-wrap {
+  margin: 14px 0 16px;
+  text-align: center;
+}
+
+.guide-formula-image {
+  display: inline-block;
+  max-width: min(100%, 360px);
+  height: auto;
 }
 """
 
