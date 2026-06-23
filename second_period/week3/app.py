@@ -9,84 +9,155 @@ current 1期 page as an initial clone.
 
 WEEK3_TASK_GUIDE_HTML = """
   <p class="guide-intro">
-    第2期 レポート課題 第3週では，ソートアルゴリズムを題材に，
-    単純法と分割統治法によるソートをOCamlで実装し，
-    比較回数の計測を通してアルゴリズムの性質を考察する。
+    関数型言語 OCaml を用いて，基本的な単純ソートおよび分割統治法に基づく
+    ソートアルゴリズムを実装します。さらに，プログラムを改造して
+    「要素の比較回数」を計測・可視化することで，データの初期状態や要素数によって
+    各アルゴリズムの処理効率がどのように変化するかを数値的に考察し，
+    アルゴリズムの特性への理解を深めることを目的とします。
   </p>
 
-  <h3 class="guide-section-title">課題 1：単純ソートアルゴリズム</h3>
+  <h3 class="guide-section-title">1. 単純ソートアルゴリズムの実装</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      単純なソートアルゴリズムを1つ以上選択し，OCamlで実装しなさい。
-      実装するソートは，以下の候補から選んでよい。
+      以下から1つ以上のソート関数を選択して実装しなさい。
+      意欲のある方は，すべての関数を実装してもかまいません。
+    </p>
+
+    <ul class="guide-submit-list">
+      <li>交換ソート（exchange_sort）</li>
+      <li>選択ソート（selection_sort）</li>
+      <li>挿入ソート（insertion_sort）</li>
+    </ul>
+
+    <p class="guide-card-text">
+      これらの実装のために，以下のように補助関数を利用して実装しなさい。
     </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">1：単純法によるソート</p>
-        <p class="guide-card-text">
-          以下のいずれか1つ以上のソートアルゴリズムを実装しなさい。
-        </p>
-        <ul class="guide-submit-list">
-          <li>交換ソート：exchange_sort</li>
-          <li>選択ソート：selection_sort</li>
-          <li>挿入ソート：insertion_sort</li>
-        </ul>
-        <pre class="guide-card-code">exchange_sort : int list -&gt; int list
-selection_sort : int list -&gt; int list
+        <p class="guide-card-title">交換ソート（exchange_sort）を選択した場合</p>
+        <ol class="guide-submit-list">
+          <li>
+            リストの先頭から隣り合う要素を順に比較し，大小関係が逆であれば入れ替える操作を
+            末尾まで行う関数 exchange_pass を作成しなさい。
+            この関数は，1回の走査を行った後のリストと，
+            「入れ替え（交換）が1回でも発生したか」を表す真偽値（bool）のペアを返すようにしなさい。
+          </li>
+          <li>
+            上記の補助関数を利用して，走査中に入れ替えが発生しなくなるまで
+            （真偽値が false になるまで）繰り返し処理を行う本体の exchange_sort を完成させなさい。
+          </li>
+        </ol>
+        <pre class="guide-card-code">exchange_pass : int list -&gt; int list * bool
+exchange_sort : int list -&gt; int list</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">選択ソート（selection_sort）を選択した場合</p>
+        <ol class="guide-submit-list">
+          <li>
+            与えられたリスト内の最小値と，その最小値を除いた「残りのリスト」のペアを返す
+            関数 select_min を作成しなさい。
+          </li>
+          <li>
+            上記の補助関数を利用して，本体の selection_sort を完成させなさい。
+          </li>
+        </ol>
+        <pre class="guide-card-code">select_min : 'a list -&gt; 'a * 'a list
+selection_sort : int list -&gt; int list</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">挿入ソート（insertion_sort）を選択した場合</p>
+        <ol class="guide-submit-list">
+          <li>
+            すでにソートが終わっているリストの正しい位置に，新しい要素を挿入する
+            関数 insert を作成しなさい。
+          </li>
+          <li>
+            上記の補助関数を利用して，本体の insertion_sort を完成させなさい。
+          </li>
+        </ol>
+        <pre class="guide-card-code">insert : 'a -&gt; 'a list -&gt; 'a list
 insertion_sort : int list -&gt; int list</pre>
-        <p class="guide-card-text">
-          すべてを実装する必要はありません。1つ以上を選択して実装してください。
-          ただし，実装した関数については，整数リストを昇順に並べ替えるようにしてください。
-        </p>
       </div>
     </div>
   </div>
 
-  <h3 class="guide-section-title">課題 2：分割統治法ソートアルゴリズム</h3>
+  <h3 class="guide-section-title">2. 分割統治法ソートアルゴリズムの実装</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      分割統治法を用いたソートアルゴリズムを1つ以上選択し，OCamlで実装しなさい。
-      分割統治法では，問題を小さな部分問題に分割し，それぞれを解いた結果を統合して全体の解を得ます。
+      以下から1つ以上のソート関数を選択して実装しなさい。
+      意欲のある方は，すべての関数を実装してもかまいません。
+    </p>
+
+    <ul class="guide-submit-list">
+      <li>マージソート（merge_sort）</li>
+      <li>クイックソート（quick_sort）</li>
+    </ul>
+
+    <p class="guide-card-text">
+      これらの実装のために，以下のように補助関数を利用して実装しなさい。
     </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">2：分割統治法によるソート</p>
-        <p class="guide-card-text">
-          以下のいずれか1つ以上のソートアルゴリズムを実装しなさい。
-        </p>
-        <ul class="guide-submit-list">
-          <li>マージソート：merge_sort</li>
-          <li>クイックソート：quick_sort</li>
-        </ul>
-        <pre class="guide-card-code">merge_sort : int list -&gt; int list
+        <p class="guide-card-title">マージソート（merge_sort）を選択した場合</p>
+        <ol class="guide-submit-list">
+          <li>
+            1つのリストを偶数番目と奇数番目の2つに分割する関数 split を作成しなさい。
+          </li>
+          <li>
+            2つのソート済みリストを1つに綺麗に合流させる関数 merge を作成しなさい。
+          </li>
+          <li>
+            上記の補助関数を利用して，本体の merge_sort を完成させなさい。
+          </li>
+        </ol>
+        <pre class="guide-card-code">split : 'a list -&gt; 'a list * 'a list
+merge : int list -&gt; int list -&gt; int list
+merge_sort : int list -&gt; int list</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">クイックソート（quick_sort）を選択した場合</p>
+        <ol class="guide-submit-list">
+          <li>
+            軸（ピボット）を元に，リストを「ピボットより小さい要素」と
+            「それ以外の要素」の2つに分ける関数 partition を作成しなさい。
+          </li>
+          <li>
+            上記の補助関数を利用して，本体の quick_sort を完成させなさい。
+          </li>
+        </ol>
+        <pre class="guide-card-code">partition : 'a -&gt; 'a list -&gt; 'a list * 'a list
 quick_sort : int list -&gt; int list</pre>
-        <p class="guide-card-text">
-          すべてを実装する必要はありません。1つ以上を選択して実装してください。
-          必要に応じて，split，merge，partition などの補助関数を定義してもかまいません。
-        </p>
       </div>
     </div>
   </div>
 
-  <h3 class="guide-section-title">課題 3：比較回数カウント版</h3>
+  <h3 class="guide-section-title">3. 全体の比較回数カウント版にアップデート</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      課題1および課題2で実装したソートアルゴリズムについて，
-      要素同士の比較回数を数えるように改造しなさい。
-      比較回数は，x &gt; y や x &lt;= y など，リスト内の要素同士を比較した回数のみを数えるものとする。
+      1. および 2. で実装したソート関数（本体）をベースに，
+      要素の比較回数をカウントする機能を追加しなさい。
+      すべての関数は，「これまでの比較回数の合計（int）」と
+      「ソート済みのリスト（int list）」のペア（int * int list）を返す形式に改造しなさい。
     </p>
+
+    <ul class="guide-submit-list">
+      <li>関数名は，それぞれ末尾に _c をつけること。</li>
+      <li>例：exchange_sort_c，merge_sort_c，quick_sort_c</li>
+    </ul>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
         <p class="guide-card-title">3-1：単純法の比較回数カウント版</p>
         <p class="guide-card-text">
           課題1で実装した単純ソートアルゴリズムを，比較回数を返す形に改造しなさい。
-          返り値は，比較回数とソート済みリストのペアにしてください。
         </p>
         <ul class="guide-submit-list">
           <li>交換ソートのカウント版：exchange_sort_c</li>
@@ -96,16 +167,12 @@ quick_sort : int list -&gt; int list</pre>
         <pre class="guide-card-code">exchange_sort_c : int list -&gt; int * int list
 selection_sort_c : int list -&gt; int * int list
 insertion_sort_c : int list -&gt; int * int list</pre>
-        <p class="guide-card-text">
-          返り値は，(比較回数, ソート済みリスト) の順にしてください。
-        </p>
       </div>
 
       <div class="guide-subitem">
         <p class="guide-card-title">3-2：分割統治法の比較回数カウント版</p>
         <p class="guide-card-text">
-          課題2で実装した分割統治法ソートアルゴリズムを，
-          比較回数を返す形に改造しなさい。
+          課題2で実装した分割統治法ソートアルゴリズムを，比較回数を返す形に改造しなさい。
         </p>
         <ul class="guide-submit-list">
           <li>マージソートのカウント版：merge_sort_c</li>
@@ -113,70 +180,109 @@ insertion_sort_c : int list -&gt; int * int list</pre>
         </ul>
         <pre class="guide-card-code">merge_sort_c : int list -&gt; int * int list
 quick_sort_c : int list -&gt; int * int list</pre>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">比較回数の定義に関する注意</p>
+        <ul class="guide-submit-list">
+          <li>
+            カウント対象は，x &gt; y や x &lt;= y などの
+            「要素の値同士を比較した回数」のみとします。
+          </li>
+          <li>
+            リストが空かどうかを判定するパターンマッチ
+            （match xs with [] -&gt; ... など）の回数はカウントに含めません。
+          </li>
+          <li>
+            分割統治法のヒントとして，再帰呼び出しによって得られた
+            「左半分のソートでかかったカウント」と
+            「右半分のソートでかかったカウント」を次の処理
+            （merge_c や partition_c）へ引き渡し，すべてのカウントが合算されるようにしてください。
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="guide-section-title">4. 実行実験</h3>
+
+  <div class="guide-card">
+    <p class="guide-card-text">
+      3. で作成したプログラム（選択したすべての関数）を用いて，
+      以下の2つの実行実験を行いなさい。
+    </p>
+
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">4-1：実験1：要素数による比較回数の変化</p>
+        <ul class="guide-submit-list">
+          <li>
+            ランダムに並んだ要素数 10，50，100 のリストをそれぞれ用意し，
+            実装したソート関数を実行して，それぞれの比較回数を計測しなさい。
+          </li>
+        </ul>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">4-2：実験2：データの初期状態による変化</p>
         <p class="guide-card-text">
-          返り値は，(比較回数, ソート済みリスト) の順にしてください。
+          要素数 20 のデータについて，以下の3つのパターンを用意し，
+          実装したソート関数を実行して比較回数を計測してください。
+        </p>
+        <ol class="guide-submit-list">
+          <li>整列済みのデータ（例：[1; 2; 3; ... ; 20]）</li>
+          <li>逆順に整列済みのデータ（例：[20; 19; 18; ... ; 1]）</li>
+          <li>ランダムなデータ</li>
+        </ol>
+        <p class="guide-card-text">
+          注意点：実験1・2で「ランダムなデータ」を比較する際は，各ソート関数に全く同じ並び順のリストを入力して回数を計測してください。
+          関数ごとに異なるランダムデータを作ると正確な比較になりません。
         </p>
       </div>
     </div>
   </div>
 
-  <h3 class="guide-section-title">課題 4：実行実験</h3>
+  <h3 class="guide-section-title">5. 考察（レポート）</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      作成した比較回数カウント版のソート関数を用いて，実行実験を行いなさい。
-      実験結果はレポートにまとめてください。
+      実行実験の結果をもとに，以下についてレポートにまとめなさい。
     </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">4-1：実行実験1</p>
-        <p class="guide-card-text">
-          要素数を変化させたときに，比較回数がどのように変化するかを調べなさい。
-          例えば，要素数 10，50，100 などのリストを用いて実験し，
-          各ソートアルゴリズムの比較回数を確認してください。
-        </p>
+        <p class="guide-card-title">5-1：問1（実験結果のまとめ）</p>
+        <ul class="guide-submit-list">
+          <li>
+            実験1および実験2の計測結果を，それぞれ分かりやすい表にまとめなさい。
+          </li>
+        </ul>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">4-2：実行実験2</p>
-        <p class="guide-card-text">
-          リストの初期状態によって，比較回数がどのように変化するかを調べなさい。
-          例えば，整列済みリスト，逆順リスト，ランダムなリストなどを用いて比較してください。
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <h3 class="guide-section-title">課題 5：実験結果と考察</h3>
-
-  <div class="guide-card">
-    <p class="guide-card-text">
-      課題4の実験結果を表にまとめ，ソートアルゴリズムごとの特徴を考察しなさい。
-    </p>
-
-    <div class="guide-subitems">
-      <div class="guide-subitem">
-        <p class="guide-card-title">5-1：実験結果の表</p>
-        <p class="guide-card-text">
-          実験で得られた比較回数を表にまとめなさい。
-          要素数や初期状態ごとに，比較回数の違いが分かるように整理してください。
-        </p>
+        <p class="guide-card-title">5-2：問2（データの初期状態とアルゴリズムの特性）</p>
+        <ul class="guide-submit-list">
+          <li>
+            実験2において，データの初期状態（整列済み・逆順・ランダム）の違いによって，
+            ご自身が選んだ単純ソートの比較回数はどのように変化したか，
+            あるいは変化しなかったか。
+            プログラムの構造（条件分岐や処理の打ち切り，データの走査方法など）に着目して，
+            その結果になる理由を説明しなさい。
+          </li>
+        </ul>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">5-2：初期状態による変化の考察</p>
-        <p class="guide-card-text">
-          整列済み，逆順，ランダムなど，リストの初期状態によって比較回数がどのように変化したかを考察しなさい。
-        </p>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">5-3：単純法と分割統治法の比較</p>
-        <p class="guide-card-text">
-          単純法と分割統治法を比較し，どのような場合に分割統治法が有利になるかを考察しなさい。
-          実験結果とアルゴリズムの特徴を関連づけて説明してください。
-        </p>
+        <p class="guide-card-title">5-3：問3（分割統治法の効率性）</p>
+        <ul class="guide-submit-list">
+          <li>
+            実験1において，要素数が 10 から 100 へと10倍に増えたとき，
+            選んだ「単純ソート」の比較回数の増え方と，
+            「分割統治法ソート」の比較回数の増え方にはどのような違いが見られますか。
+            実験データから読み取れる事実を指摘し，
+            なぜ分割統治法が大量のデータを扱う上で有利なのかを述べなさい。
+          </li>
+        </ul>
       </div>
     </div>
   </div>
