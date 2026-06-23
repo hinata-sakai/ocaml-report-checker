@@ -9,165 +9,174 @@ current 1期 page as an initial clone.
 
 WEEK3_TASK_GUIDE_HTML = """
   <p class="guide-intro">
-    第2期 レポート課題 第3週では，数値微分と数値積分を題材に，
-    高階関数と再帰を用いたOCamlプログラムを作成し，
-    アルゴリズムの説明や考察をレポートにまとめる。
+    第2期 レポート課題 第3週では，ソートアルゴリズムを題材に，
+    単純法と分割統治法によるソートをOCamlで実装し，
+    比較回数の計測を通してアルゴリズムの性質を考察する。
   </p>
 
-  <h3 class="guide-section-title">課題 1：微分</h3>
+  <h3 class="guide-section-title">課題 1：単純ソートアルゴリズム</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      関数の微分（微分係数）を，極限をとる代わりに微小な変化量（差分）を用いた
-      数値の計算によって近似的に求める手法を「数値微分」といいます。
-      本課題では，関数の数値微分を行い，それを利用して関数の極値を再帰的に探索する
-      プログラムを実装します。
-    </p>
-
-    <p class="guide-card-text">
-      プログラムの実装にあたり，微小値 h（数値微分用）および収束の閾値 c（探索の終了判定用）は，
-      プログラムの最初でグローバル変数として定義し，各関数の中からそれを参照する形にしなさい。
+      単純なソートアルゴリズムを1つ以上選択し，OCamlで実装しなさい。
+      実装するソートは，以下の候補から選んでよい。
     </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">1-1：導関数の定義からの微分係数の計算</p>
+        <p class="guide-card-title">1：単純法によるソート</p>
         <p class="guide-card-text">
-          関数 f と実数 x を受け取り，値 x における f の微分係数 f'(x) を，
-          以下の導関数の定義式を用いて計算する関数 diff_forward を定義しなさい。
-        </p>
-        <div class="guide-formula-image-wrap">
-          <img class="guide-formula-image" src="/week2_diff_forward_formula.png" alt="前方差分による微分係数の近似式">
-        </div>
-        <pre class="guide-card-code">diff_forward : (float -&gt; float) -&gt; float -&gt; float</pre>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">1-2：中心差分による高精度化</p>
-        <p class="guide-card-text">
-          1-1の式は h の大きさによって誤差が生じやすい。
-          より正確に微分係数を求めるために，以下の中心差分の式に変形した関数 diff_central を定義しなさい。
-        </p>
-        <div class="guide-formula-image-wrap">
-          <img class="guide-formula-image" src="/week2_diff_central_formula.png" alt="中心差分による微分係数の近似式">
-        </div>
-        <pre class="guide-card-code">diff_central : (float -&gt; float) -&gt; float -&gt; float</pre>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">1-3：ニュートン法の仕組みの調査（レポート課題）</p>
-        <p class="guide-card-text">
-          極値を自動で探索するためのアルゴリズムとして「ニュートン法」があります。
-          ニュートン法，特に f'(x) = 0 を解くための更新式の仕組みについて調べ，
-          どのような原理で近似値を更新していくのか，数式を用いて分かりやすく説明しなさい。
-        </p>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">1-4：再帰による極値の探索</p>
-        <p class="guide-card-text">
-          1-3で調べたニュートン法のアルゴリズムに基づき，関数 f と探索の初期値 x0 を受け取り，
-          再帰を用いて f の極値を与える x の値と，その時の極値 f(x) をタプルで返す関数 ext を定義しなさい。
-        </p>
-        <pre class="guide-card-code">ext : (float -&gt; float) -&gt; float -&gt; (float * float)</pre>
-        <ul class="guide-submit-list">
-          <li>実数の絶対値を求める関数 abs_float を使ってもかまいません。</li>
-          <li>終了条件は，極値に十分到達したと判断できる適切な条件を設定し，探索を終了させなさい。</li>
-          <li>極値が存在しない関数や，初期値から極値が離れている場合などの例外的なケースは，本課題では考慮しなくて構いません。</li>
-        </ul>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">1-5：精度と速度に関する考察（レポート課題）</p>
-        <p class="guide-card-text">
-          実装したプログラムや実行結果について，以下の2点について考察しなさい。
+          以下のいずれか1つ以上のソートアルゴリズムを実装しなさい。
         </p>
         <ul class="guide-submit-list">
-          <li>精度：前方差分と中心差分の精度差，およびグローバル変数として定義した h の大小が計算結果に与える影響について考察せよ。</li>
-          <li>速度と収束性：ニュートン法の収束の速さ，初期値 x0 の選び方が探索結果や速度に与える影響について考察せよ。</li>
+          <li>交換ソート：exchange_sort</li>
+          <li>選択ソート：selection_sort</li>
+          <li>挿入ソート：insertion_sort</li>
         </ul>
+        <pre class="guide-card-code">exchange_sort : int list -&gt; int list
+selection_sort : int list -&gt; int list
+insertion_sort : int list -&gt; int list</pre>
+        <p class="guide-card-text">
+          すべてを実装する必要はありません。1つ以上を選択して実装してください。
+          ただし，実装した関数については，整数リストを昇順に並べ替えるようにしてください。
+        </p>
       </div>
     </div>
   </div>
 
-  <h3 class="guide-section-title">課題 2：積分</h3>
+  <h3 class="guide-section-title">課題 2：分割統治法ソートアルゴリズム</h3>
 
   <div class="guide-card">
     <p class="guide-card-text">
-      関数の積分を，細かく分割した数値の足し合わせによって近似的に計算する手法を
-      「数値積分」といいます。
-      本課題では，関数の定積分の値を近似計算するプログラムを実装します。
-    </p>
-
-    <p class="guide-card-text">
-      プログラムの実装にあたり，微小区間の幅を表す実数 dx は，
-      プログラムの最初でグローバル変数として定義し，各関数の中からそれを参照する形にしなさい。
+      分割統治法を用いたソートアルゴリズムを1つ以上選択し，OCamlで実装しなさい。
+      分割統治法では，問題を小さな部分問題に分割し，それぞれを解いた結果を統合して全体の解を得ます。
     </p>
 
     <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">2-1：長方形および台形の面積を求める関数の定義</p>
+        <p class="guide-card-title">2：分割統治法によるソート</p>
         <p class="guide-card-text">
-          関数 f，現在の微小区間の左端の座標 x，および微小幅 dx を受け取り，
-          その1区間分の面積を計算する以下の2つの関数を定義しなさい。
+          以下のいずれか1つ以上のソートアルゴリズムを実装しなさい。
         </p>
         <ul class="guide-submit-list">
-          <li>長方形として面積を計算する関数 area_rectangle</li>
-          <li>台形として面積を計算する関数 area_trapezoid</li>
+          <li>マージソート：merge_sort</li>
+          <li>クイックソート：quick_sort</li>
         </ul>
-        <pre class="guide-card-code">area_rectangle : (float -&gt; float) -&gt; float -&gt; float -&gt; float
-area_trapezoid : (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
-      </div>
-
-      <div class="guide-subitem">
-        <p class="guide-card-title">2-2：シンプソンの公式の仕組みの調査（レポート課題）</p>
+        <pre class="guide-card-code">merge_sort : int list -&gt; int list
+quick_sort : int list -&gt; int list</pre>
         <p class="guide-card-text">
-          数値積分の代表的な高精度近似手法として「シンプソンの公式」があります。
-          シンプソンの公式，特に1区間分の面積を求める公式の仕組みについて調べ，
-          どのような原理で面積を計算するのか，数式を用いて分かりやすく説明しなさい。
+          すべてを実装する必要はありません。1つ以上を選択して実装してください。
+          必要に応じて，split，merge，partition などの補助関数を定義してもかまいません。
         </p>
       </div>
+    </div>
+  </div>
 
-      <div class="guide-subitem">
-        <p class="guide-card-title">2-3：シンプソンの面積を求める関数の定義</p>
-        <p class="guide-card-text">
-          2-2で調査したアルゴリズムに基づき，関数 f，現在の微小区間の左端の座標 x，
-          および微小幅 dx を受け取り，その1区間分の面積をシンプソンの公式によって計算する
-          関数 area_simpson を定義しなさい。
-        </p>
-        <p class="guide-card-text">
-          （※シンプソンの公式では，区間の中点 x + dx / 2 における関数値が必要になる点に注意しなさい）
-        </p>
-        <pre class="guide-card-code">area_simpson : (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
-      </div>
+  <h3 class="guide-section-title">課題 3：比較回数カウント版</h3>
 
+  <div class="guide-card">
+    <p class="guide-card-text">
+      課題1および課題2で実装したソートアルゴリズムについて，
+      要素同士の比較回数を数えるように改造しなさい。
+      比較回数は，x &gt; y や x &lt;= y など，リスト内の要素同士を比較した回数のみを数えるものとする。
+    </p>
+
+    <div class="guide-subitems">
       <div class="guide-subitem">
-        <p class="guide-card-title">2-4：共通の積分関数（高階関数）の定義と実行</p>
+        <p class="guide-card-title">3-1：単純法の比較回数カウント版</p>
         <p class="guide-card-text">
-          1区間分の面積を求める関数，積分したい関数 f，積分の開始位置 a，終了位置 b を引数に取り，
-          開始位置 a から座標を dx ずつ進めながら全体の面積の合計を再帰によって計算する
-          共通の関数 integral を定義しなさい。
-        </p>
-        <pre class="guide-card-code">integral : ((float -&gt; float) -&gt; float -&gt; float -&gt; float) -&gt; (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
-        <p class="guide-card-text">
-          また，作成した integral 関数に，これまで定義した3つの面積計算関数
-          （長方形・台形・シンプソン）をそれぞれ組み合わせて適切なテスト関数を定義し，
-          それぞれの計算結果を求めなさい。
+          課題1で実装した単純ソートアルゴリズムを，比較回数を返す形に改造しなさい。
+          返り値は，比較回数とソート済みリストのペアにしてください。
         </p>
         <ul class="guide-submit-list">
-          <li>注意点：関数が積分区間内で不連続である場合など，数学的に積分不可能である例外的なケースへの対策は本課題では考慮しなくて構いません。正常に積分可能な関数と区間が与えられるものとして実装しなさい。</li>
+          <li>交換ソートのカウント版：exchange_sort_c</li>
+          <li>選択ソートのカウント版：selection_sort_c</li>
+          <li>挿入ソートのカウント版：insertion_sort_c</li>
         </ul>
+        <pre class="guide-card-code">exchange_sort_c : int list -&gt; int * int list
+selection_sort_c : int list -&gt; int * int list
+insertion_sort_c : int list -&gt; int * int list</pre>
+        <p class="guide-card-text">
+          返り値は，(比較回数, ソート済みリスト) の順にしてください。
+        </p>
       </div>
 
       <div class="guide-subitem">
-        <p class="guide-card-title">2-5：精度に関する考察（レポート課題）</p>
+        <p class="guide-card-title">3-2：分割統治法の比較回数カウント版</p>
         <p class="guide-card-text">
-          実装したプログラムや実行結果について，以下の2点について考察しなさい。
+          課題2で実装した分割統治法ソートアルゴリズムを，
+          比較回数を返す形に改造しなさい。
         </p>
         <ul class="guide-submit-list">
-          <li>高階関数を用いた設計の利点：面積の計算ロジックと，区間を分割して合計するループ処理を分離して高階関数化したことによる，プログラムの構造上・開発上のメリットについて述べよ。</li>
-          <li>3つの近似手法による精度差：長方形近似，台形公式，シンプソンの公式の計算結果を，数学的な理論値と比較し，それぞれの手法の精度にどのような違いがあるか，dx の大小が与える影響も交えて考察せよ。</li>
+          <li>マージソートのカウント版：merge_sort_c</li>
+          <li>クイックソートのカウント版：quick_sort_c</li>
         </ul>
+        <pre class="guide-card-code">merge_sort_c : int list -&gt; int * int list
+quick_sort_c : int list -&gt; int * int list</pre>
+        <p class="guide-card-text">
+          返り値は，(比較回数, ソート済みリスト) の順にしてください。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="guide-section-title">課題 4：実行実験</h3>
+
+  <div class="guide-card">
+    <p class="guide-card-text">
+      作成した比較回数カウント版のソート関数を用いて，実行実験を行いなさい。
+      実験結果はレポートにまとめてください。
+    </p>
+
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">4-1：実行実験1</p>
+        <p class="guide-card-text">
+          要素数を変化させたときに，比較回数がどのように変化するかを調べなさい。
+          例えば，要素数 10，50，100 などのリストを用いて実験し，
+          各ソートアルゴリズムの比較回数を確認してください。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">4-2：実行実験2</p>
+        <p class="guide-card-text">
+          リストの初期状態によって，比較回数がどのように変化するかを調べなさい。
+          例えば，整列済みリスト，逆順リスト，ランダムなリストなどを用いて比較してください。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="guide-section-title">課題 5：実験結果と考察</h3>
+
+  <div class="guide-card">
+    <p class="guide-card-text">
+      課題4の実験結果を表にまとめ，ソートアルゴリズムごとの特徴を考察しなさい。
+    </p>
+
+    <div class="guide-subitems">
+      <div class="guide-subitem">
+        <p class="guide-card-title">5-1：実験結果の表</p>
+        <p class="guide-card-text">
+          実験で得られた比較回数を表にまとめなさい。
+          要素数や初期状態ごとに，比較回数の違いが分かるように整理してください。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">5-2：初期状態による変化の考察</p>
+        <p class="guide-card-text">
+          整列済み，逆順，ランダムなど，リストの初期状態によって比較回数がどのように変化したかを考察しなさい。
+        </p>
+      </div>
+
+      <div class="guide-subitem">
+        <p class="guide-card-title">5-3：単純法と分割統治法の比較</p>
+        <p class="guide-card-text">
+          単純法と分割統治法を比較し，どのような場合に分割統治法が有利になるかを考察しなさい。
+          実験結果とアルゴリズムの特徴を関連づけて説明してください。
+        </p>
       </div>
     </div>
   </div>
@@ -179,7 +188,7 @@ area_trapezoid : (float -&gt; float) -&gt; float -&gt; float -&gt; float</pre>
       <li>提出方法：LETUS</li>
       <li>提出物：各課題のレポート（LaTeXで作成したPDF）と，作成したプログラムソース（拡張子mlのファイル）</li>
       <li>プログラムを実装する問題においては，「アルゴリズムの説明」と「プログラムの説明」をレポートに記載すること</li>
-      <li>提出期限：第3週 2026/5/27（水）13:00</li>
+      <li>提出期限：第3週 2026/6/3（水）13:00</li>
     </ul>
   </div>
 
