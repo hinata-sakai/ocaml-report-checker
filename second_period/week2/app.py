@@ -337,6 +337,66 @@ integral area_simpson f2 0.0 1.0;;</pre>
   </div>
 """
 
+WEEK2_AUTO_POINTS = {
+    "1-1": 3,
+    "1-2": 3,
+    "1-4": 6,
+    "2-1-1": 2,
+    "2-1-2": 2,
+    "2-3": 6,
+    "2-4": 6,
+}
+
+WEEK2_AUTO_TOTAL_POINTS = sum(WEEK2_AUTO_POINTS.values())
+
+def calculate_week2_auto_score(summary):
+    score = 0
+
+    for question in summary.get("questions", []):
+        question_id = str(question.get("question", ""))
+        status = question.get("status")
+
+        if question_id not in WEEK2_AUTO_POINTS:
+            continue
+
+        if status in ("OK", "WARNING"):
+            score += WEEK2_AUTO_POINTS[question_id]
+
+    return score
+
+def add_week2_score_badges(html, file_summaries):
+    for summary in file_summaries:
+        score = calculate_week2_auto_score(summary)
+
+        warning_questions = [
+            q for q in summary.get("questions", [])
+            if q.get("status") == "WARNING"
+        ]
+        wrong_questions = [
+            q for q in summary.get("questions", [])
+            if q.get("status") == "NG"
+        ]
+        error_questions = [
+            q for q in summary.get("questions", [])
+            if q.get("status") == "ERROR"
+        ]
+
+        has_issues = bool(warning_questions or wrong_questions or error_questions)
+        status_label = "確認が必要" if has_issues else "全問正解"
+
+        marker = "<span class='status-pill'>{}</span>".format(status_label)
+
+        replacement = (
+            "<div class='week2-status-stack'>"
+            "{}"
+            "<span class='week2-point-score'>{}点/{}点</span>"
+            "</div>"
+        ).format(marker, score, WEEK2_AUTO_TOTAL_POINTS)
+
+        html = html.replace(marker, replacement, 1)
+
+    return html
+
 def add_week2_title_style(html):
     extra_css = """
 .period-with-week {
@@ -408,6 +468,26 @@ def add_week2_title_style(html):
   display: inline-block;
   max-width: min(100%, 360px);
   height: auto;
+}
+
+.week2-status-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.week2-point-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(11, 11, 13, 0.06);
+  color: rgba(11, 11, 13, 0.78);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.01em;
 }
 """
 
@@ -508,6 +588,7 @@ def build_result_html(all_results, file_summaries):
 
     html = replace_task_guide_html(html)
     html = add_answer_guide_menu(html)
+    html = add_week2_score_badges(html, file_summaries)
     html = add_week2_title_style(html)
 
     return html
