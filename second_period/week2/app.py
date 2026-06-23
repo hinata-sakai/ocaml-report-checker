@@ -493,7 +493,7 @@ def add_week2_title_style(html):
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 14px;
   flex-shrink: 0;
 }
 
@@ -501,11 +501,12 @@ def add_week2_title_style(html):
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 7px 12px;
+  min-height: 44px;
+  padding: 0 22px;
   border-radius: 999px;
   background: rgba(11, 11, 13, 0.06);
   color: rgba(11, 11, 13, 0.78);
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 950;
   letter-spacing: 0.01em;
   line-height: 1;
