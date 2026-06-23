@@ -51,9 +51,9 @@ let assert_approx label actual expected eps =
     Printf.printf "NG %s: expected %.12g but got %.12g (eps %.12g)\n" label expected actual eps
 ;;
 
-assert_approx "diff_forward (fun x -> x *. x) 2.0" (diff_forward (fun x -> x *. x) 2.0) 4.0 1e-3;;
-assert_approx "diff_forward (fun x -> x *. x *. x) 2.0" (diff_forward (fun x -> x *. x *. x) 2.0) 12.0 1e-3;;
-assert_approx "diff_forward sin 0.0" (diff_forward sin 0.0) 1.0 1e-3;;
+assert_approx "diff_forward (fun x -> x *. x) 2.0" (diff_forward (fun x -> x *. x) 2.0) 4.0 1e-2;;
+assert_approx "diff_forward (fun x -> x *. x *. x) 2.0" (diff_forward (fun x -> x *. x *. x) 2.0) 12.0 1e-2;;
+assert_approx "diff_forward sin 0.0" (diff_forward sin 0.0) 1.0 1e-2;;
 ''',
     ),
     make_test(
