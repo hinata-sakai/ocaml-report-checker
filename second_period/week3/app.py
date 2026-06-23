@@ -338,16 +338,13 @@ integral area_simpson f2 0.0 1.0;;</pre>
 """
 
 WEEK3_AUTO_POINTS = {
-    "1-1": 3,
-    "1-2": 3,
-    "1-4": 6,
-    "2-1-1": 2,
-    "2-1-2": 2,
-    "2-3": 6,
-    "2-4": 6,
+    "1": 8,
+    "2": 8,
+    "3-1": 7,
+    "3-2": 7,
 }
 
-WEEK3_AUTO_TOTAL_POINTS = sum(WEEK3_AUTO_POINTS.values())
+WEEK3_AUTO_TOTAL_POINTS = 30
 
 def calculate_week3_auto_score(summary):
     score = 0
@@ -607,7 +604,7 @@ def build_result_html(all_results, file_summaries):
         "採点結果と確認が必要な問を、ファイルごとにまとめて表示しています。",
         "採点結果と確認が必要な問を、ファイルごとにまとめて表示しています。"
         "<span class='week3-manual-check-note'>"
-        "課題1-3, 1-5-1, 1-5-2, 2-2, 2-5-1, 2-5-2は"
+        "課題4-1, 4-2, 5-1, 5-2, 5-3は"
         "自動採点できないため、提出PDFで確認してください。"
         "</span>"
     )
