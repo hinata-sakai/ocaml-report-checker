@@ -359,7 +359,7 @@ def calculate_week2_auto_score(summary):
         if question_id not in WEEK2_AUTO_POINTS:
             continue
 
-        if status in ("OK", "WARNING"):
+        if status == "OK":
             score += WEEK2_AUTO_POINTS[question_id]
 
     return score
