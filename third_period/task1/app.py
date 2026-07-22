@@ -280,10 +280,10 @@ def fix_task1_question_total_display(html):
     return html
 
 
-def replace_count_before_last_label(segment_html, label, new_count):
+def replace_count_before_label(segment_html, label_pattern, new_count):
     import re
 
-    label_matches = list(re.finditer(re.escape(label), segment_html))
+    label_matches = list(re.finditer(label_pattern, segment_html))
 
     if not label_matches:
         return segment_html
@@ -337,28 +337,28 @@ def fix_task1_result_count_display(html, file_summaries):
             before_denominator = card_html[:denominator_match.start()]
             after_denominator = card_html[denominator_match.end():]
 
-            before_denominator = replace_count_before_last_label(
+            before_denominator = replace_count_before_label(
                 before_denominator,
-                "正解",
-                counts["OK"],
-            )
-
-            before_denominator = replace_count_before_last_label(
-                before_denominator,
-                "不正解",
+                r"不正解",
                 counts["NG"],
             )
 
-            before_denominator = replace_count_before_last_label(
+            before_denominator = replace_count_before_label(
                 before_denominator,
-                "エラー",
+                r"エラー",
                 counts["ERROR"],
             )
 
-            before_denominator = replace_count_before_last_label(
+            before_denominator = replace_count_before_label(
                 before_denominator,
-                "警告",
+                r"警告",
                 counts["WARNING"],
+            )
+
+            before_denominator = replace_count_before_label(
+                before_denominator,
+                r"(?<!不)正解",
+                counts["OK"],
             )
 
             card_html = (
