@@ -116,3 +116,7 @@ def summarize_by_question(file_results):
             summary["extra_points"] = result.get("extra_points", 0)
         summaries.append(summary)
     return summaries
+
+def run_checker(ml_file):
+    """Run all automatic tests for third-period task 1."""
+    return [run_one_test(ml_file, test) for test in TESTS]
