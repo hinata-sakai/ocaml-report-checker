@@ -288,44 +288,30 @@ def extract_list_module_body(code):
 
 
 def count_extra_functions(code):
-    """Count additional top-level functions in module List, up to two.
+    """Count additional functions defined directly under module List, up to two.
 
-    Only functions defined directly under module List are counted.
-    Local helper functions such as `let rec aux ...` inside indexOf are not counted.
+    Local helper functions and local variables such as
+    `let rec aux ...`, `let m = ... in`, and `let res = ... in`
+    are not counted.
     """
 
     code = remove_ocaml_comments(code)
     body = extract_list_module_body(code)
 
-    bindings = re.findall(
-        r"(?m)^(?P<indent>[ \t]*)let\s+(?:rec\s+)?(?P<name>[a-zA-Z_][a-zA-Z0-9_']*)\b",
-        body,
-    )
-
-    if not bindings:
-        return 0
-
-    required_indents = [
-        len(indent.expandtabs(8))
-        for indent, name in bindings
-        if name in REQUIRED_FUNCTIONS
-    ]
-
-    if required_indents:
-        top_indent = min(required_indents)
-    else:
-        top_indent = min(
-            len(indent.expandtabs(8))
-            for indent, _ in bindings
-        )
-
+    lines = body.splitlines()
     extra_names = set()
 
-    for indent, name in bindings:
-        current_indent = len(indent.expandtabs(8))
+    for i, line in enumerate(lines):
+        match = re.match(
+            r"^[ \t]*let\s+(?:rec\s+)?(?P<name>[a-zA-Z_][a-zA-Z0-9_']*)\b(?P<rest>.*)$",
+            line,
+        )
 
-        if current_indent != top_indent:
+        if not match:
             continue
+
+        name = match.group("name")
+        rest = match.group("rest").strip()
 
         if name in REQUIRED_FUNCTIONS:
             continue
@@ -339,6 +325,8 @@ def count_extra_functions(code):
             "l2",
             "x",
             "y",
+            "m",
+            "res",
             "result",
             "answer",
             "test",
@@ -347,6 +335,49 @@ def count_extra_functions(code):
             "sample_l1",
             "sample_l2",
         }:
+            continue
+
+        previous = ""
+
+        for j in range(i - 1, -1, -1):
+            candidate = lines[j].strip()
+
+            if candidate:
+                previous = candidate
+                break
+
+        if previous.endswith("->"):
+            continue
+
+        if previous.endswith("="):
+            continue
+
+        if previous in {"else", "then", "in"}:
+            continue
+
+        if previous.endswith("else"):
+            continue
+
+        if previous.endswith("then"):
+            continue
+
+        if previous.endswith("in"):
+            continue
+
+        if re.search(r"\bin\s*$", previous):
+            continue
+
+        is_function_like = False
+
+        if rest.startswith("="):
+            if rest.startswith("= function"):
+                is_function_like = True
+            else:
+                is_function_like = False
+        else:
+            is_function_like = True
+
+        if not is_function_like:
             continue
 
         extra_names.add(name)
