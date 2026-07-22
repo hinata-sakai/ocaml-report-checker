@@ -217,19 +217,22 @@ def remove_task1_extra_from_summaries(file_summaries):
     return filtered_summaries
 
 
-def remove_task1_extra_from_all_results(all_results):
-    filtered_results = []
+def is_task1_extra_result(result):
+    if not isinstance(result, dict):
+        return False
 
-    for file_results in all_results:
-        filtered_file_results = [
-            result
-            for result in file_results
-            if str(result.get("question", "")) != "extra"
+    return str(result.get("question", "")) == "extra"
+
+
+def remove_task1_extra_from_all_results(all_results):
+    if isinstance(all_results, list):
+        return [
+            remove_task1_extra_from_all_results(item)
+            for item in all_results
+            if not is_task1_extra_result(item)
         ]
 
-        filtered_results.append(filtered_file_results)
-
-    return filtered_results
+    return all_results
 
 
 def fix_task1_question_total_display(html):
