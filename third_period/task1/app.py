@@ -132,22 +132,33 @@ def build_task1_extra_note(file_summaries):
 
 
 def add_task1_extra_note_above_issue_area(html, file_summaries):
-    import re
-
     note = build_task1_extra_note(file_summaries)
 
-    heading_patterns = [
-        r"(<h[1-6][^>]*>間違えた問</h[1-6]>)",
-        r"(<h[1-6][^>]*>エラーの出た問</h[1-6]>)",
-        r"(<h[1-6][^>]*>確認が必要な問はありません</h[1-6]>)",
-        r"(<p[^>]*class=['\"]no-issues['\"][^>]*>確認が必要な問はありません</p>)",
+    labels = [
+        "間違えた問",
+        "エラーの出た問",
+        "確認が必要な問はありません",
     ]
 
-    for pattern in heading_patterns:
-        if re.search(pattern, html):
-            return re.sub(pattern, note + r"\1", html, count=1)
+    positions = []
 
-    return html
+    for label in labels:
+        pos = html.find(label)
+
+        if pos != -1:
+            positions.append(pos)
+
+    if not positions:
+        return html
+
+    first_label_pos = min(positions)
+
+    tag_start = html.rfind("<", 0, first_label_pos)
+
+    if tag_start == -1:
+        return html[:first_label_pos] + note + html[first_label_pos:]
+
+    return html[:tag_start] + note + html[tag_start:]
 
 
 def remove_task1_extra_from_issue_list(html):
