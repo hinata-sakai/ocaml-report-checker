@@ -239,6 +239,104 @@ def fix_task1_question_total_display(html):
     html = html.replace("/14問", "/13問")
     return html
 
+def count_task1_required_statuses(summary):
+    counts = {
+        "OK": 0,
+        "NG": 0,
+        "ERROR": 0,
+        "WARNING": 0,
+    }
+
+    for question in summary.get("questions", []):
+        question_id = str(question.get("question", ""))
+
+        if question_id == "extra":
+            continue
+
+        status = str(question.get("status", ""))
+
+        if status in counts:
+            counts[status] += 1
+
+    return counts
+
+
+def replace_last_question_count_before_label(card_html, label, new_count):
+    import re
+
+    label_pos = card_html.find(label)
+
+    if label_pos == -1:
+        return card_html
+
+    before_label = card_html[:label_pos]
+    after_label = card_html[label_pos:]
+
+    matches = list(re.finditer(r"(\d+)(\s*問)", before_label))
+
+    if not matches:
+        return card_html
+
+    last_match = matches[-1]
+
+    before_label = (
+        before_label[:last_match.start(1)]
+        + str(new_count)
+        + before_label[last_match.end(1):]
+    )
+
+    return before_label + after_label
+
+
+def fix_task1_result_count_display(html, file_summaries):
+    search_start = 0
+
+    for summary in file_summaries:
+        counts = count_task1_required_statuses(summary)
+
+        card_start = html.find("<div class='card-top'>", search_start)
+
+        if card_start == -1:
+            break
+
+        next_card_start = html.find("<div class='card-top'>", card_start + 1)
+
+        if next_card_start == -1:
+            card_end = len(html)
+        else:
+            card_end = next_card_start
+
+        card_html = html[card_start:card_end]
+
+        card_html = replace_last_question_count_before_label(
+            card_html,
+            "正解",
+            counts["OK"],
+        )
+
+        card_html = replace_last_question_count_before_label(
+            card_html,
+            "不正解",
+            counts["NG"],
+        )
+
+        card_html = replace_last_question_count_before_label(
+            card_html,
+            "エラー",
+            counts["ERROR"],
+        )
+
+        card_html = replace_last_question_count_before_label(
+            card_html,
+            "警告",
+            counts["WARNING"],
+        )
+
+        html = html[:card_start] + card_html + html[card_end:]
+
+        search_start = card_start + len(card_html)
+
+    return html
 
 def add_task_title_style(html):
     extra_css = """
@@ -339,6 +437,7 @@ def build_result_html(all_results, file_summaries):
     html = remove_task1_extra_from_issue_list(html)
     html = remove_task1_question_prefix(html)
     html = fix_task1_question_total_display(html)
+    html = fix_task1_result_count_display(html, file_summaries)
 
     html = add_task1_extra_note_above_issue_area(html, file_summaries)
     html = add_task1_score_badges(html, file_summaries)
