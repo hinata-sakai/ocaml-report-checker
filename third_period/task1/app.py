@@ -18,7 +18,7 @@ THIRD_TASK1_AUTO_POINTS = {
     "concat": 2,
 }
 
-THIRD_TASK1_AUTO_TOTAL_POINTS = 30
+THIRD_TASK1_AUTO_TOTAL_POINTS = 26
 
 TASK1_QUESTION_LABELS = [
     "create",
@@ -40,19 +40,17 @@ TASK1_QUESTION_LABELS = [
 
 def calculate_task1_auto_score(summary):
     score = 0
-    extra_points = 0
 
     for question in summary.get("questions", []):
         question_id = str(question.get("question", ""))
 
         if question_id == "extra":
-            extra_points = question.get("extra_points", 0)
             continue
 
         if question.get("status") == "OK":
             score += THIRD_TASK1_AUTO_POINTS.get(question_id, 0)
 
-    return min(THIRD_TASK1_AUTO_TOTAL_POINTS, score + extra_points)
+    return min(THIRD_TASK1_AUTO_TOTAL_POINTS, score)
 
 
 def has_task1_required_issues(summary):
@@ -107,9 +105,9 @@ def add_task1_score_badges(html, file_summaries):
         replacement = (
             "<div class='task1-status-row'>"
             "{}"
-            "<span class='task1-point-score'>{}点/30点</span>"
+            "<span class='task1-point-score'>{}点/{}点</span>"
             "</div>"
-        ).format(marker, score)
+        ).format(marker, score, THIRD_TASK1_AUTO_TOTAL_POINTS)
 
         card_html = html[card_start:card_end]
         new_card_html = card_html.replace(marker, replacement, 1)
@@ -120,22 +118,38 @@ def add_task1_score_badges(html, file_summaries):
     return html
 
 
-def add_task1_extra_note(html, file_summaries):
+def build_task1_extra_note(file_summaries):
     if has_any_task1_extra_function(file_summaries):
         note_text = "追加の関数があります。確認してください。"
     else:
         note_text = "追加の関数はありません。"
 
-    note = (
-        "<span class='task1-extra-note'>"
+    return (
+        "<div class='task1-extra-note'>"
         "{}"
-        "</span>"
+        "</div>"
     ).format(note_text)
 
-    target = "採点結果と確認が必要な問を、ファイルごとにまとめて表示しています。"
 
-    if target in html:
-        return html.replace(target, target + note, 1)
+def add_task1_extra_note_above_issue_area(html, file_summaries):
+    note = build_task1_extra_note(file_summaries)
+
+    targets = [
+        "<h3>間違えた問</h3>",
+        "<h3>エラーの出た問</h3>",
+        "<h3>確認が必要な問はありません</h3>",
+        "<h2>間違えた問</h2>",
+        "<h2>エラーの出た問</h2>",
+        "<h2>確認が必要な問はありません</h2>",
+        "<p class='no-issues'>確認が必要な問はありません</p>",
+        "確認が必要な問はありません",
+        "間違えた問",
+        "エラーの出た問",
+    ]
+
+    for target in targets:
+        if target in html:
+            return html.replace(target, note + target, 1)
 
     return html
 
@@ -189,12 +203,11 @@ def add_task_title_style(html):
 }
 
 .task1-extra-note {
-  display: block;
-  margin-top: 14px;
-  color: rgba(11, 11, 13, 0.76);
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
+  margin: 0 0 18px 0;
+  color: rgba(11, 11, 13, 0.78);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.7;
 }
 
 .task1-status-row {
@@ -251,9 +264,9 @@ def build_result_html(all_results, file_summaries):
     html = html.replace("Ocaml 1期", "OCaml 3期 課題1")
     html = html.replace("OCaml 1期", "OCaml 3期 課題1")
 
-    html = add_task1_extra_note(html, file_summaries)
     html = remove_task1_extra_from_issue_list(html)
     html = remove_task1_question_prefix(html)
+    html = add_task1_extra_note_above_issue_area(html, file_summaries)
     html = add_task1_score_badges(html, file_summaries)
     html = add_task_title_style(html)
 
