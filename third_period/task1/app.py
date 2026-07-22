@@ -372,6 +372,51 @@ def fix_task1_result_count_display(html, file_summaries):
 
     return html
 
+def fix_task1_progress_bar_display(html, file_summaries):
+    import re
+
+    search_start = 0
+
+    for summary in file_summaries:
+        counts = count_task1_required_statuses(summary)
+        ok_count = counts["OK"]
+        percent = ok_count / THIRD_TASK1_REQUIRED_TOTAL_QUESTIONS * 100
+
+        card_start = html.find("<div class='card-top'>", search_start)
+
+        if card_start == -1:
+            break
+
+        next_card_start = html.find("<div class='card-top'>", card_start + 1)
+
+        if next_card_start == -1:
+            card_end = len(html)
+        else:
+            card_end = next_card_start
+
+        card_html = html[card_start:card_end]
+
+        progress_patterns = [
+            r"(class=['\"][^'\"]*progress[^'\"]*['\"][^>]*style=['\"][^'\"]*width:\s*)[0-9.]+%",
+            r"(style=['\"][^'\"]*width:\s*)[0-9.]+%",
+        ]
+
+        for pattern in progress_patterns:
+            new_card_html, replaced_count = re.subn(
+                pattern,
+                r"\g<1>{:.6f}%".format(percent),
+                card_html,
+                count=1,
+            )
+
+            if replaced_count > 0:
+                card_html = new_card_html
+                break
+
+        html = html[:card_start] + card_html + html[card_end:]
+        search_start = card_start + len(card_html)
+
+    return html
 
 def add_task_title_style(html):
     extra_css = """
@@ -476,6 +521,7 @@ def build_result_html(all_results, file_summaries):
     html = add_task1_extra_note_above_issue_area(html, file_summaries)
     html = add_task1_score_badges(html, file_summaries)
     html = fix_task1_result_count_display(html, file_summaries)
+    html = fix_task1_progress_bar_display(html, file_summaries)
     html = add_task_title_style(html)
 
     return html
