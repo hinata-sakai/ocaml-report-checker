@@ -288,33 +288,44 @@ def extract_list_module_body(code):
 
 
 def count_extra_functions(code):
-    """Count additional function definitions, up to two.
+    """Count additional top-level functions in module List, up to two.
 
-    Additional functions are judged by existence, not by exact behavior.
-    One extra function gives +2 points, two or more gives +4 points.
+    Only functions defined directly under module List are counted.
+    Local helper functions such as `let rec aux ...` inside indexOf are not counted.
     """
 
     code = remove_ocaml_comments(code)
     body = extract_list_module_body(code)
 
-    # Detect function-like definitions:
-    #   let reverse xs = ...
-    #   let rec contains x xs = ...
-    # This intentionally avoids simple value definitions such as:
-    #   let l1 = ...
-    pattern = (
-        r"(?m)^[ \t]*let\s+"
-        r"(?:rec\s+)?"
-        r"(?P<name>[a-zA-Z_][a-zA-Z0-9_']*)"
-        r"\s+"
-        r"(?P<arg>[a-zA-Z_][a-zA-Z0-9_']*|\([^=\n]*\))"
-        r"[^=\n]*="
+    bindings = re.findall(
+        r"(?m)^(?P<indent>[ \t]*)let\s+(?:rec\s+)?(?P<name>[a-zA-Z_][a-zA-Z0-9_']*)\b",
+        body,
     )
 
-    names = set()
+    if not bindings:
+        return 0
 
-    for match in re.finditer(pattern, body):
-        name = match.group("name")
+    required_indents = [
+        len(indent.expandtabs(8))
+        for indent, name in bindings
+        if name in REQUIRED_FUNCTIONS
+    ]
+
+    if required_indents:
+        top_indent = min(required_indents)
+    else:
+        top_indent = min(
+            len(indent.expandtabs(8))
+            for indent, _ in bindings
+        )
+
+    extra_names = set()
+
+    for indent, name in bindings:
+        current_indent = len(indent.expandtabs(8))
+
+        if current_indent != top_indent:
+            continue
 
         if name in REQUIRED_FUNCTIONS:
             continue
@@ -338,9 +349,9 @@ def count_extra_functions(code):
         }:
             continue
 
-        names.add(name)
+        extra_names.add(name)
 
-    return min(2, len(names))
+    return min(2, len(extra_names))
 
 
 def run_one_test(ml_file, test):
