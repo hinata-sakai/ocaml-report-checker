@@ -10,112 +10,487 @@ from pathlib import Path
 
 OCAML_COMMAND = "ocaml"
 TIMEOUT_SECONDS = 8
+
 REQUIRED_FUNCTIONS = {
-    "create", "unshift", "shift", "push", "pop", "size", "max", "min",
-    "get", "indexOf", "set", "remove", "concat",
+    "create",
+    "unshift",
+    "shift",
+    "push",
+    "pop",
+    "size",
+    "max",
+    "min",
+    "get",
+    "indexOf",
+    "set",
+    "remove",
+    "concat",
 }
+
+QUESTION_ORDER = [
+    "create",
+    "unshift",
+    "shift",
+    "push",
+    "pop",
+    "size",
+    "max",
+    "min",
+    "get",
+    "indexOf",
+    "set",
+    "remove",
+    "concat",
+    "extra",
+]
 
 
 def make_test(question, code):
-    return {"question": question, "name": question, "code": code}
+    return {
+        "question": str(question),
+        "name": str(question),
+        "code": code,
+    }
 
 
 PRELUDE = r'''
 open List;;
-let rec to_builtin_list xs =
-  match xs with Nil -> [] | Cell (x, rest) -> x :: to_builtin_list rest
-;;
+
 let pass label condition =
-  if condition then print_endline ("OK " ^ label)
-  else print_endline ("NG " ^ label)
+  if condition then
+    print_endline ("OK " ^ label)
+  else
+    print_endline ("NG " ^ label)
+;;
+
+let expect_int label actual expected =
+  pass label (actual = expected)
+;;
+
+let expect_list label xs expected =
+  let rec check i expected_values =
+    match expected_values with
+    | [] ->
+        size xs = i
+    | value :: rest ->
+        size xs > i && get i xs = value && check (i + 1) rest
+  in
+  pass label (check 0 expected)
+;;
+
+let sample_l1 () =
+  push 8 (unshift 10 (push 5 (unshift 2 (create ()))))
+;;
+
+let sample_l2 () =
+  push 1 (unshift 12 (unshift 2 (create ())))
+;;
+
+let sample_l () =
+  concat (sample_l1 ()) (sample_l2 ())
 ;;
 '''
 
 
 TESTS = [
-    make_test("create", PRELUDE + 'pass "create" (to_builtin_list (create ()) = []);;'),
-    make_test("unshift", PRELUDE + 'pass "unshift" (to_builtin_list (unshift 10 Nil) = [10]);;'),
-    make_test("shift", PRELUDE + 'pass "shift" (to_builtin_list (shift (Cell (10, Cell (2, Cell (5, Cell (8, Cell (12, Cell (2, Cell (1, Nil))))))))) = [2;5;8;12;2;1]);;'),
-    make_test("push", PRELUDE + 'pass "push" (to_builtin_list (push 8 Nil) = [8]);;'),
-    make_test("pop", PRELUDE + 'pass "pop" (to_builtin_list (pop (Cell (10, Cell (2, Cell (5, Cell (8, Cell (12, Cell (2, Cell (1, Nil))))))))) = [10;2;5;8;12;2]);;'),
-    make_test("size", PRELUDE + 'pass "size l" (size (Cell (10, Cell (2, Cell (5, Cell (8, Cell (12, Cell (2, Cell (1, Nil))))))))) = 7);; pass "size l2" (size (Cell (12, Cell (2, Cell (1, Nil))))) = 3);;'),
-    make_test("max", PRELUDE + 'pass "max" (max (Cell (12, Cell (2, Cell (1, Nil)))) = 12);;'),
-    make_test("min", PRELUDE + 'pass "min" (min (Cell (12, Cell (2, Cell (1, Nil)))) = 1);;'),
-    make_test("get", PRELUDE + 'pass "get" (get 3 (Cell (10, Cell (2, Cell (5, Cell (8, Cell (12, Cell (2, Cell (1, Nil))))))))) = 8);;'),
-    make_test("indexOf", PRELUDE + 'let l = Cell (10, Cell (2, Cell (5, Cell (8, Cell (12, Cell (2, Cell (1, Nil))))))) in pass "indexOf existing" (indexOf 12 l = 4); pass "indexOf missing" (indexOf 99 l = -1); pass "indexOf first" (indexOf 2 l = 1);;'),
-    make_test("set", PRELUDE + 'let l = Cell (10, Cell (2, Cell (5, Cell (8, Cell (12, Cell (2, Cell (1, Nil))))))) in pass "set one" (to_builtin_list (set 1 0 l) = [10;2;5;8;12;2;0]); pass "set all" (to_builtin_list (set 2 99 l) = [10;99;5;8;12;99;1]);;'),
-    make_test("remove", PRELUDE + 'let l = Cell (10, Cell (2, Cell (5, Cell (8, Cell (12, Cell (2, Cell (1, Nil))))))) in pass "remove one" (to_builtin_list (remove 5 l) = [10;2;8;12;2;1]); pass "remove all" (to_builtin_list (remove 2 l) = [10;5;8;12;1]);;'),
-    make_test("concat", PRELUDE + 'let l1 = Cell (10, Cell (2, Cell (5, Cell (8, Nil)))) in let l2 = Cell (12, Cell (2, Cell (1, Nil))) in pass "concat" (to_builtin_list (concat l1 l2) = [10;2;5;8;12;2;1]);;'),
-    {"question": "extra", "name": "extra", "extra": True, "code": ""},
+    make_test(
+        "create",
+        PRELUDE + r'''
+let l = create ();;
+expect_int "create size" (size l) 0;;
+''',
+    ),
+
+    make_test(
+        "unshift",
+        PRELUDE + r'''
+let l = unshift 10 (create ());;
+expect_int "unshift size" (size l) 1;;
+expect_int "unshift first" (get 0 l) 10;;
+''',
+    ),
+
+    make_test(
+        "shift",
+        PRELUDE + r'''
+let l = sample_l ();;
+let shifted = shift l;;
+expect_list "shift" shifted [2; 5; 8; 12; 2; 1];;
+''',
+    ),
+
+    make_test(
+        "push",
+        PRELUDE + r'''
+let l = push 8 (create ());;
+expect_int "push size" (size l) 1;;
+expect_int "push first" (get 0 l) 8;;
+
+let l2 = push 8 (unshift 10 (create ()));;
+expect_list "push after unshift" l2 [10; 8];;
+''',
+    ),
+
+    make_test(
+        "pop",
+        PRELUDE + r'''
+let l = sample_l ();;
+let popped = pop l;;
+expect_list "pop" popped [10; 2; 5; 8; 12; 2];;
+''',
+    ),
+
+    make_test(
+        "size",
+        PRELUDE + r'''
+let l1 = sample_l1 ();;
+let l2 = sample_l2 ();;
+let l = sample_l ();;
+expect_int "size empty" (size (create ())) 0;;
+expect_int "size l1" (size l1) 4;;
+expect_int "size l2" (size l2) 3;;
+expect_int "size l" (size l) 7;;
+''',
+    ),
+
+    make_test(
+        "max",
+        PRELUDE + r'''
+let l1 = sample_l1 ();;
+let l2 = sample_l2 ();;
+let l = sample_l ();;
+expect_int "max l1" (max l1) 10;;
+expect_int "max l2" (max l2) 12;;
+expect_int "max l" (max l) 12;;
+''',
+    ),
+
+    make_test(
+        "min",
+        PRELUDE + r'''
+let l1 = sample_l1 ();;
+let l2 = sample_l2 ();;
+let l = sample_l ();;
+expect_int "min l1" (min l1) 2;;
+expect_int "min l2" (min l2) 1;;
+expect_int "min l" (min l) 1;;
+''',
+    ),
+
+    make_test(
+        "get",
+        PRELUDE + r'''
+let l = sample_l ();;
+expect_int "get 0" (get 0 l) 10;;
+expect_int "get 1" (get 1 l) 2;;
+expect_int "get 2" (get 2 l) 5;;
+expect_int "get 3" (get 3 l) 8;;
+expect_int "get 4" (get 4 l) 12;;
+expect_int "get 5" (get 5 l) 2;;
+expect_int "get 6" (get 6 l) 1;;
+''',
+    ),
+
+    make_test(
+        "indexOf",
+        PRELUDE + r'''
+let l = sample_l ();;
+expect_int "indexOf existing" (indexOf 12 l) 4;;
+expect_int "indexOf missing" (indexOf 99 l) (-1);;
+expect_int "indexOf first duplicated value" (indexOf 2 l) 1;;
+''',
+    ),
+
+    make_test(
+        "set",
+        PRELUDE + r'''
+let l = sample_l ();;
+let set_one = set 1 0 l;;
+let set_all = set 2 99 l;;
+expect_list "set one" set_one [10; 2; 5; 8; 12; 2; 0];;
+expect_list "set all" set_all [10; 99; 5; 8; 12; 99; 1];;
+''',
+    ),
+
+    make_test(
+        "remove",
+        PRELUDE + r'''
+let l = sample_l ();;
+let remove_one = remove 5 l;;
+let remove_all = remove 2 l;;
+expect_list "remove one" remove_one [10; 2; 8; 12; 2; 1];;
+expect_list "remove all" remove_all [10; 5; 8; 12; 1];;
+''',
+    ),
+
+    make_test(
+        "concat",
+        PRELUDE + r'''
+let l1 = sample_l1 ();;
+let l2 = sample_l2 ();;
+let l = concat l1 l2;;
+expect_list "concat" l [10; 2; 5; 8; 12; 2; 1];;
+''',
+    ),
+
+    {
+        "question": "extra",
+        "name": "extra",
+        "extra": True,
+        "code": "",
+    },
 ]
 
 
 def read_file_text(path):
-    return Path(path).read_text(encoding="utf-8", errors="replace")
+    try:
+        return Path(path).read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return Path(path).read_text(encoding="utf-8", errors="replace")
+
+
+def build_ocaml_script(student_code, test_code):
+    return (
+        student_code
+        + "\n\n"
+        + "(* ---- third period task1 checker test ---- *)\n"
+        + test_code
+        + "\n"
+    )
+
+
+def remove_ocaml_comments(code):
+    """Remove simple OCaml comments for function detection."""
+    return re.sub(r"\(\*.*?\*\)", "", code, flags=re.DOTALL)
+
+
+def extract_list_module_body(code):
+    """Extract body of module List = struct ... end when possible."""
+    match = re.search(
+        r"\bmodule\s+List\b(?:\s*:\s*sig.*?end)?\s*=\s*struct\b(.*?)\bend\b",
+        code,
+        flags=re.DOTALL,
+    )
+
+    if match:
+        return match.group(1)
+
+    match = re.search(
+        r"\bmodule\s+List\s*=\s*struct\b(.*?)\bend\b",
+        code,
+        flags=re.DOTALL,
+    )
+
+    if match:
+        return match.group(1)
+
+    return code
 
 
 def count_extra_functions(code):
-    """Count additional ``let`` bindings in List (up to two for scoring)."""
-    code = re.sub(r"\(\*.*?\*\)", "", code, flags=re.DOTALL)
-    match = re.search(r"\bmodule\s+List\s*=\s*struct\b(.*?)\bend\b", code, re.DOTALL)
-    body = match.group(1) if match else code
-    bindings = re.findall(
-        r"(?m)^(?P<indent>[ \t]*)let\s+(?:rec\s+)?(?P<name>[a-zA-Z_][\w']*)\b",
-        body,
+    """Count additional function definitions, up to two.
+
+    Additional functions are judged by existence, not by exact behavior.
+    One extra function gives +2 points, two or more gives +4 points.
+    """
+
+    code = remove_ocaml_comments(code)
+    body = extract_list_module_body(code)
+
+    # Detect function-like definitions:
+    #   let reverse xs = ...
+    #   let rec contains x xs = ...
+    # This intentionally avoids simple value definitions such as:
+    #   let l1 = ...
+    pattern = (
+        r"(?m)^[ \t]*let\s+"
+        r"(?:rec\s+)?"
+        r"(?P<name>[a-zA-Z_][a-zA-Z0-9_']*)"
+        r"\s+"
+        r"(?P<arg>[a-zA-Z_][a-zA-Z0-9_']*|\([^=\n]*\))"
+        r"[^=\n]*="
     )
-    required_indents = [len(indent.expandtabs(8)) for indent, name in bindings
-                        if name in REQUIRED_FUNCTIONS]
-    top_indent = min(required_indents) if required_indents else 0
-    names = {name for indent, name in bindings if len(indent.expandtabs(8)) == top_indent}
-    return min(2, len(names - REQUIRED_FUNCTIONS))
+
+    names = set()
+
+    for match in re.finditer(pattern, body):
+        name = match.group("name")
+
+        if name in REQUIRED_FUNCTIONS:
+            continue
+
+        if name.startswith("_"):
+            continue
+
+        if name in {
+            "l",
+            "l1",
+            "l2",
+            "x",
+            "y",
+            "result",
+            "answer",
+            "test",
+            "sample",
+            "sample_l",
+            "sample_l1",
+            "sample_l2",
+        }:
+            continue
+
+        names.add(name)
+
+    return min(2, len(names))
 
 
 def run_one_test(ml_file, test):
-    result = {"question": test["question"], "test": test["name"],
-              "status": "ERROR", "stdout": "", "stderr": ""}
+    result = {
+        "question": str(test["question"]),
+        "test": test["name"],
+        "status": "ERROR",
+        "stdout": "",
+        "stderr": "",
+    }
+
     student_code = read_file_text(ml_file)
+
     if test.get("extra"):
         count = count_extra_functions(student_code)
-        result.update(status="OK", stdout="OK extra\n", extra_points=count * 2)
+        extra_points = count * 2
+
+        if extra_points > 0:
+            result.update(
+                status="OK",
+                stdout="OK extra: {} additional function(s), +{} points\n".format(
+                    count,
+                    extra_points,
+                ),
+                extra_points=extra_points,
+            )
+        else:
+            result.update(
+                status="NG",
+                stdout="NG extra: no additional function\n",
+                extra_points=0,
+            )
+
         return result
 
+    script = build_ocaml_script(student_code, test["code"])
     temp_path = None
+
     try:
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".ml", encoding="utf-8", delete=False) as file:
-            file.write(student_code + "\n(* ---- third period task1 test ---- *)\n" + test["code"] + "\n")
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".ml",
+            encoding="utf-8",
+            delete=False,
+        ) as file:
+            file.write(script)
             temp_path = file.name
-        completed = subprocess.run([OCAML_COMMAND, temp_path], stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE, text=True, timeout=TIMEOUT_SECONDS)
-        result["stdout"], result["stderr"] = completed.stdout or "", completed.stderr or ""
+
+        completed = subprocess.run(
+            [OCAML_COMMAND, temp_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            timeout=TIMEOUT_SECONDS,
+        )
+
+        stdout = completed.stdout or ""
+        stderr = completed.stderr or ""
+
+        result["stdout"] = stdout
+        result["stderr"] = stderr
+
         if completed.returncode != 0:
+            result["status"] = "ERROR"
             return result
-        if "NG " in result["stdout"] or not any(
-                line.startswith("OK ") for line in result["stdout"].splitlines()):
+
+        if "NG " in stdout:
             result["status"] = "NG"
-        elif result["stderr"].strip():
+            return result
+
+        ok_lines = [
+            line for line in stdout.splitlines()
+            if line.startswith("OK ")
+        ]
+
+        if not ok_lines:
+            result["status"] = "NG"
+            return result
+
+        if stderr.strip():
             result["status"] = "WARNING"
         else:
             result["status"] = "OK"
+
         return result
+
     except subprocess.TimeoutExpired:
+        result["status"] = "ERROR"
         result["stderr"] = "Timeout: 再帰が止まらない、または実行に時間がかかりすぎています。"
         return result
+
     except Exception as exc:
+        result["status"] = "ERROR"
         result["stderr"] = repr(exc)
         return result
+
     finally:
         if temp_path:
-            Path(temp_path).unlink(missing_ok=True)
+            try:
+                Path(temp_path).unlink()
+            except Exception:
+                pass
+
+
+def question_sort_key(question):
+    question = str(question)
+
+    if question in QUESTION_ORDER:
+        return [QUESTION_ORDER.index(question)]
+
+    return [len(QUESTION_ORDER), question]
 
 
 def summarize_by_question(file_results):
-    summaries = []
+    grouped = {}
+
     for result in file_results:
-        summary = {"question": result["question"], "status": result["status"], "results": [result]}
-        if result["question"] == "extra":
-            summary["extra_points"] = result.get("extra_points", 0)
+        question = str(result.get("question", ""))
+        grouped.setdefault(question, []).append(result)
+
+    summaries = []
+
+    for question in sorted(grouped.keys(), key=question_sort_key):
+        question_results = grouped[question]
+        statuses = [r.get("status") for r in question_results]
+
+        if "ERROR" in statuses:
+            status = "ERROR"
+        elif "NG" in statuses:
+            status = "NG"
+        elif "WARNING" in statuses:
+            status = "WARNING"
+        else:
+            status = "OK"
+
+        summary = {
+            "question": question,
+            "status": status,
+            "results": question_results,
+        }
+
+        if question == "extra":
+            summary["extra_points"] = max(
+                r.get("extra_points", 0) for r in question_results
+            )
+
         summaries.append(summary)
+
     return summaries
+
 
 def run_checker(ml_file):
     """Run all automatic tests for third-period task 1."""
