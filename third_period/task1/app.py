@@ -118,8 +118,8 @@ def add_task1_score_badges(html, file_summaries):
     return html
 
 
-def build_task1_extra_note(file_summaries):
-    if has_any_task1_extra_function(file_summaries):
+def build_task1_extra_note(summary):
+    if get_task1_extra_points_from_summary(summary) > 0:
         note_text = "追加の関数があります。確認してください。"
     else:
         note_text = "追加の関数はありません。"
@@ -132,33 +132,52 @@ def build_task1_extra_note(file_summaries):
 
 
 def add_task1_extra_note_above_issue_area(html, file_summaries):
-    note = build_task1_extra_note(file_summaries)
-
     labels = [
         "間違えた問",
         "エラーの出た問",
         "確認が必要な問はありません",
     ]
 
-    positions = []
+    search_start = 0
 
-    for label in labels:
-        pos = html.find(label)
+    for summary in file_summaries:
+        note = build_task1_extra_note(summary)
 
-        if pos != -1:
-            positions.append(pos)
+        card_top_start = html.find("<div class='card-top'>", search_start)
 
-    if not positions:
-        return html
+        if card_top_start == -1:
+            break
 
-    first_label_pos = min(positions)
+        next_card_top_start = html.find("<div class='card-top'>", card_top_start + 1)
 
-    tag_start = html.rfind("<", 0, first_label_pos)
+        if next_card_top_start == -1:
+            card_end = len(html)
+        else:
+            card_end = next_card_top_start
 
-    if tag_start == -1:
-        return html[:first_label_pos] + note + html[first_label_pos:]
+        insert_positions = []
 
-    return html[:tag_start] + note + html[tag_start:]
+        for label in labels:
+            pos = html.find(label, card_top_start, card_end)
+
+            if pos != -1:
+                insert_positions.append(pos)
+
+        if not insert_positions:
+            search_start = card_end
+            continue
+
+        first_label_pos = min(insert_positions)
+        tag_start = html.rfind("<", card_top_start, first_label_pos)
+
+        if tag_start == -1:
+            tag_start = first_label_pos
+
+        html = html[:tag_start] + note + html[tag_start:]
+
+        search_start = card_end + len(note)
+
+    return html
 
 
 def remove_task1_extra_from_issue_list(html):
