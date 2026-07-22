@@ -74,14 +74,6 @@ def get_task1_extra_points_from_summary(summary):
     return 0
 
 
-def has_any_task1_extra_function(file_summaries):
-    for summary in file_summaries:
-        if get_task1_extra_points_from_summary(summary) > 0:
-            return True
-
-    return False
-
-
 def add_task1_score_badges(html, file_summaries):
     search_start = 0
 
@@ -121,14 +113,16 @@ def add_task1_score_badges(html, file_summaries):
 def build_task1_extra_note(summary):
     if get_task1_extra_points_from_summary(summary) > 0:
         note_text = "追加の関数があります。確認してください。"
+        note_class = "task1-extra-note has-extra"
     else:
         note_text = "追加の関数はありません。"
+        note_class = "task1-extra-note no-extra"
 
     return (
-        "<div class='task1-extra-note'>"
+        "<div class='{}'>"
         "{}"
         "</div>"
-    ).format(note_text)
+    ).format(note_class, note_text)
 
 
 def add_task1_extra_note_above_issue_area(html, file_summaries):
@@ -204,9 +198,6 @@ def remove_task1_question_prefix(html):
 
     return html
 
-def fix_task1_question_total_display(html):
-    html = html.replace("/14問", "/13問")
-    return html
 
 def remove_task1_extra_from_summaries(file_summaries):
     filtered_summaries = []
@@ -224,6 +215,27 @@ def remove_task1_extra_from_summaries(file_summaries):
         filtered_summaries.append(filtered_summary)
 
     return filtered_summaries
+
+
+def remove_task1_extra_from_all_results(all_results):
+    filtered_results = []
+
+    for file_results in all_results:
+        filtered_file_results = [
+            result
+            for result in file_results
+            if str(result.get("question", "")) != "extra"
+        ]
+
+        filtered_results.append(filtered_file_results)
+
+    return filtered_results
+
+
+def fix_task1_question_total_display(html):
+    html = html.replace("/14問", "/13問")
+    return html
+
 
 def add_task_title_style(html):
     extra_css = """
@@ -254,6 +266,14 @@ def add_task_title_style(html):
   font-size: 15px;
   font-weight: 800;
   line-height: 1.7;
+}
+
+.task1-extra-note.has-extra {
+  color: rgba(11, 11, 13, 0.78);
+}
+
+.task1-extra-note.no-extra {
+  color: rgba(11, 11, 13, 0.78);
 }
 
 .task1-status-row {
@@ -306,9 +326,10 @@ def build_index_html(message=""):
 def build_result_html(all_results, file_summaries):
     import web_app
 
+    display_all_results = remove_task1_extra_from_all_results(all_results)
     display_file_summaries = remove_task1_extra_from_summaries(file_summaries)
 
-    html = web_app.build_result_html(all_results, display_file_summaries)
+    html = web_app.build_result_html(display_all_results, display_file_summaries)
     html = html.replace("Ocaml 1期", "OCaml 3期 課題1")
     html = html.replace("OCaml 1期", "OCaml 3期 課題1")
 
