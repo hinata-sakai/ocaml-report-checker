@@ -208,6 +208,22 @@ def fix_task1_question_total_display(html):
     html = html.replace("/14問", "/13問")
     return html
 
+def remove_task1_extra_from_summaries(file_summaries):
+    filtered_summaries = []
+
+    for summary in file_summaries:
+        filtered_summary = dict(summary)
+
+        filtered_questions = [
+            question
+            for question in summary.get("questions", [])
+            if str(question.get("question", "")) != "extra"
+        ]
+
+        filtered_summary["questions"] = filtered_questions
+        filtered_summaries.append(filtered_summary)
+
+    return filtered_summaries
 
 def add_task_title_style(html):
     extra_css = """
@@ -290,13 +306,16 @@ def build_index_html(message=""):
 def build_result_html(all_results, file_summaries):
     import web_app
 
-    html = web_app.build_result_html(all_results, file_summaries)
+    display_file_summaries = remove_task1_extra_from_summaries(file_summaries)
+
+    html = web_app.build_result_html(all_results, display_file_summaries)
     html = html.replace("Ocaml 1期", "OCaml 3期 課題1")
     html = html.replace("OCaml 1期", "OCaml 3期 課題1")
 
     html = remove_task1_extra_from_issue_list(html)
     html = remove_task1_question_prefix(html)
     html = fix_task1_question_total_display(html)
+
     html = add_task1_extra_note_above_issue_area(html, file_summaries)
     html = add_task1_score_badges(html, file_summaries)
     html = add_task_title_style(html)
