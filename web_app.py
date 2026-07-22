@@ -10,6 +10,7 @@ import traceback
 
 from first_period import run_checker
 import second_period_pages
+from third_period import pages as third_period_pages
 from second_period.week1 import app as second_period_week1_app
 from second_period.week1 import checker as second_period_week1_checker
 from second_period.week2 import app as second_period_week2_app
@@ -2180,7 +2181,7 @@ def build_period_select_html():
     items = [
         {"label": "1期\nOCaml演習", "href": "/upload"},
         {"label": "2期\nOCaml演習", "href": "/period/2"},
-        {"label": "3期\nOCaml演習", "href": "#", "coming_soon": True},
+        {"label": "3期\nOCaml演習", "href": "/period/3"},
         {"label": "4期\nOCaml演習", "href": "#", "coming_soon": True},
     ]
     return build_carousel_select_html("期選択", items, initial_index=0, back_href="/term")
@@ -6084,6 +6085,8 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_html(build_period_select_html())
         elif self.path == "/period/2" or self.path.startswith("/period/2?"):
             self.send_html(second_period_pages.build_week_select_html(build_carousel_select_html))
+        elif self.path == "/period/3" or self.path.startswith("/period/3?"):
+            self.send_html(third_period_pages.build_task_select_html(build_carousel_select_html))
         elif self.path == "/period/2/week1" or self.path.startswith("/period/2/week1?"):
             self.send_html(second_period_week1_app.build_index_html())
         elif self.path == "/period/2/week2" or self.path.startswith("/period/2/week2?"):
