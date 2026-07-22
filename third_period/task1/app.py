@@ -204,6 +204,10 @@ def remove_task1_question_prefix(html):
 
     return html
 
+def fix_task1_question_total_display(html):
+    html = html.replace("/14問", "/13問")
+    return html
+
 
 def add_task_title_style(html):
     extra_css = """
@@ -292,6 +296,7 @@ def build_result_html(all_results, file_summaries):
 
     html = remove_task1_extra_from_issue_list(html)
     html = remove_task1_question_prefix(html)
+    html = fix_task1_question_total_display(html)
     html = add_task1_extra_note_above_issue_area(html, file_summaries)
     html = add_task1_score_badges(html, file_summaries)
     html = add_task_title_style(html)
