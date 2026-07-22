@@ -19,6 +19,7 @@ THIRD_TASK1_AUTO_POINTS = {
 }
 
 THIRD_TASK1_AUTO_TOTAL_POINTS = 26
+THIRD_TASK1_REQUIRED_TOTAL_QUESTIONS = 13
 
 TASK1_QUESTION_LABELS = [
     "create",
@@ -72,6 +73,28 @@ def get_task1_extra_points_from_summary(summary):
             return question.get("extra_points", 0)
 
     return 0
+
+
+def count_task1_required_statuses(summary):
+    counts = {
+        "OK": 0,
+        "NG": 0,
+        "ERROR": 0,
+        "WARNING": 0,
+    }
+
+    for question in summary.get("questions", []):
+        question_id = str(question.get("question", ""))
+
+        if question_id == "extra":
+            continue
+
+        status = str(question.get("status", ""))
+
+        if status in counts:
+            counts[status] += 1
+
+    return counts
 
 
 def add_task1_score_badges(html, file_summaries):
@@ -221,74 +244,74 @@ def is_task1_extra_result(result):
     if not isinstance(result, dict):
         return False
 
-    return str(result.get("question", "")) == "extra"
+    question = str(result.get("question", ""))
+    test = str(result.get("test", ""))
+    name = str(result.get("name", ""))
+
+    return question == "extra" or test == "extra" or name == "extra"
 
 
 def remove_task1_extra_from_all_results(all_results):
+    if isinstance(all_results, dict):
+        if is_task1_extra_result(all_results):
+            return None
+
+        return all_results
+
     if isinstance(all_results, list):
-        return [
-            remove_task1_extra_from_all_results(item)
-            for item in all_results
-            if not is_task1_extra_result(item)
-        ]
+        filtered = []
+
+        for item in all_results:
+            cleaned_item = remove_task1_extra_from_all_results(item)
+
+            if cleaned_item is None:
+                continue
+
+            filtered.append(cleaned_item)
+
+        return filtered
 
     return all_results
 
 
 def fix_task1_question_total_display(html):
     html = html.replace("/14問", "/13問")
+    html = html.replace("/0問", "/13問")
     return html
 
-def count_task1_required_statuses(summary):
-    counts = {
-        "OK": 0,
-        "NG": 0,
-        "ERROR": 0,
-        "WARNING": 0,
-    }
 
-    for question in summary.get("questions", []):
-        question_id = str(question.get("question", ""))
-
-        if question_id == "extra":
-            continue
-
-        status = str(question.get("status", ""))
-
-        if status in counts:
-            counts[status] += 1
-
-    return counts
-
-
-def replace_last_question_count_before_label(card_html, label, new_count):
+def replace_count_before_last_label(segment_html, label, new_count):
     import re
 
-    label_pos = card_html.find(label)
+    label_matches = list(re.finditer(re.escape(label), segment_html))
 
-    if label_pos == -1:
-        return card_html
+    if not label_matches:
+        return segment_html
 
-    before_label = card_html[:label_pos]
-    after_label = card_html[label_pos:]
+    label_match = label_matches[-1]
 
-    matches = list(re.finditer(r"(\d+)(\s*問)", before_label))
+    before_label = segment_html[:label_match.start()]
+    after_label = segment_html[label_match.start():]
 
-    if not matches:
-        return card_html
+    count_matches = list(re.finditer(r"(\d+)(\s*問)", before_label))
 
-    last_match = matches[-1]
+    if not count_matches:
+        return segment_html
+
+    count_match = count_matches[-1]
 
     before_label = (
-        before_label[:last_match.start(1)]
+        before_label[:count_match.start(1)]
         + str(new_count)
-        + before_label[last_match.end(1):]
+        + before_label[count_match.end(1):]
     )
 
     return before_label + after_label
 
 
 def fix_task1_result_count_display(html, file_summaries):
+    import re
+
     search_start = 0
 
     for summary in file_summaries:
@@ -308,35 +331,47 @@ def fix_task1_result_count_display(html, file_summaries):
 
         card_html = html[card_start:card_end]
 
-        card_html = replace_last_question_count_before_label(
-            card_html,
-            "正解",
-            counts["OK"],
-        )
+        denominator_match = re.search(r"/\d+問", card_html)
 
-        card_html = replace_last_question_count_before_label(
-            card_html,
-            "不正解",
-            counts["NG"],
-        )
+        if denominator_match:
+            before_denominator = card_html[:denominator_match.start()]
+            after_denominator = card_html[denominator_match.end():]
 
-        card_html = replace_last_question_count_before_label(
-            card_html,
-            "エラー",
-            counts["ERROR"],
-        )
+            before_denominator = replace_count_before_last_label(
+                before_denominator,
+                "正解",
+                counts["OK"],
+            )
 
-        card_html = replace_last_question_count_before_label(
-            card_html,
-            "警告",
-            counts["WARNING"],
-        )
+            before_denominator = replace_count_before_last_label(
+                before_denominator,
+                "不正解",
+                counts["NG"],
+            )
+
+            before_denominator = replace_count_before_last_label(
+                before_denominator,
+                "エラー",
+                counts["ERROR"],
+            )
+
+            before_denominator = replace_count_before_last_label(
+                before_denominator,
+                "警告",
+                counts["WARNING"],
+            )
+
+            card_html = (
+                before_denominator
+                + "/{}問".format(THIRD_TASK1_REQUIRED_TOTAL_QUESTIONS)
+                + after_denominator
+            )
 
         html = html[:card_start] + card_html + html[card_end:]
-
         search_start = card_start + len(card_html)
 
     return html
+
 
 def add_task_title_style(html):
     extra_css = """
@@ -437,10 +472,10 @@ def build_result_html(all_results, file_summaries):
     html = remove_task1_extra_from_issue_list(html)
     html = remove_task1_question_prefix(html)
     html = fix_task1_question_total_display(html)
-    html = fix_task1_result_count_display(html, file_summaries)
 
     html = add_task1_extra_note_above_issue_area(html, file_summaries)
     html = add_task1_score_badges(html, file_summaries)
+    html = fix_task1_result_count_display(html, file_summaries)
     html = add_task_title_style(html)
 
     return html
