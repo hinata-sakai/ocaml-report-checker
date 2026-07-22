@@ -17,6 +17,14 @@ from second_period.week2 import app as second_period_week2_app
 from second_period.week2 import checker as second_period_week2_checker
 from second_period.week3 import app as second_period_week3_app
 from second_period.week3 import checker as second_period_week3_checker
+from third_period.task1 import app as third_period_task1_app
+from third_period.task1 import checker as third_period_task1_checker
+from third_period.task2 import app as third_period_task2_app
+from third_period.task2 import checker as third_period_task2_checker
+from third_period.task3 import app as third_period_task3_app
+from third_period.task3 import checker as third_period_task3_checker
+from third_period.task4 import app as third_period_task4_app
+from third_period.task4 import checker as third_period_task4_checker
 
 import os
 
@@ -6093,6 +6101,14 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_html(second_period_week2_app.build_index_html())
         elif self.path == "/period/2/week3" or self.path.startswith("/period/2/week3?"):
             self.send_html(second_period_week3_app.build_index_html())
+        elif self.path == "/period/3/task1" or self.path.startswith("/period/3/task1?"):
+            self.send_html(third_period_task1_app.build_index_html())
+        elif self.path == "/period/3/task2" or self.path.startswith("/period/3/task2?"):
+            self.send_html(third_period_task2_app.build_index_html())
+        elif self.path == "/period/3/task3" or self.path.startswith("/period/3/task3?"):
+            self.send_html(third_period_task3_app.build_index_html())
+        elif self.path == "/period/3/task4" or self.path.startswith("/period/3/task4?"):
+            self.send_html(third_period_task4_app.build_index_html())
         elif self.path == "/upload" or self.path.startswith("/upload?"):
             self.send_html(build_index_html())
         elif self.path == "/background.png":
@@ -6111,7 +6127,10 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_html(build_index_html("ページが見つかりません。"), status=404)
 
     def do_POST(self):
-        if self.path not in ("/check", "/period/2/week1/check", "/period/2/week2/check", "/period/2/week3/check"):
+        if self.path not in (
+            "/check", "/period/2/week1/check", "/period/2/week2/check", "/period/2/week3/check",
+            "/period/3/task1/check", "/period/3/task2/check", "/period/3/task3/check", "/period/3/task4/check",
+        ):
             self.send_html(build_index_html("不正なURLです。"), status=404)
             return
 
@@ -6129,6 +6148,22 @@ class CheckerHandler(BaseHTTPRequestHandler):
             index_html_builder = second_period_week3_app.build_index_html
             result_html_builder = second_period_week3_app.build_result_html
             checker_module = second_period_week3_checker
+        elif self.path == "/period/3/task1/check":
+            index_html_builder = third_period_task1_app.build_index_html
+            result_html_builder = third_period_task1_app.build_result_html
+            checker_module = third_period_task1_checker
+        elif self.path == "/period/3/task2/check":
+            index_html_builder = third_period_task2_app.build_index_html
+            result_html_builder = third_period_task2_app.build_result_html
+            checker_module = third_period_task2_checker
+        elif self.path == "/period/3/task3/check":
+            index_html_builder = third_period_task3_app.build_index_html
+            result_html_builder = third_period_task3_app.build_result_html
+            checker_module = third_period_task3_checker
+        elif self.path == "/period/3/task4/check":
+            index_html_builder = third_period_task4_app.build_index_html
+            result_html_builder = third_period_task4_app.build_result_html
+            checker_module = third_period_task4_checker
         else:
             index_html_builder = build_index_html
             result_html_builder = build_result_html
