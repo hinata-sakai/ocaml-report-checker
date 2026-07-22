@@ -359,20 +359,16 @@ def run_one_test(ml_file, test):
         extra_points = count * 2
 
         if extra_points > 0:
-            result.update(
-                status="OK",
-                stdout="OK extra: {} additional function(s), +{} points\n".format(
-                    count,
-                    extra_points,
-                ),
-                extra_points=extra_points,
-            )
+            stdout = "OK extra: 追加の関数があります。確認してください。\n"
         else:
-            result.update(
-                status="NG",
-                stdout="NG extra: no additional function\n",
-                extra_points=0,
-            )
+            stdout = "OK extra: 追加の関数はありません。\n"
+
+        result.update(
+            status="OK",
+            stdout=stdout,
+            extra_points=extra_points,
+            extra_count=count,
+        )
 
         return result
 
