@@ -23,7 +23,11 @@ def add_task_title_style(html):
 .task3-point-score { background:rgba(11,11,13,.06); color:rgba(11,11,13,.78); }
 .challenge-section { margin-top:28px; padding-top:24px;
   border-top:1px dashed rgba(0,0,0,.15); }
-.challenge-section .challenge-title { font-size:1.2rem; font-weight:900; }
+.challenge-section .challenge-title {
+  font-size:1.2rem;
+  font-weight:900;
+  color:#0f766e;
+}
 /* The outer card's state belongs to the basic questions. Keep the nested
    challenge block's colours tied to its own result instead. */
 .challenge-section:not(.needs-review) .status-pill {
