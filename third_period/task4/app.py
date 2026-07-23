@@ -11,10 +11,26 @@ CHALLENGE_NAMES = ["to_list", "union"]
 
 def add_task_title_style(html):
     extra_css = """
-.period-with-week { display:inline-flex; align-items:flex-end; letter-spacing:-.08em; }
-.period-main { display:inline-block; }
-.period-week { display:inline-block; font-size:.63em; font-weight:950; line-height:1;
-  margin-bottom:.10em; letter-spacing:-.06em; transform:translateX(-.04em); }
+.period-with-week {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.04em;
+  letter-spacing: -0.08em;
+}
+
+.period-main {
+  display: inline-block;
+}
+
+.period-week {
+  display: inline-block;
+  font-size: 0.63em;
+  font-weight: 950;
+  line-height: 1;
+  margin-bottom: 0.10em;
+  letter-spacing: -0.06em;
+  transform: none;
+}
 .task4-status-row { display:inline-flex; align-items:center; justify-content:flex-end;
   gap:8px; flex-shrink:0; }
 .task4-status-row .status-pill, .task4-point-score { display:inline-flex;
