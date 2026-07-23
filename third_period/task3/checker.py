@@ -214,13 +214,23 @@ def _is_exported(module_code, name):
     return None
 
 
+def _is_challenge_exported(module_code, name):
+    """Return whether an optional challenge binding is exposed by ``BTree``."""
+    probe = module_code + "\nopen BTree;;\nlet _ = " + name + ";;\n"
+    try:
+        completed = _execute(probe)
+    except (subprocess.TimeoutExpired, OSError):
+        return None
+    if completed.returncode == 0:
+        return True
+    if re.search(r"Unbound value\s+" + re.escape(name) + r"\b", completed.stderr):
+        return False
+    return None
+
+
 def run_one_test(ml_file, test):
     result = {"question": test["question"], "test": test["name"],
               "status": "ERROR", "stdout": "", "stderr": ""}
-    if test.get("unimplemented"):
-        result["status"] = "NG"
-        result["stderr"] = "未実装（任意のチャレンジ問題です）。"
-        return result
     student_code = read_file_text(ml_file)
     module_code = extract_btree_module_code(student_code)
     try:
@@ -268,17 +278,14 @@ def run_checker(ml_file):
     selected = [test for test in TESTS if not test["challenge"]]
     challenge_tests = [test for test in TESTS if test["challenge"]]
     availability = {
-        test["question"]: _is_exported(module_code, test["question"])
+        test["question"]: _is_challenge_exported(module_code, test["question"])
         for test in challenge_tests
     }
-    # Neither function is part of the basic assignment, so omit the entire
-    # challenge section unless at least one is genuinely exported.
-    if any(value is True for value in availability.values()):
-        for test in challenge_tests:
-            if availability[test["question"]] is True:
-                selected.append(test)
-            else:
-                missing = dict(test)
-                missing["unimplemented"] = True
-                selected.append(missing)
+    # Optional functions that are not exported are outside the grading target.
+    # Each implemented function is selected independently, so an absent partner
+    # never becomes an NG/ERROR result or a question in the summary.
+    selected.extend(
+        test for test in challenge_tests
+        if availability[test["question"]] is True
+    )
     return [run_one_test(ml_file, test) for test in selected]
