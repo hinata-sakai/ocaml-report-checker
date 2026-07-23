@@ -6,12 +6,12 @@ import re
 
 
 THIRD_TASK2_AUTO_POINTS = {
-    "vempty": 4,
-    "at": 4,
-    "vector": 4,
-    "vlength": 4,
-    "vshow": 4,
-    "isempty": 4,
+    "vempty": 2,
+    "at": 2,
+    "vector": 2,
+    "vlength": 2,
+    "vshow": 2,
+    "isvempty": 2,
 }
 THIRD_TASK2_AUTO_TOTAL_POINTS = 24
 THIRD_TASK2_REQUIRED_TOTAL_QUESTIONS = 6

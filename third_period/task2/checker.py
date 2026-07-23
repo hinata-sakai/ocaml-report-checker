@@ -11,7 +11,7 @@ from pathlib import Path
 OCAML_COMMAND = "ocaml"
 TIMEOUT_SECONDS = 8
 
-QUESTION_ORDER = ["vempty", "at", "vector", "vlength", "vshow", "isempty"]
+QUESTION_ORDER = ["vempty", "at", "vector", "vlength", "vshow", "isvempty"]
 
 
 def make_test(question, code, expected_output=None):
@@ -37,35 +37,36 @@ TESTS = [
     make_test(
         "vempty",
         PRELUDE + r'''
-let empty = vempty ();;
-pass "vempty length" (vlength empty = 0);;
+let a0 = vempty ();;
+pass "vempty length" (vlength a0 = 0);;
+pass "vempty is empty" (isvempty a0);;
 ''',
     ),
 
     make_test(
         "vector",
         PRELUDE + r'''
-let values = vector [1; 2; 3; 4];;
+let a1 = vector [1; 2; 3; 4];;
 
-pass "vector length" (vlength values = 4);;
-pass "vector first" (at 0 values = 1);;
-pass "vector middle" (at 2 values = 3);;
-pass "vector last" (at 3 values = 4);;
+pass "vector length" (vlength a1 = 4);;
+pass "vector first" (at 0 a1 = 1);;
+pass "vector second" (at 1 a1 = 2);;
+pass "vector third" (at 2 a1 = 3);;
+pass "vector fourth" (at 3 a1 = 4);;
 ''',
     ),
 
     make_test(
         "at",
         PRELUDE + r'''
-let values = vector [10; 20; 30; 40];;
+let a1 = vector [1; 2; 3; 4];;
 
-pass "at first" (at 0 values = 10);;
-pass "at middle" (at 2 values = 30);;
-pass "at last" (at 3 values = 40);;
+pass "at 0" (at 0 a1 = 1);;
+pass "at 3" (at 3 a1 = 4);;
 
 let raises_empty index =
   try
-    let _ = at index values in
+    let _ = at index a1 in
     false
   with
   | Vector.Empty -> true
@@ -79,19 +80,19 @@ pass "at upper bound" (raises_empty 4);;
     make_test(
         "vlength",
         PRELUDE + r'''
-let empty = vempty ();;
-let values = vector [1; 2; 3; 4];;
+let a0 = vempty ();;
+let a1 = vector [1; 2; 3; 4];;
 
-pass "vlength empty" (vlength empty = 0);;
-pass "vlength values" (vlength values = 4);;
+pass "vlength empty" (vlength a0 = 0);;
+pass "vlength values" (vlength a1 = 4);;
 ''',
     ),
 
     make_test(
         "vshow",
         PRELUDE + r'''
-let values = vector [1; 2; 3; 4];;
-vshow values;;
+let a1 = vector [1; 2; 3; 4];;
+vshow a1;;
 print_newline ();;
 print_endline "OK vshow";;
 ''',
@@ -99,13 +100,13 @@ print_endline "OK vshow";;
     ),
 
     make_test(
-        "isempty",
+        "isvempty",
         PRELUDE + r'''
-let empty = vempty ();;
-let values = vector [7; 8];;
+let a0 = vempty ();;
+let a1 = vector [1; 2; 3; 4];;
 
-pass "isempty empty" (isempty empty);;
-pass "isempty values" (not (isempty values));;
+pass "isvempty empty" (isvempty a0);;
+pass "isvempty values" (not (isvempty a1));;
 ''',
     ),
 ]
