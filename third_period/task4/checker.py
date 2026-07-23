@@ -262,12 +262,21 @@ def run_checker(ml_file):
     masked = _masked_code(student_code)
     has_bag = MODULE_PATTERN.search(masked) is not None
     module_code = extract_bag_module_code(student_code)
+
     selected = [test for test in TESTS if not test["challenge"]]
+
     for test in (test for test in TESTS if test["challenge"]):
+        name = test["question"]
+
         if has_bag:
-            implemented = _binding_is_exported(module_code, test["question"]) is True
+            implemented = (
+                _binding_is_exported(module_code, name) is True
+                or _defines_challenge_function(student_code, name)
+            )
         else:
-            implemented = _defines_challenge_function(student_code, test["question"])
+            implemented = _defines_challenge_function(student_code, name)
+
         if implemented:
             selected.append(test)
+
     return [run_one_test(ml_file, test) for test in selected]
