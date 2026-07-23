@@ -423,7 +423,7 @@ def add_task_title_style(html):
 .period-with-week {
   display: inline-flex;
   align-items: flex-end;
-  gap: 0.10em;
+  gap: 0.08em;
   letter-spacing: -0.08em;
 }
 
