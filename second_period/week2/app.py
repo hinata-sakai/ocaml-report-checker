@@ -538,7 +538,7 @@ def add_week2_title_style(html):
 .period-with-week {
   display: inline-flex;
   align-items: flex-end;
-  gap: 0;
+  gap: 0.04em;
   letter-spacing: -0.08em;
 }
 
@@ -553,7 +553,7 @@ def add_week2_title_style(html):
   line-height: 1;
   margin-bottom: 0.10em;
   letter-spacing: -0.06em;
-  transform: translateX(-0.04em);
+  transform: none;
 }
 
 .guide-card > .guide-subitems:first-child {
