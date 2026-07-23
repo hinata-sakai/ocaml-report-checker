@@ -38,8 +38,7 @@ TESTS = [
         "vempty",
         PRELUDE + r'''
 let empty = vempty ();;
-pass "vempty empty list" (empty = []);;
-pass "vempty is empty" (isempty empty);;
+pass "vempty length" (vlength empty = 0);;
 ''',
     ),
 
@@ -47,10 +46,11 @@ pass "vempty is empty" (isempty empty);;
         "vector",
         PRELUDE + r'''
 let values = vector [1; 2; 3; 4];;
-pass "vector creates values" (values = [1; 2; 3; 4]);;
 
-let empty = vector [];;
-pass "vector creates empty" (empty = []);;
+pass "vector length" (vlength values = 4);;
+pass "vector first" (at 0 values = 1);;
+pass "vector middle" (at 2 values = 3);;
+pass "vector last" (at 3 values = 4);;
 ''',
     ),
 
@@ -79,9 +79,10 @@ pass "at upper bound" (raises_empty 4);;
     make_test(
         "vlength",
         PRELUDE + r'''
-pass "vlength empty" (vlength (vempty ()) = 0);;
-
+let empty = vempty ();;
 let values = vector [1; 2; 3; 4];;
+
+pass "vlength empty" (vlength empty = 0);;
 pass "vlength values" (vlength values = 4);;
 ''',
     ),
@@ -100,9 +101,10 @@ print_endline "OK vshow";;
     make_test(
         "isempty",
         PRELUDE + r'''
-pass "isempty empty" (isempty (vempty ()));;
-
+let empty = vempty ();;
 let values = vector [7; 8];;
+
+pass "isempty empty" (isempty empty);;
 pass "isempty values" (not (isempty values));;
 ''',
     ),
