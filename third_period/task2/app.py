@@ -122,10 +122,14 @@ def add_task_title_style(html):
 .period-with-week {
   display: inline-flex;
   align-items: flex-end;
-  gap: 0;
+  gap: 0.04em;
   letter-spacing: -0.08em;
 }
-.period-main { display: inline-block; }
+
+.period-main {
+  display: inline-block;
+}
+
 .period-week {
   display: inline-block;
   font-size: 0.63em;
@@ -133,7 +137,7 @@ def add_task_title_style(html):
   line-height: 1;
   margin-bottom: 0.10em;
   letter-spacing: -0.06em;
-  transform: translateX(-0.04em);
+  transform: none;
 }
 .task2-status-row {
   display: inline-flex;
