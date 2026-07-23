@@ -73,6 +73,37 @@ def _filtered_summary(summary, names):
     return dict(summary, questions=questions, total=len(questions), ok=counts["OK"],
                 warning=counts["WARNING"], ng=counts["NG"], error=counts["ERROR"])
 
+def _is_unimplemented_challenge_question(question_summary):
+    """Return True when dfs/bfs is absent and should not be shown."""
+    question_name = question_summary.get("question")
+    if question_name not in CHALLENGE_NAMES:
+        return False
+
+    results = question_summary.get("results", [])
+    if not results:
+        return False
+
+    stderr_text = "\n".join(result.get("stderr", "") for result in results)
+    return (
+        all(result.get("status") == "ERROR" for result in results)
+        and re.search(r"Unbound value\s+" + re.escape(question_name) + r"\b", stderr_text)
+    )
+
+
+def _challenge_summary(summary):
+    questions = []
+    for q in summary.get("questions", []):
+        if q.get("question") not in CHALLENGE_NAMES:
+            continue
+        if _is_unimplemented_challenge_question(q):
+            continue
+        questions.append(q)
+
+    counts = {status: sum(q.get("status") == status for q in questions)
+              for status in ("OK", "WARNING", "NG", "ERROR")}
+
+    return dict(summary, questions=questions, total=len(questions), ok=counts["OK"],
+                warning=counts["WARNING"], ng=counts["NG"], error=counts["ERROR"])
 
 def _add_points(article, score, total):
     label = "全問正解" if "<span class='status-pill'>全問正解</span>" in article else "確認が必要"
@@ -106,7 +137,7 @@ def build_result_html(all_results, file_summaries):
 
     challenge_articles = []
     for summary in file_summaries:
-        challenge = _filtered_summary(summary, CHALLENGE_NAMES)
+        challenge = _challenge_summary(summary)
         if not challenge["questions"]:
             challenge_articles.append(None)
             continue
