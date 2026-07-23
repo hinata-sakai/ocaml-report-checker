@@ -120,14 +120,61 @@ def read_file_text(path):
 
 
 def build_ocaml_script(student_code, test_code):
+    module_code = extract_vector_module_code(student_code)
+
     return (
-        student_code
+        module_code
         + "\n\n"
         + "(* ---- third period task2 checker test ---- *)\n"
         + test_code
         + "\n"
     )
 
+def extract_vector_module_code(code):
+    """Extract only module Vector = struct ... end from submitted code.
+
+    This prevents example calls after the module, such as:
+    open Vector;;
+    let a0 = vempty();;
+    at 4 a1;;
+    from stopping the checker before tests run.
+    """
+
+    pattern = r"\bmodule\s+Vector\b(?:\s*:\s*sig.*?end)?\s*=\s*struct\b"
+
+    match = re.search(pattern, code, flags=re.DOTALL)
+
+    if not match:
+        return code
+
+    start = match.start()
+    pos = match.end()
+    depth = 1
+
+    token_pattern = re.compile(r"\b(struct|sig|end)\b")
+
+    while depth > 0:
+        token_match = token_pattern.search(code, pos)
+
+        if not token_match:
+            return code[start:]
+
+        token = token_match.group(1)
+
+        if token in {"struct", "sig"}:
+            depth += 1
+        elif token == "end":
+            depth -= 1
+
+        pos = token_match.end()
+
+    while pos < len(code) and code[pos].isspace():
+        pos += 1
+
+    if code.startswith(";;", pos):
+        pos += 2
+
+    return code[start:pos]
 
 def normalize_output(text):
     """Normalize output for vshow.
