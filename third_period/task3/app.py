@@ -28,6 +28,25 @@ def add_task_title_style(html):
   font-weight:900;
   color:#0f766e;
 }
+.challenge-heading {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.challenge-implemented-label {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.04em;
+  background:rgba(15,118,110,.10);
+  color:#0f766e;
+  border:1px solid rgba(15,118,110,.18);
+}
 /* The outer card's state belongs to the basic questions. Keep the nested
    challenge block's colours tied to its own result instead. */
 .challenge-section:not(.needs-review) .status-pill {
@@ -144,11 +163,22 @@ def build_result_html(all_results, file_summaries):
         rendered = web_app.build_result_html(all_results, [challenge])
         articles = _extract_articles(rendered)
         article = articles[0] if articles else ""
+        implemented = {q.get("question") for q in challenge["questions"]}
+        implemented_label = {
+            frozenset(["dfs"]): "dfsのみ実装",
+            frozenset(["bfs"]): "bfsのみ実装",
+            frozenset(["dfs", "bfs"]): "dfs / bfs 実装済み",
+        }.get(frozenset(implemented), "")
         # The basic block already identifies the submitted file; the nested block
         # gets the assignment-specified heading instead.
+        challenge_heading = (
+            "<div class='challenge-heading'>"
+            "<h2 class='file-name challenge-title'>チャレンジ問題</h2>"
+            "<span class='challenge-implemented-label'>{}</span>"
+            "</div>"
+        ).format(implemented_label)
         article = re.sub(r"<h2 class='file-name[^']*'>.*?</h2>",
-                         "<h2 class='file-name challenge-title'>チャレンジ問題</h2>", article,
-                         count=1, flags=re.S)
+                         lambda _match: challenge_heading, article, count=1, flags=re.S)
         score = sum(q.get("status") == "OK" for q in challenge["questions"]) * 5
         challenge_articles.append(_as_challenge_section(_add_points(article, score, 10)))
 
