@@ -6012,13 +6012,16 @@ def check_uploaded_files(upload_dir, file_metadata=None, checker_module=run_chec
     ml_files = sorted(upload_dir.glob("*.ml"), key=file_order)
 
     for ml_file in ml_files:
-        file_results = []
+        if hasattr(checker_module, "run_checker"):
+            file_results = checker_module.run_checker(ml_file)
+        else:
+            file_results = []
 
-        # まずは54個の小テストをすべて実行する
-        for test in checker_module.TESTS:
-            result = checker_module.run_one_test(ml_file, test)
-            all_results.append(result)
-            file_results.append(result)
+            for test in checker_module.TESTS:
+                result = checker_module.run_one_test(ml_file, test)
+                file_results.append(result)
+
+        all_results.extend(file_results)
 
         # 小テスト結果を1〜20の大問単位にまとめる
         question_summaries = checker_module.summarize_by_question(file_results)
