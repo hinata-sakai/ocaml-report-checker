@@ -103,9 +103,13 @@ def _is_unimplemented_challenge_question(question_summary):
         return False
 
     stderr_text = "\n".join(result.get("stderr", "") for result in results)
+
     return (
         all(result.get("status") == "ERROR" for result in results)
-        and re.search(r"Unbound value\s+" + re.escape(question_name) + r"\b", stderr_text)
+        and (
+            re.search(r"Unbound module\s+BTree\b", stderr_text)
+            or re.search(r"Unbound value\s+" + re.escape(question_name) + r"\b", stderr_text)
+        )
     )
 
 
