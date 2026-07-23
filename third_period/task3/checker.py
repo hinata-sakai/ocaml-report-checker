@@ -220,12 +220,23 @@ def _is_challenge_exported(module_code, name):
     try:
         completed = _execute(probe)
     except (subprocess.TimeoutExpired, OSError):
-        return None
+        return False
+
     if completed.returncode == 0:
         return True
-    if re.search(r"Unbound value\s+" + re.escape(name) + r"\b", completed.stderr):
+
+    stderr = completed.stderr or ""
+
+    # BTree モジュール自体がない場合は、dfs/bfs は未実装扱いにする
+    if re.search(r"Unbound module\s+BTree\b", stderr):
         return False
-    return None
+
+    # dfs / bfs がない場合も、未実装扱いにする
+    if re.search(r"Unbound value\s+" + re.escape(name) + r"\b", stderr):
+        return False
+
+    # 存在確認中に別のエラーが出た場合も、チャレンジ実装済みとはみなさない
+    return False
 
 
 def run_one_test(ml_file, test):
