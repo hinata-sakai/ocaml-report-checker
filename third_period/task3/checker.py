@@ -178,6 +178,17 @@ def extract_btree_module_code(code):
         whitespace_end += 2
     return code[start:whitespace_end]
 
+def _defines_challenge_function(student_code, name):
+    """Return True when the submitted source appears to define dfs/bfs."""
+    masked = _masked_code(student_code)
+
+    patterns = [
+        r"\blet\s+rec\s+" + re.escape(name) + r"\b",
+        r"\blet\s+" + re.escape(name) + r"\b",
+        r"\bval\s+" + re.escape(name) + r"\b",
+    ]
+
+    return any(re.search(pattern, masked) for pattern in patterns)
 
 def build_ocaml_script(student_code, test_code):
     return extract_btree_module_code(student_code) + "\n" + test_code + "\n"
@@ -285,18 +296,27 @@ def summarize_by_question(file_results):
 
 
 def run_checker(ml_file):
-    module_code = extract_btree_module_code(read_file_text(ml_file))
+    student_code = read_file_text(ml_file)
+    module_code = extract_btree_module_code(student_code)
+
     selected = [test for test in TESTS if not test["challenge"]]
     challenge_tests = [test for test in TESTS if test["challenge"]]
-    availability = {
-        test["question"]: _is_challenge_exported(module_code, test["question"])
-        for test in challenge_tests
-    }
-    # Optional functions that are not exported are outside the grading target.
-    # Each implemented function is selected independently, so an absent partner
-    # never becomes an NG/ERROR result or a question in the summary.
-    selected.extend(
-        test for test in challenge_tests
-        if availability[test["question"]] is True
-    )
+
+    has_btree = re.search(
+        r"\bmodule\s+BTree\b(?:(?!\bstruct\b).)*=\s*struct\b",
+        _masked_code(student_code),
+        re.S,
+    ) is not None
+
+    for test in challenge_tests:
+        name = test["question"]
+
+        if has_btree:
+            implemented = _is_challenge_exported(module_code, name) is True
+        else:
+            implemented = _defines_challenge_function(student_code, name)
+
+        if implemented:
+            selected.append(test)
+
     return [run_one_test(ml_file, test) for test in selected]
