@@ -21,7 +21,23 @@ def add_task_title_style(html):
   align-items:center; justify-content:center; padding:8px 12px; border-radius:999px;
   font-size:12px; font-weight:950; letter-spacing:.04em; line-height:1; white-space:nowrap; }
 .task3-point-score { background:rgba(11,11,13,.06); color:rgba(11,11,13,.78); }
-.challenge-card { margin-top:18px; }
+.challenge-section { margin-top:28px; padding-top:24px;
+  border-top:1px dashed rgba(0,0,0,.15); }
+.challenge-section .challenge-title { font-size:1.2rem; font-weight:900; }
+/* The outer card's state belongs to the basic questions. Keep the nested
+   challenge block's colours tied to its own result instead. */
+.challenge-section:not(.needs-review) .status-pill {
+  background:rgba(37,138,89,.12); color:var(--poster-mint-dark); }
+.challenge-section:not(.needs-review) .progress-bar {
+  background:linear-gradient(90deg,var(--poster-mint-dark),var(--poster-mint)); }
+.challenge-section:not(.needs-review) .issue-block {
+  background:rgba(134,221,177,.22); border-color:rgba(37,138,89,.18); }
+.challenge-section.needs-review .status-pill {
+  background:var(--poster-alert-soft); color:#c63c1c; }
+.challenge-section.needs-review .progress-bar {
+  background:linear-gradient(90deg,var(--poster-alert),#ffba6a); }
+.challenge-section.needs-review .issue-block {
+  background:rgba(255,255,255,.58); border-color:rgba(11,11,13,.10); }
 """
     return html.replace("</style>", extra_css + "\n</style>", 1)
 
@@ -67,6 +83,16 @@ def _extract_articles(html):
     return re.findall(r"<article\s+class='[^']*'>.*?</article>", html, flags=re.S)
 
 
+def _as_challenge_section(article):
+    """Turn a rendered result card into a block for an existing result card."""
+    match = re.match(r"<article\s+class='([^']*)'>(.*)</article>", article, flags=re.S)
+    if not match:
+        return ""
+    state_class = " needs-review" if "needs-review" in match.group(1).split() else ""
+    return "<section class='challenge-section{}'>{}</section>".format(
+        state_class, match.group(2))
+
+
 def build_result_html(all_results, file_summaries):
     import web_app
 
@@ -83,20 +109,19 @@ def build_result_html(all_results, file_summaries):
         rendered = web_app.build_result_html(all_results, [challenge])
         articles = _extract_articles(rendered)
         article = articles[0] if articles else ""
-        # The basic card already identifies the submitted file; the lower card gets
-        # the assignment-specified heading instead.
+        # The basic block already identifies the submitted file; the nested block
+        # gets the assignment-specified heading instead.
         article = re.sub(r"<h2 class='file-name[^']*'>.*?</h2>",
-                         "<h2 class='file-name'>チャレンジ問題</h2>", article,
+                         "<h2 class='file-name challenge-title'>チャレンジ問題</h2>", article,
                          count=1, flags=re.S)
-        article = article.replace("<article class='", "<article class='challenge-card ", 1)
         score = sum(q.get("status") == "OK" for q in challenge["questions"]) * 5
-        challenge_articles.append(_add_points(article, score, 10))
+        challenge_articles.append(_as_challenge_section(_add_points(article, score, 10)))
 
-    # Keep each optional challenge card immediately below its file's basic card.
+    # Put each optional challenge block inside its file's one and only result card.
     for basic, challenge, summary in zip(basic_articles, challenge_articles, basic_summaries):
         score = sum(q.get("status") == "OK" for q in summary["questions"]) * 3
         decorated = _add_points(basic, score, 18)
-        replacement = decorated + (challenge or "")
+        replacement = decorated.replace("</article>", (challenge or "") + "</article>", 1)
         html = html.replace(basic, replacement, 1)
 
     for label in BASIC_NAMES + CHALLENGE_NAMES:
