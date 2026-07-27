@@ -19,7 +19,7 @@ STYLE = """
 .period-with-week{display:inline-flex;align-items:flex-end;gap:.04em;letter-spacing:-.08em}
 .period-main{display:inline-block}.period-week{display:inline-block;font-size:.63em;font-weight:950;line-height:1;margin-bottom:.10em;letter-spacing:-.06em;transform:none}
 .fourth-status-row{display:inline-flex;align-items:center;gap:8px}.fourth-point-score{padding:8px 12px;border-radius:999px;background:rgba(11,11,13,.06);font-size:12px;font-weight:950;white-space:nowrap}
-.manual-note{margin:18px 0;padding:16px 18px;border-radius:18px;background:#fff4df;border:1px solid rgba(198,60,28,.18);line-height:1.8}.manual-note strong{display:block;margin-bottom:4px}
+.fourth-manual-check-note{display:block;margin-top:14px;color:rgba(11,11,13,.76);font-size:inherit;font-weight:inherit;line-height:inherit}
 """
 
 TASK_GUIDE = """<ul class='guide-list'>%s</ul>""" % "".join(
@@ -52,17 +52,38 @@ def build_index_html(message=""):
 def build_result_html(all_results, file_summaries):
     import web_app
     html = web_app.build_result_html(all_results, file_summaries)
+
+    html = html.replace(
+        "採点結果と確認が必要な問を、ファイルごとにまとめて表示しています。",
+        "採点結果と確認が必要な問を、ファイルごとにまとめて表示しています。"
+        "<span class='fourth-manual-check-note'>"
+        "問題4「isono.plを用いて振舞いを確認しなさい．」は自動採点できないため、提出PDFで確認してください。"
+        "</span>"
+    )
+
     articles = re.findall(r"<article\s+class='[^']*'>.*?</article>", html, re.S)
+
     for article, summary in zip(articles, file_summaries):
-        score = sum(QUESTION_POINTS.get(q["question"], 0) for q in summary["questions"] if q["status"] == "OK")
+        score = sum(
+            QUESTION_POINTS.get(q["question"], 0)
+            for q in summary["questions"]
+            if q["status"] == "OK"
+        )
+
         label = "全問正解" if "<span class='status-pill'>全問正解</span>" in article else "確認が必要"
         marker = "<span class='status-pill'>%s</span>" % label
-        badge = "<div class='fourth-status-row'>%s<span class='fourth-point-score'>%d点/%d点</span></div>" % (marker, score, TOTAL_POINTS)
-        note = "<div class='manual-note'><strong>第4期 手動確認メモ:</strong>・問4「isono.pl を用いた振る舞い確認」は自動採点対象外です。提出PDFの実行結果を確認してください。<br>・問5以降について、実行結果が提出PDFにない場合は各問5点減点してください。</div>"
-        decorated = article.replace(marker, badge, 1).replace("<div class='issue-block", note + "<div class='issue-block", 1)
-        if note not in decorated:
-            decorated = decorated.replace("</article>", note + "</article>")
+
+        badge = (
+            "<div class='fourth-status-row'>"
+            "%s"
+            "<span class='fourth-point-score'>%d点/%d点</span>"
+            "</div>"
+        ) % (marker, score, TOTAL_POINTS)
+
+        decorated = article.replace(marker, badge, 1)
         html = html.replace(article, decorated, 1)
+
     for key, label in LABELS.items():
         html = html.replace("Q" + key, label)
+
     return _decorate(html)
