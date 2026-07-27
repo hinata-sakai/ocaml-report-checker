@@ -25,9 +25,8 @@ from third_period.task3 import app as third_period_task3_app
 from third_period.task3 import checker as third_period_task3_checker
 from third_period.task4 import app as third_period_task4_app
 from third_period.task4 import checker as third_period_task4_checker
-from fourth_period import pages as fourth_period_pages
-from fourth_period.task1 import app as fourth_period_task1_app
-from fourth_period.task1 import checker as fourth_period_task1_checker
+from fourth_period import app as fourth_period_app
+from fourth_period import checker as fourth_period_checker
 
 import os
 
@@ -6102,7 +6101,7 @@ class CheckerHandler(BaseHTTPRequestHandler):
         elif self.path == "/period/3" or self.path.startswith("/period/3?"):
             self.send_html(third_period_pages.build_task_select_html(build_carousel_select_html))
         elif self.path == "/period/4" or self.path.startswith("/period/4?"):
-            self.send_html(fourth_period_pages.build_task_select_html(build_carousel_select_html))
+            self.send_html(fourth_period_app.build_index_html())
         elif self.path == "/period/2/week1" or self.path.startswith("/period/2/week1?"):
             self.send_html(second_period_week1_app.build_index_html())
         elif self.path == "/period/2/week2" or self.path.startswith("/period/2/week2?"):
@@ -6117,8 +6116,6 @@ class CheckerHandler(BaseHTTPRequestHandler):
             self.send_html(third_period_task3_app.build_index_html())
         elif self.path == "/period/3/task4" or self.path.startswith("/period/3/task4?"):
             self.send_html(third_period_task4_app.build_index_html())
-        elif self.path == "/period/4/task1" or self.path.startswith("/period/4/task1?"):
-            self.send_html(fourth_period_task1_app.build_index_html())
         elif self.path == "/upload" or self.path.startswith("/upload?"):
             self.send_html(build_index_html())
         elif self.path == "/background.png":
