@@ -6140,7 +6140,8 @@ class CheckerHandler(BaseHTTPRequestHandler):
         if self.path not in (
             "/check", "/period/2/week1/check", "/period/2/week2/check", "/period/2/week3/check",
             "/period/3/task1/check", "/period/3/task2/check", "/period/3/task3/check", "/period/3/task4/check",
-            "/period/4/task1/check",
+            "/period/4/check",
+
         ):
             self.send_html(build_index_html("不正なURLです。"), status=404)
             return
@@ -6175,10 +6176,10 @@ class CheckerHandler(BaseHTTPRequestHandler):
             index_html_builder = third_period_task4_app.build_index_html
             result_html_builder = third_period_task4_app.build_result_html
             checker_module = third_period_task4_checker
-        elif self.path == "/period/4/task1/check":
-            index_html_builder = fourth_period_task1_app.build_index_html
-            result_html_builder = fourth_period_task1_app.build_result_html
-            checker_module = fourth_period_task1_checker
+        elif self.path == "/period/4/check":
+            index_html_builder = fourth_period_app.build_index_html
+            result_html_builder = fourth_period_app.build_result_html
+            checker_module = fourth_period_checker
         else:
             index_html_builder = build_index_html
             result_html_builder = build_result_html
