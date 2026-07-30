@@ -53,11 +53,15 @@ def _clean(source):
 
 
 def _function(source, name):
-    """Extract a rough function body for `let rec name` or `and name`."""
+    """Extract a rough function body for `let rec name` or top-level `and name`.
+
+    Important:
+    Do not stop at indented local `let` inside a function.
+    """
     match = re.search(
         r"\b(?:let\s+rec|and)\s+"
         + re.escape(name)
-        + r"\b.*?=(.*?)(?=\n\s*(?:and|let)\s+[a-zA-Z_]|\Z)",
+        + r"\b.*?=(.*?)(?=\n(?:and|let)\s+[a-zA-Z_]|\Z)",
         source,
         re.S,
     )
@@ -209,6 +213,83 @@ def _expr_is_valid(expr_body):
 
     return bool(calls_arithmexp or original_expr_style)
 
+def _arithmexp_acts_as_expr(source, arithmfactor_body):
+    """
+    Accept implementations that omit expr() and use arithmexp as expr.
+
+    In this style, arithmfactor handles the original expr cases:
+      "(" arithmexp ")"
+      "[" list "]"
+      CID tail_opt
+      VID
+      NUM
+    """
+    has_arithm_functions = _has(
+        source,
+        r"\barithmexp\b",
+        r"\barithmterm\b",
+        r"\barithmfactor\b",
+    )
+
+    factor_handles_expr_cases = _has(
+        arithmfactor_body,
+        r"\bCID\b",
+        r"\bVID\b",
+        r"\bNUM\b",
+        r"tail_opt",
+        r"list\s*\(",
+    )
+
+    return bool(has_arithm_functions and factor_handles_expr_cases)
+
+
+def _command_is_valid(command_body):
+    """
+    Accept command implementations that use term(), terms(), or query()
+    for user questions.
+    """
+    return _has(
+        command_body,
+        r"\bQUIT\b",
+        r"\bOPEN\b",
+        r"\bCID\b",
+        r"(?:term|terms|query)\s*\(",
+        r"['\"]\.['\"]",
+    )
+
+
+def _multiple_goals_is_valid(command_body, query_body, query_opt_body, source):
+    """
+    Accept multiple-goal questions in either style:
+
+    1. command() calls terms()
+    2. command() calls query(), and query/query_opt handles term and comma
+    """
+    if not command_body:
+        return False
+
+    command_calls_terms = re.search(r"terms\s*\(", command_body) is not None
+
+    command_calls_query = re.search(r"query\s*\(", command_body) is not None
+    query_reads_term = re.search(r"term\s*\(", query_body) is not None
+    query_handles_comma = (
+        _contains_comma_token(query_body)
+        or _contains_comma_token(query_opt_body)
+        or (
+            query_opt_body
+            and re.search(r"term\s*\(", query_opt_body)
+            and _contains_comma_token(source)
+        )
+    )
+
+    return bool(
+        command_calls_terms
+        or (
+            command_calls_query
+            and query_reads_term
+            and query_handles_comma
+        )
+    )
 
 def run_checker(ml_file):
     try:
@@ -232,6 +313,9 @@ def run_checker(ml_file):
     command = f("command")
     expr = f("expr")
     term = f("term")
+    query = f("query")
+    query_opt = f("query_opt")
+    arithmfactor = f("arithmfactor")
 
     checks = {
         "1-1-cid-reserved": _has(
@@ -287,14 +371,7 @@ def run_checker(ml_file):
             r"terms\s*\(",
         ),
 
-        "3-3-command": _has(
-            command,
-            r"\bQUIT\b",
-            r"\bOPEN\b",
-            r"\bCID\b",
-            r"(?:term|terms)\s*\(",
-            r"['\"]\.['\"]",
-        ),
+        "3-3-command": _command_is_valid(command), 
 
         "3-4-term": _has(
             term,
@@ -323,8 +400,10 @@ def run_checker(ml_file):
             and _contains_comma_token(source)
         ),
 
-        # expr() = arithmexp() の形も正解にする
-        "3-8-expr": _expr_is_valid(expr),
+        "3-8-expr": bool(
+            _expr_is_valid(expr)
+            or _arithmexp_acts_as_expr(source, arithmfactor)
+        ),
 
         "3-9-tail-opt": _has(
             f("tail_opt"),
@@ -346,10 +425,11 @@ def run_checker(ml_file):
             r"\bNUM\b",
         ),
 
-        # 問5：複数述語
-        "5-multiple-goals": bool(
-            command
-            and re.search(r"terms\s*\(", command)
+        "5-multiple-goals": _multiple_goals_is_valid(
+            command,
+            query,
+            query_opt,
+            source,
         ),
 
         # 問6：行番号付きエラー処理
